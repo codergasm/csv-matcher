@@ -53,7 +53,7 @@
 .loadFiles__inputWrapper {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
     width: 45%;
 }
@@ -123,7 +123,7 @@
 
 .correlation__viewPicker {
     width: 80%;
-    margin: auto;
+    margin: 0 auto 30px;
 }
 
 .btn--correlationViewPicker {
@@ -148,4 +148,237 @@
 .btn--correlationViewPicker:hover {
     background: transparent;
     color: var(--primary);
+}
+
+.sheet {
+    width: 90%;
+    height: 80vh;
+    margin: 20px auto;
+    overflow-x: scroll;
+}
+
+.sheet__table {
+    border: 1px solid var(--primary);
+    border-collapse: collapse;
+}
+
+.sheet__table td {
+    text-align: center;
+    padding: 5px;
+    border: 1px solid var(--primary);
+}
+
+.sheet__header__cell {
+    font-weight: 700;
+}
+
+.sheet__body__row {
+
+}
+
+.sheet__body__row__cell {
+
+}
+
+.btn--check {
+    background: transparent;
+    width: 19px;
+    height: 19px;
+    border-radius: 3px;
+    border: 1px solid var(--primary);
+    position: relative;
+    margin: auto;
+    padding: 0;
+}
+
+.btn--check:hover {
+    background: #dedede;
+}
+
+.btn--check--selected::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: 50%;
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+table .cell--legend {
+    text-align: left;
+    font-weight: 700;
+}
+
+.btn--selectAll {
+    background: transparent;
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 14px;
+    margin: 0 15px;
+    display: inline-block;
+}
+
+.btn--selectAll:hover {
+    background: transparent;
+    text-decoration: underline;
+}
+
+.btn--selectAll:first-of-type {
+    margin-left: 30px;
+}
+
+.scroll {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #C1DCFF;
+}
+
+.scroll::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+}
+.scroll::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+}
+.scroll::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border: 33px none #ffffff;
+    border-radius: 36px;
+}
+.scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--hover);
+}
+.scroll::-webkit-scrollbar-thumb:active {
+    background: var(--hover);
+}
+.scroll::-webkit-scrollbar-track {
+    background: #dedede;
+    border: 49px none #dedede;
+    border-radius: 50px;
+}
+.scroll::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.sheet thead {
+    position: sticky;
+    top: 0;
+}
+
+table, table * {
+    background: #fff;
+}
+
+.btn--autoMatch {
+    width: 400px;
+    height: 50px;
+    border-radius: 50px;
+    margin: 20px auto;
+}
+
+.btn--remove {
+    background: red;
+    width: 100px;
+    height: 35px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    border-radius: 3px;
+}
+
+.btn--remove:hover {
+    background: #ed1111;
+}
+
+.sheetLoaded {
+    width: 300px;
+    height: 300px;
+    border: 2px solid var(--primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.sheetLoaded__text {
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.btn:disabled {
+    opacity: .75;
+    pointer-events: none;
+    cursor: default;
+}
+
+.sheetWrapper .sheet {
+    max-height: 70vh;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, .6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: .2s all;
+}
+
+.modal__inner {
+    width: 600px;
+    height: 80vh;
+    overflow-y: auto;
+    padding: 30px;
+    border-radius: 15px;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    min-height: 400px;
+}
+
+.modal__header {
+    margin: 20px 0;
+}
+
+.modal__label {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 8px 0;
+    cursor: pointer;
+}
+
+.modal__label .btn--check {
+    margin-right: 15px;
+}
+
+.modal__label--disabled {
+    opacity: .5;
+    pointer-events: none;
+    cursor: default;
+}
+
+.btn--addPriority {
+    border-radius: 5px;
+    width: 80%;
+    margin: 10px auto;
+    height: 40px;
+    font-size: 16px;
 }

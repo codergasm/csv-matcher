@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import {AppContext} from "../App";
 
 const LoadFilesView = () => {
-    const { setCurrentView, setDataSheet, setRelationSheet } = useContext(AppContext);
+    const { setCurrentView, dataSheet, setDataSheet, relationSheet, setRelationSheet } = useContext(AppContext);
 
     const handleRelationSheetChange = (e) => {
         const files = e.target.files;
@@ -39,10 +39,19 @@ const LoadFilesView = () => {
                 <span>
                     Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.
                 </span>
-                <input className="loadFiles__input"
-                       type="file"
-                       accept=".csv,.xlsx,.xls"
-                       onChange={(e) => { handleDataSheetChange(e); }} />
+                {!dataSheet?.length ? <input className="loadFiles__input"
+                                     type="file"
+                                     accept=".csv,.xlsx,.xls"
+                                     onChange={(e) => { handleDataSheetChange(e); }} /> :
+                    <div className="sheetLoaded">
+                        <p className="sheetLoaded__text">
+                            Plik został dodany
+                        </p>
+                        <button className="btn btn--remove"
+                                onClick={() => { setDataSheet([]); }}>
+                            Usuń
+                        </button>
+                </div>}
             </div>
 
             <div className="loadFiles__inputWrapper">
@@ -50,14 +59,24 @@ const LoadFilesView = () => {
                     Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
                     do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)
                 </span>
-                <input className="loadFiles__input"
-                       type="file"
-                       accept=".csv,.xlsx,.xls"
-                       onChange={(e) => { handleRelationSheetChange(e); }} />
+                {!relationSheet?.length ? <input className="loadFiles__input"
+                                                 type="file"
+                                                 accept=".csv,.xlsx,.xls"
+                                                 onChange={(e) => { handleRelationSheetChange(e); }} /> :
+                    <div className="sheetLoaded">
+                        <p className="sheetLoaded__text">
+                            Plik został dodany
+                        </p>
+                        <button className="btn btn--remove"
+                                onClick={() => { setRelationSheet([]); }}>
+                            Usuń
+                        </button>
+                    </div>}
             </div>
         </div>
 
         <button className="btn btn--loadFiles"
+                disabled={!dataSheet?.length || !relationSheet?.length}
                 onClick={() => { setCurrentView(1); }}>
             Przejdź do korelacji rekordów
         </button>
