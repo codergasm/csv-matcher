@@ -15,6 +15,11 @@ const CorrelationView = () => {
     const [showInSelectMenuColumns, setShowInSelectMenuColumns] = useState([]);
     const [exportColumns, setExportColumns] = useState([]);
     const [relationSheetExportColumns, setRelationSheetExportColumns] = useState([]);
+    const [outputSheet, setOutputSheet] = useState([]);
+    const [outputSheetExportColumns, setOutputSheetExportColumns] = useState([]);
+
+    const [matchType, setMatchType] = useState(0);
+    const [priorities, setPriorities] = useState([]);
 
     useEffect(() => {
         const columns = Object.entries(dataSheet[0]);
@@ -22,6 +27,10 @@ const CorrelationView = () => {
         setExportColumns(columns.map(() => (0)));
         setRelationSheetExportColumns(columns.map(() => (0)));
     }, [dataSheet]);
+
+    useEffect(() => {
+        setOutputSheetExportColumns(Object.entries(outputSheet[0]).map(() => (0)));
+    }, [outputSheet]);
 
     useEffect(() => {
         switch(currentSheet) {
@@ -36,6 +45,10 @@ const CorrelationView = () => {
                 break;
         }
     }, [currentSheet]);
+
+    const correlate = () => {
+
+    }
 
     return <div className="container container--correlation">
         <div className="correlation__viewPicker flex">
@@ -56,7 +69,10 @@ const CorrelationView = () => {
         <ViewContext.Provider value={{
             showInSelectMenuColumns, setShowInSelectMenuColumns,
             exportColumns, setExportColumns,
-            relationSheetExportColumns, setRelationSheetExportColumns
+            relationSheetExportColumns, setRelationSheetExportColumns,
+            matchType, setMatchType,
+            priorities, setPriorities,
+            correlate
         }}>
             {sheetComponent}
         </ViewContext.Provider>
