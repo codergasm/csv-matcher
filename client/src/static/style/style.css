@@ -154,10 +154,11 @@
     width: 90%;
     height: 80vh;
     margin: 20px auto;
-    overflow-x: scroll;
+    overflow-x: auto;
 }
 
 .sheet__table {
+    width: 100%;
     border: 1px solid var(--primary);
     border-collapse: collapse;
 }

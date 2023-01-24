@@ -5,7 +5,7 @@ import AutoMatchModal from "./AutoMatchModal";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { relationSheetExportColumns, setRelationSheetExportColumns } = useContext(ViewContext);
+    const { relationSheetExportColumns, setRelationSheetExportColumns, outputSheet } = useContext(ViewContext);
 
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
@@ -17,6 +17,12 @@ const RelationSheetView = () => {
             setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0])));
         }
     }, [relationSheet, dataSheet]);
+
+    useEffect(() => {
+        if(outputSheet?.length) {
+            setAutoMatchModalVisible(false);
+        }
+    }, [outputSheet]);
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {

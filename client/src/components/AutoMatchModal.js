@@ -240,7 +240,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns}) => {
             </p>
 
             <button className="btn btn--startAutoMatch"
-                    disabled={priorities.length}
+                    disabled={!priorities.length}
                     onClick={() => { correlate(); }}>
                 Uruchom automatyczne dopasowanie
             </button>
