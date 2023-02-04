@@ -1,30 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
-import Select from 'react-select';
-import {AppContext} from "../App";
 
 const OutputSheetView = () => {
-    const { dataSheet } = useContext(AppContext);
-    const { outputSheet, showInSelectMenuColumns, outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
+    const { outputSheet, showInSelectMenuColumns,
+        outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
 
     const [columnsNames, setColumnsNames] = useState([]);
-    const [selectList, setSelectList] = useState([]);
-
-    useEffect(() => {
-        if(dataSheet?.length && showInSelectMenuColumns?.length) {
-            setSelectList(dataSheet.map((item) => {
-                const valAndLabel = Object.entries(item)
-                    .filter((item, index) => (showInSelectMenuColumns[index]))
-                    .map((item) => (item[1]))
-                    .join(' - ');
-
-                return {
-                    value: valAndLabel,
-                    label: valAndLabel
-                }
-            }));
-        }
-    }, [dataSheet, showInSelectMenuColumns]);
 
     useEffect(() => {
         if(outputSheet) {
@@ -106,22 +87,10 @@ const OutputSheetView = () => {
                     {Object.entries(item).map((item, index, array) => {
                         const cellValue = item[1];
 
-                        if(index === array.length - 1) {
-                            // Column with select
-                            return <td className="sheet__body__row__cell"
-                                key={index}>
-                                {selectList ? <Select
-                                    defaultValue={selectList[0]}
-                                    options={selectList}
-                                    placeholder="Wybierz rekord" /> : ''}
-                            </td>
-                        }
-                        else {
-                            return <td className="sheet__body__row__cell"
-                                       key={index}>
-                                {cellValue}
-                            </td>
-                        }
+                        return <td className="sheet__body__row__cell"
+                                   key={index}>
+                            {cellValue}
+                        </td>
                     })}
 
                     <td className="sheet__body__row__cell" style={{

@@ -19,6 +19,10 @@ const CorrelationView = () => {
     const [relationSheetExportColumns, setRelationSheetExportColumns] = useState([]);
     const [outputSheet, setOutputSheet] = useState([]);
     const [outputSheetExportColumns, setOutputSheetExportColumns] = useState([]);
+    const [correlationMatrix, setCorrelationMatrix] = useState([[]]);
+
+    // 0 - not correlating, 1 - in progress, 2 - finished
+    const [correlationStatus, setCorrelationStatus] = useState(0);
 
     const [matchType, setMatchType] = useState(0);
     const [priorities, setPriorities] = useState([]);
@@ -50,13 +54,19 @@ const CorrelationView = () => {
         }
     }, [currentSheet]);
 
+    useEffect(() => {
+        if(correlationStatus === 2) {
+            setCorrelationStatus(0);
+        }
+    }, [correlationStatus]);
+
     const getSimilarityScores = (conditions, logicalOperators) => {
         let allSimilarities = [];
 
         // Iterate over rows
-        for(const dataRow of dataSheet) {
-            let dataRowSimilarities = [];
-            for(const relationRow of relationSheet) {
+        for(const relationRow of relationSheet) {
+            let relationRowSimilarities = [];
+            for(const dataRow of dataSheet) {
                 // Calculate similarities
                 let similarities = [];
                 for(let i=0; i<conditions.length; i++) {
@@ -86,9 +96,9 @@ const CorrelationView = () => {
                     }
                 }
 
-                dataRowSimilarities.push(Math.max(finalSimilarity * 100, 0));
+                relationRowSimilarities.push(Math.max(finalSimilarity * 100, 0));
             }
-            allSimilarities.push(dataRowSimilarities);
+            allSimilarities.push(relationRowSimilarities);
         }
 
         return allSimilarities;
@@ -126,21 +136,32 @@ const CorrelationView = () => {
         });
     }
 
+    const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
+
+    }
+
     const correlate = () => {
+        setCorrelationStatus(1);
+
         let priorityIndex = 0;
         let outputSheetTmp = [];
+        let correlationMatrixTmp = [];
 
         const relationSheetToMerge = getRelationSheetToMerge();
 
         for(const priority of priorities) {
-            // Get similarities for all rows for current priority [[data row 1 similarities], [data row 2 similarities] ...]
+            // Get similarities for all rows for current priority
+            // [[data row 1 similarities], [data row 2 similarities] ...]
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = getSimilarityScores(priority.conditions, logicalOperators);
 
-            let dataSheetIndex = 0;
-            for(const dataRowSimilarities of similarityScores) {
-                const relationSheetIndex = dataRowSimilarities.indexOf(Math.max(...dataRowSimilarities));
-                const maxSimilarity = dataRowSimilarities[relationSheetIndex];
+            console.log(similarityScores);
+
+            let relationSheetIndex = 0;
+
+            for(const relationRowSimilarities of similarityScores) {
+                const dataSheetIndex = relationRowSimilarities.indexOf(Math.max(...relationRowSimilarities));
+                const maxSimilarity = relationRowSimilarities[dataSheetIndex];
 
                 if(maxSimilarity >= 50) {
                     outputSheetTmp.push({
@@ -150,12 +171,18 @@ const CorrelationView = () => {
                     });
                 }
 
-                dataSheetIndex++;
+                correlationMatrixTmp.push(relationRowSimilarities);
+
+                relationSheetIndex++;
             }
+
+            priorityIndex++;
         }
 
-        console.log(outputSheetTmp);
         setOutputSheet(outputSheetTmp);
+        setCorrelationMatrix(correlationMatrixTmp);
+
+        setCorrelationStatus(2);
     }
 
     return <div className="container container--correlation">
@@ -182,6 +209,9 @@ const CorrelationView = () => {
             matchType, setMatchType,
             priorities, setPriorities,
             outputSheet, setOutputSheet,
+            correlationStatus,
+            correlationMatrix,
+            addManualCorrelation,
             correlate
         }}>
             {sheetComponent}

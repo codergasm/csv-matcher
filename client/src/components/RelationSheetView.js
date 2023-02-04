@@ -2,14 +2,40 @@ import React, {useContext, useEffect, useState} from 'react';
 import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
+import arrowDown from '../static/img/arrow-down.svg';
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { relationSheetExportColumns, setRelationSheetExportColumns, outputSheet } = useContext(ViewContext);
+    const { relationSheetExportColumns, setRelationSheetExportColumns, correlationMatrix,
+        showInSelectMenuColumns, outputSheet, addManualCorrelation } = useContext(ViewContext);
 
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [autoMatchModalVisible, setAutoMatchModalVisible] = useState(false);
+    const [selectList, setSelectList] = useState([]);
+    const [showSelectMenu, setShowSelectMenu] = useState(-1);
+
+    useEffect(() => {
+        if(correlationMatrix[0]?.length) {
+            setSelectList(correlationMatrix.map((relationRowItem, relationRowIndex) => {
+                return relationRowItem.map((dataRowItem, dataRowIndex) => {
+                    const value = Object.entries(dataSheet[dataRowIndex])
+                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .map((item) => (item[1]))
+                        .join(' - ');
+                    const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
+                        .toFixed(0);
+
+                    return {
+                        dataRowIndex,
+                        relationRowIndex,
+                        value,
+                        similarity
+                    }
+                }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
+            }));
+        }
+    }, [correlationMatrix]);
 
     useEffect(() => {
         if(relationSheet && dataSheet) {
@@ -38,8 +64,21 @@ const RelationSheetView = () => {
         }
     }
 
+    const getSimilarityColor = (val) => {
+        if(val >= 90) {
+            return 'red';
+        }
+        else if(val >= 60) {
+            return 'orange';
+        }
+        else {
+            return 'yellow';
+        }
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
+                                                 closeModal={() => { setAutoMatchModalVisible(false); }}
                                                  relationSheetColumns={columnsNames} /> : ''}
 
         <button className="btn btn--autoMatch"
@@ -84,8 +123,12 @@ const RelationSheetView = () => {
                             {item}
                         </td>
                     })}
+                    <td className="sheet__header__cell">
+                        Rekord z ark. 1, z którym powiązano rekord
+                    </td>
                 </tr>
                 </thead>
+
                 <tbody>
                 {relationSheet.map((item, index) => {
                     return <tr className="sheet__body__row"
@@ -98,6 +141,43 @@ const RelationSheetView = () => {
                                 {cellValue}
                             </td>
                         })}
+
+                        <td className="sheet__body__row__cell">
+                            {selectList[index]?.length ? <button className="select__btn"
+                                                                 onClick={() => { setShowSelectMenu(index); }}>
+                                <span className="select__menu__item"
+                                      key={index}>
+                                        <span className="select__menu__item__value">
+                                            {selectList[index][0].value}
+                                        </span>
+                                        <span className="select__menu__item__similarity" style={{
+                                            background: getSimilarityColor(selectList[index][0].similarity)
+                                        }}>
+                                            {selectList[index][0].similarity} %
+                                        </span>
+                                </span>
+                                <img className="select__btn__img"
+                                     src={arrowDown}
+                                     alt="arrow-down" />
+                            </button> : ''}
+
+                            {showSelectMenu === index ? <div className="select__menu scroll">
+                                {selectList[index]?.map((item, index) => {
+                                    return <button className="select__menu__item"
+                                                   onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
+                                                key={index}>
+                                        <span className="select__menu__item__value">
+                                            {item.value}
+                                        </span>
+                                        <span className="select__menu__item__similarity" style={{
+                                            background: getSimilarityColor(item.similarity)
+                                        }}>
+                                            {item.similarity} %
+                                        </span>
+                                    </button>
+                                })}
+                            </div> : ''}
+                        </td>
                     </tr>
                 })}
                 </tbody>
