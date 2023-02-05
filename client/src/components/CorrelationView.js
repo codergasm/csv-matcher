@@ -27,6 +27,11 @@ const CorrelationView = () => {
     const [matchType, setMatchType] = useState(0);
     const [priorities, setPriorities] = useState([]);
 
+    // Indexes of rows from data sheet correlated to 0, 1 ... n row in relation sheet
+    const [indexesOfCorrelatedRows, setIndexesOfCorrelatedRows] = useState([]);
+
+    const [manuallyCorrelatedRows, setManuallyCorrelatedRows] = useState([]);
+
     useEffect(() => {
         const columns = Object.entries(dataSheet[0]);
         setShowInSelectMenuColumns(columns.map(() => (0)));
@@ -137,7 +142,18 @@ const CorrelationView = () => {
     }
 
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
+        setManuallyCorrelatedRows(prevState => ([...prevState, relationRowIndex]));
 
+        setIndexesOfCorrelatedRows(prevState => {
+            return prevState.map((item, index) => {
+                if(index === relationRowIndex) {
+                    return dataRowIndex;
+                }
+                else {
+                    return item;
+                }
+            });
+        });
     }
 
     const correlate = () => {
@@ -154,8 +170,6 @@ const CorrelationView = () => {
             // [[data row 1 similarities], [data row 2 similarities] ...]
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = getSimilarityScores(priority.conditions, logicalOperators);
-
-            console.log(similarityScores);
 
             let relationSheetIndex = 0;
 
@@ -180,9 +194,26 @@ const CorrelationView = () => {
         }
 
         setOutputSheet(outputSheetTmp);
+        setIndexesOfCorrelatedRows(correlationMatrixTmp.map((item) => (getIndexWithMaxValue(item))));
         setCorrelationMatrix(correlationMatrixTmp);
 
         setCorrelationStatus(2);
+    }
+
+    const getIndexWithMaxValue = (arr) => {
+        let maxVal = 0;
+        let indexWithMaxValue = 0;
+        let arrIndex = 0;
+
+        for(const el of arr) {
+            if(el > maxVal) {
+                maxVal = el;
+                indexWithMaxValue = arrIndex;
+            }
+            arrIndex++;
+        }
+
+        return indexWithMaxValue;
     }
 
     return <div className="container container--correlation">
@@ -211,7 +242,8 @@ const CorrelationView = () => {
             outputSheet, setOutputSheet,
             correlationStatus,
             correlationMatrix,
-            addManualCorrelation,
+            indexesOfCorrelatedRows,
+            addManualCorrelation, manuallyCorrelatedRows,
             correlate
         }}>
             {sheetComponent}

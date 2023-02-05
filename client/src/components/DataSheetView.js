@@ -50,14 +50,13 @@ const DataSheetView = () => {
                     <td className="cell--legend" colSpan={columnsNames.length}>
                         Pokazuj w podpowiadajce
 
-                        <button className="btn btn--selectAll"
-                                onClick={() => { handleSelectMenuColumnsChange(-1); }}>
+                        {showInSelectMenuColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                               onClick={() => { handleSelectMenuColumnsChange(-1); }}>
                             Zaznacz wszystkie
-                        </button>
-                        <button className="btn btn--selectAll"
+                        </button> : <button className="btn btn--selectAll"
                                 onClick={() => { handleSelectMenuColumnsChange(-2); }}>
                             Odznacz wszystkie
-                        </button>
+                        </button>}
                     </td>
                 </tr>
                 <tr>
@@ -76,14 +75,13 @@ const DataSheetView = () => {
                     <td className="cell--legend" colSpan={columnsNames.length}>
                         Uwzględnij w eksporcie
 
-                        <button className="btn btn--selectAll"
-                                onClick={() => { handleExportColumnsChange(-1); }}>
+                        {exportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                     onClick={() => { handleExportColumnsChange(-1); }}>
                             Zaznacz wszystkie
-                        </button>
-                        <button className="btn btn--selectAll"
-                                onClick={() => { handleExportColumnsChange(-2); }}>
+                        </button> : <button className="btn btn--selectAll"
+                                            onClick={() => { handleExportColumnsChange(-2); }}>
                             Odznacz wszystkie
-                        </button>
+                        </button>}
                     </td>
                 </tr>
                 <tr>

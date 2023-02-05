@@ -6,14 +6,50 @@ import arrowDown from '../static/img/arrow-down.svg';
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { relationSheetExportColumns, setRelationSheetExportColumns, correlationMatrix,
-        showInSelectMenuColumns, outputSheet, addManualCorrelation } = useContext(ViewContext);
+    const { relationSheetExportColumns, setRelationSheetExportColumns, correlationMatrix, manuallyCorrelatedRows,
+        showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
 
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [autoMatchModalVisible, setAutoMatchModalVisible] = useState(false);
     const [selectList, setSelectList] = useState([]);
+    const [currentSelectMenu, setCurrentSelectMenu] = useState([]);
+    const [currentSelectMenuFiltered, setCurrentSelectMenuFiltered] = useState([]);
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
+    const [searchInputValue, setSearchInputValue] = useState('');
+
+    useEffect(() => {
+        document.addEventListener('click', (e) => {
+            setShowSelectMenu(-1);
+        });
+
+        document.addEventListener('keyup', (e) => {
+           if(e.key === 'Escape') {
+               setShowSelectMenu(-1);
+           }
+        });
+    }, []);
+
+    useEffect(() => {
+        setSearchInputValue('');
+
+        if(showSelectMenu !== -1) {
+            setCurrentSelectMenu(selectList[showSelectMenu]);
+            document.querySelector('.select__input').focus();
+        }
+    }, [showSelectMenu]);
+
+    useEffect(() => {
+        setCurrentSelectMenuFiltered(currentSelectMenu);
+    }, [currentSelectMenu]);
+
+    useEffect(() => {
+        const searchValue = searchInputValue.toLowerCase();
+
+        setCurrentSelectMenuFiltered(currentSelectMenu.filter((item) => {
+            return item.value.toLowerCase().includes(searchValue);
+        }));
+    }, [searchInputValue]);
 
     useEffect(() => {
         if(correlationMatrix[0]?.length) {
@@ -64,15 +100,20 @@ const RelationSheetView = () => {
         }
     }
 
-    const getSimilarityColor = (val) => {
-        if(val >= 90) {
-            return 'red';
+    const getSimilarityColor = (val, relationRow) => {
+        if(manuallyCorrelatedRows.includes(relationRow)) {
+            return 'purple';
         }
-        else if(val >= 60) {
-            return 'orange';
-        }
-        else {
-            return 'yellow';
+        else  {
+            if(val >= 90) {
+                return 'red';
+            }
+            else if(val >= 60) {
+                return 'orange';
+            }
+            else {
+                return 'yellow';
+            }
         }
     }
 
@@ -94,14 +135,13 @@ const RelationSheetView = () => {
                     <td className="cell--legend" colSpan={columnsNames.length}>
                         Uwzględnij w eksporcie
 
-                        <button className="btn btn--selectAll"
-                                onClick={() => { handleExportColumnsChange(-1); }}>
+                        {relationSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                                  onClick={() => { handleExportColumnsChange(-1); }}>
                             Zaznacz wszystkie
-                        </button>
-                        <button className="btn btn--selectAll"
-                                onClick={() => { handleExportColumnsChange(-2); }}>
+                        </button> : <button className="btn btn--selectAll"
+                                            onClick={() => { handleExportColumnsChange(-2); }}>
                             Odznacz wszystkie
-                        </button>
+                        </button>}
                     </td>
                 </tr>
                 <tr>
@@ -131,6 +171,12 @@ const RelationSheetView = () => {
 
                 <tbody>
                 {relationSheet.map((item, index) => {
+                    let correlatedRow = {};
+
+                    if(selectList[index]?.length) {
+                        correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
+                    }
+
                     return <tr className="sheet__body__row"
                                key={index}>
                         {Object.entries(item).map((item, index) => {
@@ -144,25 +190,33 @@ const RelationSheetView = () => {
 
                         <td className="sheet__body__row__cell">
                             {selectList[index]?.length ? <button className="select__btn"
-                                                                 onClick={() => { setShowSelectMenu(index); }}>
-                                <span className="select__menu__item"
-                                      key={index}>
+                                                                 onClick={(e) => {
+                                                                     e.stopPropagation();
+                                                                     e.preventDefault();
+                                                                     setShowSelectMenu(prevState => (prevState === index ? prevState : index));
+                                                                 }}>
+                                {showSelectMenu !== index ? <span className="select__menu__item"
+                                                                  key={index}>
                                         <span className="select__menu__item__value">
-                                            {selectList[index][0].value}
+                                            {correlatedRow.value}
                                         </span>
                                         <span className="select__menu__item__similarity" style={{
-                                            background: getSimilarityColor(selectList[index][0].similarity)
+                                            background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
+                                            color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                         }}>
-                                            {selectList[index][0].similarity} %
+                                            {correlatedRow.similarity} %
                                         </span>
-                                </span>
+                                </span> : <input className="select__input"
+                                                 value={searchInputValue}
+                                                 onChange={(e) => { setSearchInputValue(e.target.value); }} />}
+
                                 <img className="select__btn__img"
                                      src={arrowDown}
                                      alt="arrow-down" />
                             </button> : ''}
 
                             {showSelectMenu === index ? <div className="select__menu scroll">
-                                {selectList[index]?.map((item, index) => {
+                                {currentSelectMenuFiltered?.map((item, index) => {
                                     return <button className="select__menu__item"
                                                    onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
                                                 key={index}>
@@ -170,7 +224,7 @@ const RelationSheetView = () => {
                                             {item.value}
                                         </span>
                                         <span className="select__menu__item__similarity" style={{
-                                            background: getSimilarityColor(item.similarity)
+                                            background: getSimilarityColor(item.similarity, -1)
                                         }}>
                                             {item.similarity} %
                                         </span>

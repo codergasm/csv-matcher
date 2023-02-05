@@ -2,16 +2,31 @@ import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 
 const OutputSheetView = () => {
-    const { outputSheet, showInSelectMenuColumns,
-        outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
+    const { outputSheet, setOutputSheet, exportColumns,
+        relationSheetExportColumns, outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
 
     const [columnsNames, setColumnsNames] = useState([]);
 
     useEffect(() => {
-        if(outputSheet) {
+        if(outputSheet && !columnsNames?.length) {
             setColumnsNames(Object.entries(outputSheet[0]).map((item) => (item[0])));
         }
     }, [outputSheet]);
+
+    useEffect(() => {
+        setOutputSheet(prevState => {
+            return prevState.map((item) => {
+                return Object.fromEntries(Object.entries(item).filter((item, index) => {
+                    if(index < exportColumns.length) {
+                        return exportColumns[index];
+                    }
+                    else {
+                        return relationSheetExportColumns[index - exportColumns.length];
+                    }
+                }));
+            });
+        })
+    }, [exportColumns, relationSheetExportColumns, outputSheetExportColumns]);
 
     const handleOutputSheetExportChange = (i) => {
         if(i === -2) {
@@ -24,18 +39,6 @@ const OutputSheetView = () => {
             setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
-        }
-    }
-
-    const getSimilarityColor = (val) => {
-        if(val >= 90) {
-            return 'red';
-        }
-        else if(val >= 60) {
-            return 'orange';
-        }
-        else {
-            return 'yellow';
         }
     }
 
@@ -58,14 +61,13 @@ const OutputSheetView = () => {
                 <td className="cell--legend" colSpan={columnsNames.length}>
                     Uwzględnij w eksporcie
 
-                    <button className="btn btn--selectAll"
-                            onClick={() => { handleOutputSheetExportChange(-1); }}>
+                    {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                            onClick={() => { handleOutputSheetExportChange(-1); }}>
                         Zaznacz wszystkie
-                    </button>
-                    <button className="btn btn--selectAll"
-                            onClick={() => { handleOutputSheetExportChange(-2); }}>
+                    </button> : <button className="btn btn--selectAll"
+                                        onClick={() => { handleOutputSheetExportChange(-2); }}>
                         Odznacz wszystkie
-                    </button>
+                    </button>}
                 </td>
             </tr>
 
@@ -80,8 +82,6 @@ const OutputSheetView = () => {
             </thead>
             <tbody>
             {outputSheet.map((item, index) => {
-                const similarityValue = parseInt(Object.entries(item).slice(-1)[0][1]);
-
                 return <tr className="sheet__body__row"
                            key={index}>
                     {Object.entries(item).map((item, index, array) => {
@@ -92,13 +92,6 @@ const OutputSheetView = () => {
                             {cellValue}
                         </td>
                     })}
-
-                    <td className="sheet__body__row__cell" style={{
-                        background: getSimilarityColor(similarityValue)
-                    }}>
-                        Podobieństwo:<br/>
-                        {similarityValue} %
-                    </td>
                 </tr>
             })}
             </tbody>
