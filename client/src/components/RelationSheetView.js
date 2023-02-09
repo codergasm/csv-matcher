@@ -6,7 +6,7 @@ import arrowDown from '../static/img/arrow-down.svg';
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { relationSheetExportColumns, setRelationSheetExportColumns, correlationMatrix, manuallyCorrelatedRows,
+    const { outputSheetExportColumns, setOutputSheetExportColumns, correlationMatrix, manuallyCorrelatedRows,
         showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
 
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
@@ -88,13 +88,17 @@ const RelationSheetView = () => {
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {
-            setRelationSheetExportColumns(prevState => (prevState.map(() => (0))));
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
+                return index >= dataSheetColumnsNames?.length ? 0 : item;
+            })));
         }
         else if(i === -1) {
-            setRelationSheetExportColumns(prevState => (prevState.map(() => (1))));
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
+                return index >= dataSheetColumnsNames?.length ? 1 : item;
+            })));
         }
         else {
-            setRelationSheetExportColumns(prevState => (prevState.map((item, index) => {
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
         }
@@ -135,7 +139,7 @@ const RelationSheetView = () => {
                     <td className="cell--legend" colSpan={columnsNames.length}>
                         Uwzględnij w eksporcie
 
-                        {relationSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                        {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                                   onClick={() => { handleExportColumnsChange(-1); }}>
                             Zaznacz wszystkie
                         </button> : <button className="btn btn--selectAll"
@@ -145,14 +149,16 @@ const RelationSheetView = () => {
                     </td>
                 </tr>
                 <tr>
-                    {relationSheetExportColumns.map((item, index) => {
-                        return <td className="check__cell"
-                                   key={index}>
-                            <button className={relationSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleExportColumnsChange(index); }}>
+                    {outputSheetExportColumns.map((item, index) => {
+                        if(index >= dataSheetColumnsNames?.length) {
+                            return <td className="check__cell"
+                                       key={index}>
+                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleExportColumnsChange(index); }}>
 
-                            </button>
-                        </td>
+                                </button>
+                            </td>
+                        }
                     })}
                 </tr>
 

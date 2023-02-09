@@ -4,7 +4,6 @@ import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../App";
 import { stringSimilarity } from 'string-similarity-js';
-import { zip } from 'pythonic';
 
 const ViewContext = React.createContext(null);
 
@@ -13,10 +12,9 @@ const CorrelationView = () => {
 
     // 0 - data, 1 - relation, 2 - output
     const [currentSheet, setCurrentSheet] = useState(0);
+
     const [sheetComponent, setSheetComponent] = useState(<DataSheetView />);
     const [showInSelectMenuColumns, setShowInSelectMenuColumns] = useState([]);
-    const [exportColumns, setExportColumns] = useState([]);
-    const [relationSheetExportColumns, setRelationSheetExportColumns] = useState([]);
     const [outputSheet, setOutputSheet] = useState([]);
     const [outputSheetExportColumns, setOutputSheetExportColumns] = useState([]);
     const [correlationMatrix, setCorrelationMatrix] = useState([[]]);
@@ -35,15 +33,43 @@ const CorrelationView = () => {
     useEffect(() => {
         const columns = Object.entries(dataSheet[0]);
         setShowInSelectMenuColumns(columns.map(() => (0)));
-        setExportColumns(columns.map(() => (0)));
-        setRelationSheetExportColumns(columns.map(() => (0)));
     }, [dataSheet]);
 
     useEffect(() => {
-        if(outputSheet?.length) {
-            setOutputSheetExportColumns(Object.entries(outputSheet[0]).map(() => (0)));
+        if(dataSheet?.length && relationSheet?.length) {
+            setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (0))
+                .concat(Object.entries(relationSheet[0]).map(() => (0))));
         }
-    }, [outputSheet]);
+    }, [dataSheet, relationSheet]);
+
+    const joinTwoSheets = (arrayA, arrayB, mapping) => {
+        const result = [];
+
+        for(let i=0; i<mapping.length; i++) {
+            const a = arrayA[mapping[i]];
+            const b = arrayB[i];
+
+            const combined = { ...a };
+            for(const key in b) {
+                if(combined.hasOwnProperty(key)) {
+                    combined[`rel_${key}`] = b[key];
+                }
+                else {
+                    combined[key] = b[key];
+                }
+            }
+
+            result.push(combined);
+        }
+
+        return result;
+    }
+
+    useEffect(() => {
+        if(indexesOfCorrelatedRows && dataSheet && relationSheet) {
+            setOutputSheet(joinTwoSheets(dataSheet, relationSheet, indexesOfCorrelatedRows));
+        }
+    }, [indexesOfCorrelatedRows, dataSheet, relationSheet]);
 
     useEffect(() => {
         switch(currentSheet) {
@@ -84,8 +110,10 @@ const CorrelationView = () => {
                     }
                 }
 
-                // Calculate final similarity based on conditions
-                let finalSimilarity = -1;
+                // Calculate final similarity based on conditions - default first similarity
+                // (if no conditions, loop will be omitted)
+                let finalSimilarity = similarities[0];
+
                 for(let i=0; i<similarities.length-1; i++) {
                     if(logicalOperators[i] === 1) { // or
                         let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
@@ -109,38 +137,6 @@ const CorrelationView = () => {
         return allSimilarities;
     }
 
-    const getRelationSheetToMerge = () => {
-        const dataSheetColumns = Object.entries(dataSheet[0]).map((item) => (item[0]));
-        const relationSheetColumns = Object.entries(relationSheet[0]).map((item) => (item[0]));
-
-        let newRelationSheetColumns = [];
-        let sameColumnInDataSheet = false;
-
-        for(const relationColumn of relationSheetColumns) {
-            sameColumnInDataSheet = false;
-
-            for(const dataColumn of dataSheetColumns) {
-                if(dataColumn === relationColumn) {
-                    sameColumnInDataSheet = true;
-                    break;
-                }
-            }
-
-            if(!sameColumnInDataSheet) {
-                newRelationSheetColumns.push(relationColumn);
-            }
-            else {
-                newRelationSheetColumns.push(`rel_${relationColumn}`);
-            }
-        }
-
-        return relationSheet.map((item) => {
-            return Object.fromEntries(Object.entries(item).map((item, index) => {
-                return [newRelationSheetColumns[index], item[1]];
-            }));
-        });
-    }
-
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
         setManuallyCorrelatedRows(prevState => ([...prevState, relationRowIndex]));
 
@@ -160,10 +156,7 @@ const CorrelationView = () => {
         setCorrelationStatus(1);
 
         let priorityIndex = 0;
-        let outputSheetTmp = [];
         let correlationMatrixTmp = [];
-
-        const relationSheetToMerge = getRelationSheetToMerge();
 
         for(const priority of priorities) {
             // Get similarities for all rows for current priority
@@ -171,29 +164,13 @@ const CorrelationView = () => {
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = getSimilarityScores(priority.conditions, logicalOperators);
 
-            let relationSheetIndex = 0;
-
             for(const relationRowSimilarities of similarityScores) {
-                const dataSheetIndex = relationRowSimilarities.indexOf(Math.max(...relationRowSimilarities));
-                const maxSimilarity = relationRowSimilarities[dataSheetIndex];
-
-                if(maxSimilarity >= 50) {
-                    outputSheetTmp.push({
-                        ...dataSheet[dataSheetIndex],
-                        ...relationSheetToMerge[relationSheetIndex],
-                        similarity: maxSimilarity
-                    });
-                }
-
                 correlationMatrixTmp.push(relationRowSimilarities);
-
-                relationSheetIndex++;
             }
 
             priorityIndex++;
         }
 
-        setOutputSheet(outputSheetTmp);
         setIndexesOfCorrelatedRows(correlationMatrixTmp.map((item) => (getIndexWithMaxValue(item))));
         setCorrelationMatrix(correlationMatrixTmp);
 
@@ -234,8 +211,6 @@ const CorrelationView = () => {
 
         <ViewContext.Provider value={{
             showInSelectMenuColumns, setShowInSelectMenuColumns,
-            exportColumns, setExportColumns,
-            relationSheetExportColumns, setRelationSheetExportColumns,
             outputSheetExportColumns, setOutputSheetExportColumns,
             matchType, setMatchType,
             priorities, setPriorities,

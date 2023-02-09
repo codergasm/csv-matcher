@@ -5,7 +5,7 @@ import {ViewContext} from "./CorrelationView";
 const DataSheetView = () => {
     const { dataSheet } = useContext(AppContext);
     const { showInSelectMenuColumns, setShowInSelectMenuColumns,
-        exportColumns, setExportColumns } = useContext(ViewContext);
+        outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
 
     const [columnsNames, setColumnsNames] = useState([]);
 
@@ -31,13 +31,17 @@ const DataSheetView = () => {
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {
-            setExportColumns(prevState => (prevState.map(() => (0))));
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
+                return index < columnsNames?.length ? 0 : item;
+            })));
         }
         else if(i === -1) {
-            setExportColumns(prevState => (prevState.map(() => (1))));
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
+                return index < columnsNames?.length ? 1 : item;
+            })));
         }
         else {
-            setExportColumns(prevState => (prevState.map((item, index) => {
+            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
         }
@@ -75,7 +79,7 @@ const DataSheetView = () => {
                     <td className="cell--legend" colSpan={columnsNames.length}>
                         Uwzględnij w eksporcie
 
-                        {exportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                        {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                      onClick={() => { handleExportColumnsChange(-1); }}>
                             Zaznacz wszystkie
                         </button> : <button className="btn btn--selectAll"
@@ -85,14 +89,16 @@ const DataSheetView = () => {
                     </td>
                 </tr>
                 <tr>
-                    {exportColumns.map((item, index) => {
-                        return <td className="check__cell"
-                                   key={index}>
-                            <button className={exportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleExportColumnsChange(index); }}>
+                    {outputSheetExportColumns.map((item, index) => {
+                        if(index < columnsNames?.length) {
+                            return <td className="check__cell"
+                                       key={index}>
+                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleExportColumnsChange(index); }}>
 
-                            </button>
-                        </td>
+                                </button>
+                            </td>
+                        }
                     })}
                 </tr>
 

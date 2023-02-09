@@ -273,6 +273,7 @@ table, table * {
     background: #fff;
 }
 
+.btn--export,
 .btn--autoMatch {
     width: 400px;
     height: 50px;
@@ -589,4 +590,8 @@ option {
 .select__input:focus,
 .select__input:active {
     border-bottom: 2px solid var(--primary);
+}
+
+.btn--export {
+    margin: 0 auto 30px;
 }
