@@ -1,16 +1,17 @@
 1. dataSheet jest pierwszym wczytywanym arkuszem, relationSheet drugim, natomiast outputSheet - arkuszem wyjściowym
-2. dataSheet i relationSheet są niezmienialne po wczytaniu
+2. dataSheet i relationSheet są niemutowalne po wczytaniu
 3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumns, natomiast informacje
 o eksporcie - w outputSheetExportColumns
 4. Informacja o korelacji między poszczególnymi rekordami dataSheet i relationSheet przechowywana jest w state
 indexesOfCorrelatedRows, gdzie i-ty element tej tablicy o wartości j, wskazuje, że i-ty wiersz z relationSheet
-powinien zostać skorelowany z j-tym wierszem w dataSheet
+powinien zostać skorelowany z j-tym wierszem w dataSheet, jeśli i-ty element tablicy jest równy -1 to znaczy, że i-ty
+wiersz z relationSheet nie znalazł odpowiadającego mu rekordu w dataSheet
 5. outputSheet jest zmieniany w momencie zmiany indexesOfCorrelatedRows
 6. indexesOfCorrelatedRows może zostać zmieniony tylko podczas automatycznej lub manualnej korelacji
 7. Aby zachować informacje o tym, które rekordy zostały manualnie skorelowane, w tablicy manuallyCorrelatedRows
-trzymane są indeksy wierszy z relationSheet, które zostały manualnie skorelowane z wierszamy w dataSheet
+trzymane są indeksy wierszy z relationSheet, które zostały manualnie skorelowane z wierszami w dataSheet
 
 TODO:
-- dodać brak korelacji rekordów w relationSheet z rekordami w dataSheet
-- infinite scroll dla dużych arkuszy, bo będzie problem z szybkością renderowania, to samo dla szukajki
+- problem szybkości renderowania drugiego arkusza
 - priorytety
+- zaznaczanie wszystkich kolumn w arkuszach 1 i 2

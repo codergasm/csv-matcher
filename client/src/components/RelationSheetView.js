@@ -3,12 +3,17 @@ import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';
+import InfiniteScroll from 'react-infinite-scroll-component';
+
+const ROWS_PER_PAGE = 20;
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, correlationMatrix, manuallyCorrelatedRows,
         showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
 
+    const [page, setPage] = useState(1);
+    const [rowsToRender, setRowsToRender] = useState([]);
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [autoMatchModalVisible, setAutoMatchModalVisible] = useState(false);
@@ -17,6 +22,10 @@ const RelationSheetView = () => {
     const [currentSelectMenuFiltered, setCurrentSelectMenuFiltered] = useState([]);
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
     const [searchInputValue, setSearchInputValue] = useState('');
+
+    useEffect(() => {
+        setRowsToRender(relationSheet.slice(0, ROWS_PER_PAGE));
+    }, [relationSheet]);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -121,6 +130,13 @@ const RelationSheetView = () => {
         }
     }
 
+    const fetchNextRows = () => {
+        setRowsToRender(prevState => {
+            return [...prevState, ...relationSheet.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+        });
+        setPage(prevState => (prevState+1));
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
                                                  closeModal={() => { setAutoMatchModalVisible(false); }}
@@ -131,12 +147,10 @@ const RelationSheetView = () => {
             Automatycznie dopasuj
         </button>
 
-        <div className="sheet scroll">
-            <table className="sheet__table">
-                <thead>
-
-                <tr>
-                    <td className="cell--legend" colSpan={columnsNames.length}>
+        <div className="sheet">
+            <div className="sheet__table">
+                <div className="sheet__table__info">
+                    <div className="cell--legend">
                         Uwzględnij w eksporcie
 
                         {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
@@ -146,55 +160,65 @@ const RelationSheetView = () => {
                                             onClick={() => { handleExportColumnsChange(-2); }}>
                             Odznacz wszystkie
                         </button>}
-                    </td>
-                </tr>
-                <tr>
+                    </div>
+                </div>
+
+                <div className="flex">
                     {outputSheetExportColumns.map((item, index) => {
                         if(index >= dataSheetColumnsNames?.length) {
-                            return <td className="check__cell"
+                            return <div className="check__cell"
                                        key={index}>
                                 <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                         onClick={() => { handleExportColumnsChange(index); }}>
 
                                 </button>
-                            </td>
+                            </div>
                         }
                     })}
-                </tr>
+                    <div className="check__cell check__cell--relation">
 
-                <tr>
+                    </div>
+                </div>
+
+                <div className="flex">
                     {columnsNames.map((item, index) => {
-                        return <td className="sheet__header__cell"
+                        return <div className="sheet__header__cell"
                                    key={index}>
                             {item}
-                        </td>
+                        </div>
                     })}
-                    <td className="sheet__header__cell">
+                    <div className="sheet__header__cell sheet__header__cell--relation">
                         Rekord z ark. 1, z którym powiązano rekord
-                    </td>
-                </tr>
-                </thead>
+                    </div>
+                </div>
+            </div>
 
-                <tbody>
-                {relationSheet.map((item, index) => {
+            <InfiniteScroll dataLength={page * ROWS_PER_PAGE}
+                            next={fetchNextRows}
+                            hasMore={true}
+                            loader={<h4>Loading...</h4>}
+                            height={400}
+                            className="scroll"
+                            endMessage={''}>
+                {rowsToRender.map((item, index) => {
                     let correlatedRow = {};
 
                     if(selectList[index]?.length) {
                         correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
                     }
 
-                    return <tr className="sheet__body__row"
+                    return <div className="sheet__body__row"
                                key={index}>
                         {Object.entries(item).map((item, index) => {
                             const cellValue = item[1];
 
-                            return <td className="sheet__body__row__cell"
+                            return <div className="sheet__body__row__cell"
                                        key={index}>
                                 {cellValue}
-                            </td>
+                            </div>
                         })}
 
-                        <td className="sheet__body__row__cell">
+                        <div className="sheet__body__row__cell sheet__body__row__cell--relation">
                             {selectList[index]?.length ? <button className="select__btn"
                                                                  onClick={(e) => {
                                                                      e.stopPropagation();
@@ -225,7 +249,7 @@ const RelationSheetView = () => {
                                 {currentSelectMenuFiltered?.map((item, index) => {
                                     return <button className="select__menu__item"
                                                    onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
-                                                key={index}>
+                                                   key={index}>
                                         <span className="select__menu__item__value">
                                             {item.value}
                                         </span>
@@ -237,11 +261,10 @@ const RelationSheetView = () => {
                                     </button>
                                 })}
                             </div> : ''}
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 })}
-                </tbody>
-            </table>
+            </InfiniteScroll>
         </div>
     </div>
 };

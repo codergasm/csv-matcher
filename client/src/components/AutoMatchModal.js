@@ -146,6 +146,10 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
         })
     }
 
+    useEffect(() => {
+        console.log(correlationStatus);
+    }, [correlationStatus]);
+
     return <div className="modal">
         <div className="modal__inner scroll">
             {correlationStatus !== 1 ? <>

@@ -1,14 +1,20 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
+import InfiniteScroll from "react-infinite-scroll-component";
+
+const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = () => {
     const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
 
+    const [page, setPage] = useState(1);
+    const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
 
     useEffect(() => {
         if(outputSheet?.length) {
+            setRowsToRender(outputSheet.slice(0, ROWS_PER_PAGE));
             setColumnsNames(Object.entries(outputSheet[0]).map((item) => (item[0])))
         }
     }, [outputSheet]);
@@ -48,7 +54,14 @@ const OutputSheetView = () => {
         link.remove();
     }
 
-    return <div className="sheet scroll">
+    const fetchNextRows = () => {
+        setRowsToRender(prevState => {
+            return [...prevState, ...outputSheet.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+        });
+        setPage(prevState => (prevState+1));
+    }
+
+    return <div className="sheet">
         <button className="btn btn--export" onClick={() => { exportOutputSheet(); }}>
             Eksportuj arkusz wyjściowy
         </button>
@@ -90,22 +103,31 @@ const OutputSheetView = () => {
                 })}
             </tr>
             </thead>
-            <tbody>
-                {outputSheet.map((item, index) => {
-                    return <tr className="sheet__body__row"
-                               key={index}>
-                        {Object.entries(item).map((item, index, array) => {
-                            const cellValue = item[1];
-
-                            return <td className="sheet__body__row__cell"
-                                       key={index}>
-                                {cellValue}
-                            </td>
-                        })}
-                    </tr>
-                })}
-            </tbody>
         </table>
+
+        <InfiniteScroll
+            dataLength={page * ROWS_PER_PAGE}
+            next={fetchNextRows}
+            hasMore={true}
+            loader={<h4>Loading...</h4>}
+            height={400}
+            className="scroll"
+            endMessage={''}
+        >
+            {rowsToRender.map((item, index) => {
+                return <tr className="sheet__body__row"
+                           key={index}>
+                    {Object.entries(item).map((item, index, array) => {
+                        const cellValue = item[1];
+
+                        return <td className="sheet__body__row__cell"
+                                   key={index}>
+                            {cellValue}
+                        </td>
+                    })}
+                </tr>
+            })}
+        </InfiniteScroll>
     </div>
 };
 

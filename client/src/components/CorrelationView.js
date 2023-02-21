@@ -42,20 +42,58 @@ const CorrelationView = () => {
         }
     }, [dataSheet, relationSheet]);
 
+    const findMax = (arr) => {
+        let maxEl = arr[0];
+        for(let i=0; i< arr.length; i++) {
+            if(arr[i] > maxEl) {
+                maxEl = arr[i];
+            }
+        }
+        return maxEl;
+    }
+
+    const getDataSheetCorrelations = (inputArray) => {
+        const maxIndex = findMax(inputArray);
+        let outputArray = [];
+
+        for(let i=0; i<=maxIndex; i++) {
+            const index = inputArray.findIndex((item) => (item === i));
+            outputArray.push(index);
+        }
+
+        return outputArray;
+    }
+
     const joinTwoSheets = (arrayA, arrayB, mapping) => {
         const result = [];
+        const dataSheetMapping = getDataSheetCorrelations(mapping);
 
-        for(let i=0; i<mapping.length; i++) {
-            const a = arrayA[mapping[i]];
-            const b = arrayB[i];
+        for(let i=0; i<arrayA.length; i++) {
+            const a = arrayA[i];
+            let b = {};
+            let correlationInRelationSheetNotFound = false;
+
+            if(dataSheetMapping[i] >= 0) {
+                if(correlationMatrix[dataSheetMapping[i]][i] >= 80 || manuallyCorrelatedRows.includes(dataSheetMapping[i])) {
+                    b = arrayB[dataSheetMapping[i]];
+                }
+                else {
+                    b = arrayB[0];
+                    correlationInRelationSheetNotFound = true;
+                }
+            }
+            else {
+                b = arrayB[0];
+                correlationInRelationSheetNotFound = true;
+            }
 
             const combined = { ...a };
             for(const key in b) {
                 if(combined.hasOwnProperty(key)) {
-                    combined[`rel_${key}`] = b[key];
+                    combined[`rel_${key}`] = correlationInRelationSheetNotFound ? '' : b[key];
                 }
                 else {
-                    combined[key] = b[key];
+                    combined[key] = correlationInRelationSheetNotFound ? '' : b[key];
                 }
             }
 
@@ -160,7 +198,7 @@ const CorrelationView = () => {
 
         for(const priority of priorities) {
             // Get similarities for all rows for current priority
-            // [[data row 1 similarities], [data row 2 similarities] ...]
+            // [[relation row 1 similarities], [relation row 2 similarities] ...]
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = getSimilarityScores(priority.conditions, logicalOperators);
 

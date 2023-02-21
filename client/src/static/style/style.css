@@ -155,10 +155,12 @@
     height: 80vh;
     margin: 20px auto;
     overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .sheet__table {
-    width: 100%;
+    table-layout: fixed;
+    width: calc(100% - 15px);
     border: 1px solid var(--primary);
     border-collapse: collapse;
 }
@@ -173,12 +175,71 @@
     font-weight: 700;
 }
 
-.sheet__body__row {
+.flex > .sheet__header__cell,
+div.check__cell {
+    flex-grow: 1;
+    flex-basis: 0;
+    border: 1px solid var(--primary);
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.flex > .sheet__header__cell,
+div.check__cell {
+    border-right: none;
+    border-bottom: none;
+}
+
+.flex > .sheet__header__cell:first-of-type,
+div.check__cell:first-of-type {
+    border-left: none;
+}
+
+.sheet__body__row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
 }
 
 .sheet__body__row__cell {
     position: relative;
+    flex-grow: 1;
+    flex-basis: 0;
+    border: 1px solid var(--primary);
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sheet__header--relation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.check__cell--relation,
+.sheet__header__cell--relation,
+.sheet__body__row__cell--relation {
+    flex-basis: 30% !important;
+    display: flex !important;
+}
+
+.sheet__body__row__cell {
+    border-right: none;
+}
+
+.sheet__table__info {
+    height: 40px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px 10px;
 }
 
 .btn--check {
@@ -232,7 +293,7 @@ table .cell--legend {
 }
 
 .scroll {
-    overflow-y: auto;
+    overflow-y: scroll !important;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) #C1DCFF;
 }
@@ -262,11 +323,6 @@ table .cell--legend {
 
 .scroll::-webkit-scrollbar-corner {
     background: transparent;
-}
-
-.sheet thead {
-    position: sticky;
-    top: 0;
 }
 
 table, table * {
