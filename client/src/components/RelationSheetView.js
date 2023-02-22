@@ -3,7 +3,6 @@ import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';
-import InfiniteScroll from 'react-infinite-scroll-component';
 
 const ROWS_PER_PAGE = 20;
 
@@ -75,7 +74,7 @@ const RelationSheetView = () => {
                         dataRowIndex,
                         relationRowIndex,
                         value,
-                        similarity
+                        similarity: isNaN(similarity) ? 0 : similarity
                     }
                 }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
             }));
@@ -137,6 +136,30 @@ const RelationSheetView = () => {
         setPage(prevState => (prevState+1));
     }
 
+    const checkScrollToBottom = (e) => {
+        const visibleHeight = e.target.clientHeight;
+        const scrollHeight = e.target.scrollHeight;
+
+        const scrolled = e.target.scrollTop;
+
+        if(scrolled + visibleHeight >= scrollHeight) {
+            if((page + 1) * ROWS_PER_PAGE < relationSheet.length) {
+                fetchNextRows();
+            }
+        }
+    }
+
+    const changeZIndex = (i) => {
+        Array.from(document.querySelectorAll('.sheet__body__row__cell--relation')).forEach((item, index) => {
+            if(index === i) {
+                item.style.zIndex = '1001';
+            }
+            else {
+                item.style.zIndex = '1000';
+            }
+        });
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
                                                  closeModal={() => { setAutoMatchModalVisible(false); }}
@@ -147,23 +170,24 @@ const RelationSheetView = () => {
             Automatycznie dopasuj
         </button>
 
-        <div className="sheet">
-            <div className="sheet__table">
-                <div className="sheet__table__info">
-                    <div className="cell--legend">
-                        Uwzględnij w eksporcie
+        <div className="sheet scroll"
+             onScroll={(e) => { checkScrollToBottom(e); }}>
+            <div className="sheet__table__info">
+                <div className="cell--legend">
+                    Uwzględnij w eksporcie
 
-                        {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                                  onClick={() => { handleExportColumnsChange(-1); }}>
-                            Zaznacz wszystkie
-                        </button> : <button className="btn btn--selectAll"
-                                            onClick={() => { handleExportColumnsChange(-2); }}>
-                            Odznacz wszystkie
-                        </button>}
-                    </div>
+                    {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                            onClick={() => { handleExportColumnsChange(-1); }}>
+                        Zaznacz wszystkie
+                    </button> : <button className="btn btn--selectAll"
+                                        onClick={() => { handleExportColumnsChange(-2); }}>
+                        Odznacz wszystkie
+                    </button>}
                 </div>
+            </div>
 
-                <div className="flex">
+            <div className="sheet__table">
+                <div className="line">
                     {outputSheetExportColumns.map((item, index) => {
                         if(index >= dataSheetColumnsNames?.length) {
                             return <div className="check__cell"
@@ -180,7 +204,7 @@ const RelationSheetView = () => {
                     </div>
                 </div>
 
-                <div className="flex">
+                <div className="line">
                     {columnsNames.map((item, index) => {
                         return <div className="sheet__header__cell"
                                    key={index}>
@@ -193,78 +217,71 @@ const RelationSheetView = () => {
                 </div>
             </div>
 
-            <InfiniteScroll dataLength={page * ROWS_PER_PAGE}
-                            next={fetchNextRows}
-                            hasMore={true}
-                            loader={<h4>Loading...</h4>}
-                            height={400}
-                            className="scroll"
-                            endMessage={''}>
-                {rowsToRender.map((item, index) => {
-                    let correlatedRow = {};
+            {rowsToRender.map((item, index) => {
+                let correlatedRow = {};
 
-                    if(selectList[index]?.length) {
-                        correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
-                    }
+                if(selectList[index]?.length) {
+                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
+                }
 
-                    return <div className="sheet__body__row"
-                               key={index}>
-                        {Object.entries(item).map((item, index) => {
-                            const cellValue = item[1];
+                return <div className="line line--tableRow"
+                           key={index}>
+                    {Object.entries(item).map((item, index) => {
+                        const cellValue = item[1];
 
-                            return <div className="sheet__body__row__cell"
-                                       key={index}>
-                                {cellValue}
-                            </div>
-                        })}
-
-                        <div className="sheet__body__row__cell sheet__body__row__cell--relation">
-                            {selectList[index]?.length ? <button className="select__btn"
-                                                                 onClick={(e) => {
-                                                                     e.stopPropagation();
-                                                                     e.preventDefault();
-                                                                     setShowSelectMenu(prevState => (prevState === index ? prevState : index));
-                                                                 }}>
-                                {showSelectMenu !== index ? <span className="select__menu__item"
-                                                                  key={index}>
-                                        <span className="select__menu__item__value">
-                                            {correlatedRow.value}
-                                        </span>
-                                        <span className="select__menu__item__similarity" style={{
-                                            background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
-                                            color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
-                                        }}>
-                                            {correlatedRow.similarity} %
-                                        </span>
-                                </span> : <input className="select__input"
-                                                 value={searchInputValue}
-                                                 onChange={(e) => { setSearchInputValue(e.target.value); }} />}
-
-                                <img className="select__btn__img"
-                                     src={arrowDown}
-                                     alt="arrow-down" />
-                            </button> : ''}
-
-                            {showSelectMenu === index ? <div className="select__menu scroll">
-                                {currentSelectMenuFiltered?.map((item, index) => {
-                                    return <button className="select__menu__item"
-                                                   onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
-                                                   key={index}>
-                                        <span className="select__menu__item__value">
-                                            {item.value}
-                                        </span>
-                                        <span className="select__menu__item__similarity" style={{
-                                            background: getSimilarityColor(item.similarity, -1)
-                                        }}>
-                                            {item.similarity} %
-                                        </span>
-                                    </button>
-                                })}
-                            </div> : ''}
+                        return <div className="sheet__body__row__cell"
+                                   key={index}>
+                            {cellValue}
                         </div>
+                    })}
+
+                    <div className="sheet__body__row__cell sheet__body__row__cell--relation">
+                        {selectList[index]?.length ? <button className="select__btn"
+                                                             onClick={(e) => {
+                                                                 e.stopPropagation();
+                                                                 e.preventDefault();
+                                                                 changeZIndex(index);
+                                                                 setShowSelectMenu(prevState => (prevState === index ? prevState : index));
+                                                             }}>
+                            {showSelectMenu !== index ? <span className="select__menu__item"
+                                                              key={index}>
+                                    <span className="select__menu__item__value">
+                                        {correlatedRow.value}
+                                    </span>
+                                    <span className="select__menu__item__similarity" style={{
+                                        background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
+                                        color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
+                                    }}>
+                                        {correlatedRow.similarity} %
+                                    </span>
+                            </span> : <input className="select__input"
+                                             value={searchInputValue}
+                                             onChange={(e) => { setSearchInputValue(e.target.value); }} />}
+
+                            <img className="select__btn__img"
+                                 src={arrowDown}
+                                 alt="arrow-down" />
+                        </button> : ''}
+
+                        {showSelectMenu === index ? <div className="select__menu scroll">
+                            {currentSelectMenuFiltered?.map((item, index) => {
+                                return <button className="select__menu__item"
+                                               onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
+                                               key={index}>
+                                    <span className="select__menu__item__value">
+                                        {item.value}
+                                    </span>
+                                    <span className="select__menu__item__similarity" style={{
+                                        background: getSimilarityColor(item.similarity, -1)
+                                    }}>
+                                        {item.similarity} %
+                                    </span>
+                                </button>
+                            })}
+                        </div> : ''}
                     </div>
-                })}
-            </InfiniteScroll>
+                </div>
+            })}
         </div>
     </div>
 };

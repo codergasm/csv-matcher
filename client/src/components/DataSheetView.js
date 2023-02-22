@@ -1,7 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
-import InfiniteScroll from 'react-infinite-scroll-component';
 
 const ROWS_PER_PAGE = 20;
 
@@ -13,6 +12,8 @@ const DataSheetView = () => {
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
+
+    let exportLegend = useRef(null);
 
     useEffect(() => {
         if(dataSheet) {
@@ -60,11 +61,30 @@ const DataSheetView = () => {
         setPage(prevState => (prevState+1));
     }
 
-    return <div className="sheet">
-        <table className="sheet__table" id="scrollableTable">
-            <thead>
-                <tr>
-                    <td className="cell--legend" colSpan={columnsNames.length}>
+    const checkScrollToBottom = (e) => {
+        const visibleHeight = e.target.clientHeight;
+        const scrollHeight = e.target.scrollHeight;
+
+        const scrolled = e.target.scrollTop;
+
+        if(scrolled + visibleHeight >= scrollHeight) {
+            if((page + 1) * ROWS_PER_PAGE < dataSheet.length) {
+                fetchNextRows();
+            }
+        }
+
+        if(e.target.scrollTop === 0) {
+            exportLegend.current.style.height = '40px';
+        }
+        else {
+            exportLegend.current.style.height = '0';
+        }
+    }
+
+    return <div className="sheet scroll"
+                onScroll={(e) => { checkScrollToBottom(e); }}>
+                <div className="sheet__table__info">
+                    <div className="cell--legend">
                         Pokazuj w podpowiadajce
 
                         {showInSelectMenuColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
@@ -74,81 +94,72 @@ const DataSheetView = () => {
                                 onClick={() => { handleSelectMenuColumnsChange(-2); }}>
                             Odznacz wszystkie
                         </button>}
-                    </td>
-                </tr>
-                <tr>
-                    {showInSelectMenuColumns.map((item, index) => {
-                        return <td className="check__cell"
-                                   key={index}>
-                            <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleSelectMenuColumnsChange(index); }}>
+                    </div>
+                </div>
 
-                            </button>
-                        </td>
-                    })}
-                </tr>
-
-                <tr>
-                    <td className="cell--legend" colSpan={columnsNames.length}>
-                        Uwzględnij w eksporcie
-
-                        {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                     onClick={() => { handleExportColumnsChange(-1); }}>
-                            Zaznacz wszystkie
-                        </button> : <button className="btn btn--selectAll"
-                                            onClick={() => { handleExportColumnsChange(-2); }}>
-                            Odznacz wszystkie
-                        </button>}
-                    </td>
-                </tr>
-                <tr>
-                    {outputSheetExportColumns.map((item, index) => {
-                        if(index < columnsNames?.length) {
-                            return <td className="check__cell"
+                <div className="sheet__table">
+                    <div className="line">
+                        {showInSelectMenuColumns.map((item, index) => {
+                            return <div className="check__cell check__cell--borderBottom"
                                        key={index}>
-                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleExportColumnsChange(index); }}>
+                                <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleSelectMenuColumnsChange(index); }}>
 
                                 </button>
-                            </td>
-                        }
-                    })}
-                </tr>
+                            </div>
+                        })}
+                    </div>
 
-                <tr>
-                    {columnsNames.map((item, index) => {
-                        return <td className="sheet__header__cell"
-                                   key={index}>
-                            {item}
-                        </td>
-                    })}
-                </tr>
-            </thead>
-        </table>
+                    <div className="line line--exportLegend" ref={exportLegend}>
+                        <div className="cell--legend">
+                            Uwzględnij w eksporcie
 
-        <InfiniteScroll
-            dataLength={page * ROWS_PER_PAGE}
-            next={fetchNextRows}
-            hasMore={true}
-            loader={<h4>Loading...</h4>}
-            height={400}
-            className="scroll"
-            endMessage={''}
-        >
-            {rowsToRender.map((item, index) => {
-                return <div className="sheet__body__row"
-                           key={index}>
-                    {Object.entries(item).map((item, index) => {
-                        const cellValue = item[1];
-
-                        return <div className="sheet__body__row__cell"
-                                   key={index}>
-                            {cellValue}
+                            {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                                    onClick={() => { handleExportColumnsChange(-1); }}>
+                                Zaznacz wszystkie
+                            </button> : <button className="btn btn--selectAll"
+                                                onClick={() => { handleExportColumnsChange(-2); }}>
+                                Odznacz wszystkie
+                            </button>}
                         </div>
-                    })}
+                    </div>
+                    <div className="line">
+                        {outputSheetExportColumns.map((item, index) => {
+                            if(index < columnsNames?.length) {
+                                return <div className="check__cell"
+                                           key={index}>
+                                    <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleExportColumnsChange(index); }}>
+
+                                    </button>
+                                </div>
+                            }
+                        })}
+                    </div>
+
+                    <div className="line">
+                        {columnsNames.map((item, index) => {
+                            return <div className="sheet__header__cell"
+                                       key={index}>
+                                {item}
+                            </div>
+                        })}
+                    </div>
                 </div>
-            })}
-        </InfiniteScroll>
+
+        {rowsToRender.map((item, index) => {
+            return <div className="line line--tableRow"
+                       key={index}>
+                {Object.entries(item).map((item, index) => {
+                    const cellValue = item[1];
+
+                    return <div className="sheet__body__row__cell"
+                               key={index}>
+                        {cellValue}
+                    </div>
+                })}
+            </div>
+        })}
     </div>
 };
 

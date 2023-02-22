@@ -1,7 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 const ROWS_PER_PAGE = 20;
 
@@ -61,27 +60,29 @@ const OutputSheetView = () => {
         setPage(prevState => (prevState+1));
     }
 
-    return <div className="sheet">
-        <button className="btn btn--export" onClick={() => { exportOutputSheet(); }}>
+    const checkScrollToBottom = (e) => {
+        const visibleHeight = e.target.clientHeight;
+        const scrollHeight = e.target.scrollHeight;
+
+        const scrolled = e.target.scrollTop;
+
+        if(scrolled + visibleHeight >= scrollHeight) {
+            if((page + 1) * ROWS_PER_PAGE < outputSheet.length) {
+                fetchNextRows();
+            }
+        }
+    }
+
+    return <div className="sheetWrapper">
+        <button className="btn btn--export"
+                onClick={() => { exportOutputSheet(); }}>
             Eksportuj arkusz wyjściowy
         </button>
 
-        <table className="sheet__table">
-            <thead>
-            <tr>
-                {outputSheetExportColumns.map((item, index) => {
-                    return <td className="check__cell"
-                               key={index}>
-                        <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { handleOutputSheetExportChange(index); }}>
-
-                        </button>
-                    </td>
-                })}
-            </tr>
-
-            <tr>
-                <td className="cell--legend" colSpan={columnsNames.length}>
+        <div className="sheet scroll"
+             onScroll={(e) => { checkScrollToBottom(e); }}>
+            <div className="line line--exportLegend">
+                <div className="cell--legend">
                     Uwzględnij w eksporcie
 
                     {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
@@ -91,43 +92,46 @@ const OutputSheetView = () => {
                                         onClick={() => { handleOutputSheetExportChange(-2); }}>
                         Odznacz wszystkie
                     </button>}
-                </td>
-            </tr>
+                </div>
+            </div>
 
-            <tr>
-                {columnsNames.map((item, index) => {
-                    return <td className="sheet__header__cell"
-                               key={index}>
-                        {item}
-                    </td>
-                })}
-            </tr>
-            </thead>
-        </table>
+            <div className="sheet__table">
+                <div className="line">
+                    {outputSheetExportColumns.map((item, index) => {
+                        return <div className="check__cell"
+                                    key={index}>
+                            <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleOutputSheetExportChange(index); }}>
 
-        <InfiniteScroll
-            dataLength={page * ROWS_PER_PAGE}
-            next={fetchNextRows}
-            hasMore={true}
-            loader={<h4>Loading...</h4>}
-            height={400}
-            className="scroll"
-            endMessage={''}
-        >
+                            </button>
+                        </div>
+                    })}
+                </div>
+
+                <div className="line">
+                    {columnsNames.map((item, index) => {
+                        return <div className="sheet__header__cell"
+                                    key={index}>
+                            {item}
+                        </div>
+                    })}
+                </div>
+            </div>
+
             {rowsToRender.map((item, index) => {
-                return <tr className="sheet__body__row"
+                return <div className="line line--tableRow"
                            key={index}>
                     {Object.entries(item).map((item, index, array) => {
                         const cellValue = item[1];
 
-                        return <td className="sheet__body__row__cell"
+                        return <div className="sheet__body__row__cell"
                                    key={index}>
                             {cellValue}
-                        </td>
+                        </div>
                     })}
-                </tr>
+                </div>
             })}
-        </InfiniteScroll>
+        </div>
     </div>
 };
 

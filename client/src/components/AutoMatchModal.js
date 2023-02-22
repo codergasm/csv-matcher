@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import {TailSpin} from "react-loader-spinner";
 
@@ -8,6 +8,8 @@ const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) => {
     const { priorities, setPriorities, matchType, setMatchType,
         correlate, correlationStatus } = useContext(ViewContext);
+
+    const [loading, setLoading] = useState(false);
 
     /*
         Priorities:
@@ -35,6 +37,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
     useEffect(() => {
         if(correlationStatus === 2) {
             closeModal();
+            setLoading(false);
         }
     }, [correlationStatus]);
 
@@ -146,13 +149,9 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
         })
     }
 
-    useEffect(() => {
-        console.log(correlationStatus);
-    }, [correlationStatus]);
-
     return <div className="modal">
         <div className="modal__inner scroll">
-            {correlationStatus !== 1 ? <>
+            {!loading ? <>
                 <h3 className="modal__header">
                     Typ dopasowania
                 </h3>
@@ -254,7 +253,9 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
 
                 <button className="btn btn--startAutoMatch"
                         disabled={!priorities.length}
-                        onClick={() => { correlate(); }}>
+                        onClick={() => { setLoading(true); setTimeout(() => {
+                            correlate();
+                        }, 1000); }}>
                     Uruchom automatyczne dopasowanie
                 </button>
             </> : <div className="center">
