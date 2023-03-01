@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
+import ColumnsSettingsModal from "./ColumnsSettingsModal";
 
 const ROWS_PER_PAGE = 20;
 
@@ -12,12 +13,13 @@ const DataSheetView = () => {
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
+    const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
 
     let exportLegend = useRef(null);
 
     useEffect(() => {
         if(dataSheet) {
-            setColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0])));
+            setColumnsNames(['Id'].concat(Object.entries(dataSheet[0]).map((item) => (item[0]))));
             setRowsToRender(dataSheet.slice(0, 20));
         }
     }, [dataSheet]);
@@ -83,6 +85,13 @@ const DataSheetView = () => {
 
     return <div className="sheet scroll"
                 onScroll={(e) => { checkScrollToBottom(e); }}>
+
+        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
+                                                             columnsNames={columnsNames}
+                                                             columns={columnsSettingsModalVisible === 1 ? showInSelectMenuColumns : outputSheetExportColumns.slice(1, columnsNames.length)}
+                                                             setColumns={columnsSettingsModalVisible === 1 ? setShowInSelectMenuColumns : setOutputSheetExportColumns}
+                                                             header={columnsSettingsModalVisible === 1 ? 'Pokazuj w podpowiadajce' : 'Uwzględnij w eksporcie'} /> : ''}
+
                 <div className="sheet__table__info">
                     <div className="cell--legend">
                         Pokazuj w podpowiadajce
@@ -94,6 +103,11 @@ const DataSheetView = () => {
                                 onClick={() => { handleSelectMenuColumnsChange(-2); }}>
                             Odznacz wszystkie
                         </button>}
+
+                        <button className="btn btn--selectAll"
+                                onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                            Konfiguruj w okienku
+                        </button>
                     </div>
                 </div>
 
@@ -114,25 +128,41 @@ const DataSheetView = () => {
                         <div className="cell--legend">
                             Uwzględnij w eksporcie
 
-                            {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                            {outputSheetExportColumns.filter((_, index) => (index < columnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                                     onClick={() => { handleExportColumnsChange(-1); }}>
                                 Zaznacz wszystkie
                             </button> : <button className="btn btn--selectAll"
                                                 onClick={() => { handleExportColumnsChange(-2); }}>
                                 Odznacz wszystkie
                             </button>}
+
+                            <button className="btn btn--selectAll"
+                                    onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                                Konfiguruj w okienku
+                            </button>
                         </div>
                     </div>
                     <div className="line">
                         {outputSheetExportColumns.map((item, index) => {
                             if(index < columnsNames?.length) {
-                                return <div className="check__cell"
-                                           key={index}>
-                                    <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                            onClick={() => { handleExportColumnsChange(index); }}>
+                                if(index === 0) {
+                                    return <div className="check__cell"
+                                                key={index}>
+                                        <button className="btn btn--check btn--notVisible"
+                                                disabled={true}>
 
-                                    </button>
-                                </div>
+                                        </button>
+                                    </div>
+                                }
+                                else {
+                                    return <div className="check__cell"
+                                                key={index}>
+                                        <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                                onClick={() => { handleExportColumnsChange(index); }}>
+
+                                        </button>
+                                    </div>
+                                }
                             }
                         })}
                     </div>
@@ -150,6 +180,10 @@ const DataSheetView = () => {
         {rowsToRender.map((item, index) => {
             return <div className="line line--tableRow"
                        key={index}>
+                <div className="sheet__body__row__cell">
+                    {index+1}
+                </div>
+
                 {Object.entries(item).map((item, index) => {
                     const cellValue = item[1];
 

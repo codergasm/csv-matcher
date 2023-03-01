@@ -31,12 +31,41 @@ const CorrelationView = () => {
     const [manuallyCorrelatedRows, setManuallyCorrelatedRows] = useState([]);
 
     useEffect(() => {
-        const columns = Object.entries(dataSheet[0]);
-        setShowInSelectMenuColumns(columns.map(() => (0)));
+        // Select column with most content for showInSelectMenuColumns
+        const dataSheetSample = dataSheet.slice(0, 10);
+        const columnsContent = dataSheetSample.map((item) => {
+            return Object.entries(item).map((item) => (item[1]));
+        });
+
+        let columnWithMostContent = 0;
+        let maxLength = 0;
+
+        for(let i=0; i<columnsContent[0].length; i++) {
+            let currentColumnContentLength = columnsContent.reduce((prev, curr) => {
+                return prev + curr[i].length;
+            }, 0);
+
+            if(currentColumnContentLength > maxLength) {
+                maxLength = currentColumnContentLength;
+                columnWithMostContent = i;
+            }
+        }
+
+        setShowInSelectMenuColumns([0].concat(columnsContent[0].map((item, index) => (index === columnWithMostContent))));
     }, [dataSheet]);
 
     useEffect(() => {
+        setIndexesOfCorrelatedRows(relationSheet.map(() => (-1)));
+    }, [relationSheet]);
+
+    useEffect(() => {
         if(dataSheet?.length && relationSheet?.length) {
+            setCorrelationMatrix(relationSheet.map(() => {
+                return dataSheet.map(() => {
+                    return -1;
+                });
+            }));
+
             setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (0))
                 .concat(Object.entries(relationSheet[0]).map(() => (0))));
         }
@@ -214,6 +243,10 @@ const CorrelationView = () => {
 
         setCorrelationStatus(2);
     }
+
+    useEffect(() => {
+        console.log(correlationMatrix);
+    }, [correlationMatrix]);
 
     const getIndexWithMaxValue = (arr) => {
         let maxVal = 0;

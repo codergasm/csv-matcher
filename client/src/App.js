@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import 'react-tippy/dist/tippy.css'
 import './static/style/style.css';
 import LoadFilesView from "./components/LoadFilesView";
 import CorelationView from "./components/CorrelationView";

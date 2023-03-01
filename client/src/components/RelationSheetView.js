@@ -3,6 +3,8 @@ import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';
+import ColumnsSettingsModal from "./ColumnsSettingsModal";
+import { Tooltip } from 'react-tippy';
 
 const ROWS_PER_PAGE = 20;
 
@@ -21,6 +23,7 @@ const RelationSheetView = () => {
     const [currentSelectMenuFiltered, setCurrentSelectMenuFiltered] = useState([]);
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
     const [searchInputValue, setSearchInputValue] = useState('');
+    const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(false);
 
     useEffect(() => {
         setRowsToRender(relationSheet.slice(0, ROWS_PER_PAGE));
@@ -58,6 +61,26 @@ const RelationSheetView = () => {
             return item.value.toLowerCase().includes(searchValue);
         }));
     }, [searchInputValue]);
+
+    useEffect(() => {
+        if(relationSheet?.length && dataSheet?.length) {
+            setSelectList(relationSheet.map((relationSheetItem, relationRowIndex) => {
+                return dataSheet.map((dataSheetItem, dataRowIndex) => {
+                    const value = Object.entries(dataSheet[dataRowIndex])
+                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .map((item) => (item[1]))
+                        .join(' - ');
+
+                    return {
+                        relationRowIndex,
+                        dataRowIndex,
+                        similarity: '-1',
+                        value
+                    }
+                });
+            }));
+        }
+    }, [relationSheet, dataSheet]);
 
     useEffect(() => {
         if(correlationMatrix[0]?.length) {
@@ -123,6 +146,9 @@ const RelationSheetView = () => {
             else if(val >= 60) {
                 return 'orange';
             }
+            else if(val === -1) {
+                return 'white';
+            }
             else {
                 return 'yellow';
             }
@@ -165,10 +191,23 @@ const RelationSheetView = () => {
                                                  closeModal={() => { setAutoMatchModalVisible(false); }}
                                                  relationSheetColumns={columnsNames} /> : ''}
 
+        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(false); }}
+                                                             columnsNames={columnsNames}
+                                                             columns={outputSheetExportColumns.slice(dataSheetColumnsNames.length)}
+                                                             setColumns={setOutputSheetExportColumns}
+                                                             header='Uwzględnij w eksporcie' /> : ''}
+
         <button className="btn btn--autoMatch"
                 onClick={() => { setAutoMatchModalVisible(true); }}>
             Automatycznie dopasuj
         </button>
+
+        {showInSelectMenuColumns.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
+                            <span>
+                                Uwaga! żadne kolumny nie są wskazane w arkuszu 1 jako mające się wyświetlać w podpowiadajce,
+                                dlatego wiersze poniżej są puste.
+                            </span>
+                        </span> : ''}
 
         <div className="sheet scroll"
              onScroll={(e) => { checkScrollToBottom(e); }}>
@@ -176,13 +215,18 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
-                    {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                    {outputSheetExportColumns.filter((_, index) => (index >= dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                             onClick={() => { handleExportColumnsChange(-1); }}>
                         Zaznacz wszystkie
                     </button> : <button className="btn btn--selectAll"
                                         onClick={() => { handleExportColumnsChange(-2); }}>
                         Odznacz wszystkie
                     </button>}
+
+                    <button className="btn btn--selectAll"
+                            onClick={() => { setColumnsSettingsModalVisible(true); }}>
+                        Konfiguruj w okienku
+                    </button>
                 </div>
             </div>
 
@@ -213,6 +257,15 @@ const RelationSheetView = () => {
                     })}
                     <div className="sheet__header__cell sheet__header__cell--relation">
                         Rekord z ark. 1, z którym powiązano rekord
+
+                        <Tooltip title="Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1."
+                                 followCursor={true}
+                                 size="small"
+                                 position="top">
+                            <span className="sheet__tooltip">
+                                ?
+                            </span>
+                        </Tooltip>
                     </div>
                 </div>
             </div>
@@ -221,7 +274,8 @@ const RelationSheetView = () => {
                 let correlatedRow = {};
 
                 if(selectList[index]?.length) {
-                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
+                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]))
+                        || selectList[index][0];
                 }
 
                 return <div className="line line--tableRow"
@@ -252,7 +306,7 @@ const RelationSheetView = () => {
                                         background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
                                         color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
-                                        {correlatedRow.similarity} %
+                                        {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : '-'}
                                     </span>
                             </span> : <input className="select__input"
                                              value={searchInputValue}
@@ -274,7 +328,7 @@ const RelationSheetView = () => {
                                     <span className="select__menu__item__similarity" style={{
                                         background: getSimilarityColor(item.similarity, -1)
                                     }}>
-                                        {item.similarity} %
+                                        {item.similarity >= 0 ? `${item.similarity} %` : '-'}
                                     </span>
                                 </button>
                             })}

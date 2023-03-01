@@ -150,6 +150,11 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
     }
 
     return <div className="modal">
+        <button className="btn btn--closeModal"
+                onClick={() => { closeModal(); }}>
+            &times;
+        </button>
+
         <div className="modal__inner scroll">
             {!loading ? <>
                 <h3 className="modal__header">

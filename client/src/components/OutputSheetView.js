@@ -10,6 +10,11 @@ const OutputSheetView = () => {
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
+    const [finalExportColumns, setFinalExportColumns] = useState([]);
+
+    useEffect(() => {
+        setFinalExportColumns(outputSheetExportColumns);
+    }, [outputSheetExportColumns]);
 
     useEffect(() => {
         if(outputSheet?.length) {
@@ -20,22 +25,24 @@ const OutputSheetView = () => {
 
     const handleOutputSheetExportChange = (i) => {
         if(i === -2) {
-            setOutputSheetExportColumns(prevState => (prevState.map(() => (0))));
+            setFinalExportColumns(prevState => (prevState.map(() => (0))));
         }
         else if(i === -1) {
-            setOutputSheetExportColumns(prevState => (prevState.map(() => (1))));
+            setFinalExportColumns(prevState => (prevState.map(() => (1))));
         }
         else {
-            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
+            setFinalExportColumns(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
         }
     }
 
     const exportOutputSheet = () => {
+        console.log(finalExportColumns);
+
         const data = outputSheet.map((item) => {
             return Object.fromEntries(Object.entries(item)
-                .filter((item, index) => (outputSheetExportColumns[index])));
+                .filter((item, index) => (finalExportColumns[index])));
         });
 
         const csvData = Papa.unparse({
@@ -73,6 +80,10 @@ const OutputSheetView = () => {
         }
     }
 
+    useEffect(() => {
+        console.log(outputSheetExportColumns);
+    }, [outputSheetExportColumns]);
+
     return <div className="sheetWrapper">
         <button className="btn btn--export"
                 onClick={() => { exportOutputSheet(); }}>
@@ -85,7 +96,7 @@ const OutputSheetView = () => {
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
-                    {outputSheetExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                    {finalExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                             onClick={() => { handleOutputSheetExportChange(-1); }}>
                         Zaznacz wszystkie
                     </button> : <button className="btn btn--selectAll"
@@ -98,22 +109,28 @@ const OutputSheetView = () => {
             <div className="sheet__table">
                 <div className="line">
                     {outputSheetExportColumns.map((item, index) => {
-                        return <div className="check__cell"
-                                    key={index}>
-                            <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleOutputSheetExportChange(index); }}>
+                        if(item) {
+                            return <div className="check__cell"
+                                        key={index}>
+                                <button className={finalExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleOutputSheetExportChange(index); }}>
 
-                            </button>
-                        </div>
+                                </button>
+                            </div>
+                        }
+                        else {
+                            return '';
+                        }
                     })}
                 </div>
 
                 <div className="line">
-                    {columnsNames.map((item, index) => {
-                        return <div className="sheet__header__cell"
-                                    key={index}>
-                            {item}
-                        </div>
+                    {columnsNames.filter((_, index) => (outputSheetExportColumns[index]))
+                        .map((item, index) => {
+                            return <div className="sheet__header__cell"
+                                        key={index}>
+                                {item}
+                            </div>
                     })}
                 </div>
             </div>
@@ -121,7 +138,8 @@ const OutputSheetView = () => {
             {rowsToRender.map((item, index) => {
                 return <div className="line line--tableRow"
                            key={index}>
-                    {Object.entries(item).map((item, index, array) => {
+                    {Object.entries(item).filter((_, index) => (outputSheetExportColumns[index]))
+                        .map((item, index, array) => {
                         const cellValue = item[1];
 
                         return <div className="sheet__body__row__cell"

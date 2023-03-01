@@ -461,7 +461,6 @@ table, table * {
     height: 80vh;
     overflow-y: auto;
     padding: 30px;
-    border-radius: 15px;
     background: #fff;
     position: relative;
     display: flex;
@@ -729,4 +728,110 @@ option {
 
 .priorities__item__condition__select {
     max-width: 300px;
+}
+
+.btn--closeModal {
+    background: transparent !important;
+    color: #fff;
+    font-weight: 700;
+    font-size: 48px;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.btn--modalConfirm {
+    border-radius: 5px;
+    width: 200px;
+    height: 50px;
+    min-height: 50px;
+    margin: 30px auto;
+}
+
+.modal__inner__column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--primary);
+}
+
+.modal__inner__column__name {
+    padding-right: 25px;
+    font-size: 16px;
+    display: block;
+    max-width: calc(100% - 70px);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.modal__inner__columns {
+    margin: 50px auto;
+    width: 100%;
+}
+
+.modal__inner__columns .btn--check {
+    margin: 0;
+}
+
+.modal__header--center {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.modal__inner--columnsSettings {
+    max-height: 80vh;
+    height: auto;
+}
+
+.btn--selectAll--modal {
+    margin: 20px auto 0 !important;
+}
+
+.disclaimer {
+    white-space: normal;
+    position: relative;
+    padding: 0 10px;
+    margin: 20px auto;
+}
+
+.disclaimer > span {
+    display: block;
+    margin-top: 0;
+    color: red;
+    font-size: 14px;
+    text-align: center;
+    position: relative;
+    z-index: 100;
+    font-weight: 700;
+}
+
+.sheet__tooltip {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    border-radius: 50%;
+    background: #fff;
+    color: #313131;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.sheet__header__cell--relation {
+    overflow: visible !important;
+}
+
+.btn--notVisible {
+    opacity: 0 !important;
 }

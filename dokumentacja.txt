@@ -1,5 +1,7 @@
 1. dataSheet jest pierwszym wczytywanym arkuszem, relationSheet drugim, natomiast outputSheet - arkuszem wyjściowym
-2. dataSheet i relationSheet są niemutowalne po wczytaniu
+2. dataSheet i relationSheet są tablicami obiektów, gdzie i-ty element tablicy to i-ty wiersz w arkuszu, poszczególne
+klucze obiektu to nazwy kolumn, a wartości - wartości w tych kolumnach. dataSheet i relationSheet są
+niemutowalne po wczytaniu
 3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumns, natomiast informacje
 o eksporcie - w outputSheetExportColumns
 4. Informacja o korelacji między poszczególnymi rekordami dataSheet i relationSheet przechowywana jest w state
@@ -10,6 +12,23 @@ wiersz z relationSheet nie znalazł odpowiadającego mu rekordu w dataSheet
 6. indexesOfCorrelatedRows może zostać zmieniony tylko podczas automatycznej lub manualnej korelacji
 7. Aby zachować informacje o tym, które rekordy zostały manualnie skorelowane, w tablicy manuallyCorrelatedRows
 trzymane są indeksy wierszy z relationSheet, które zostały manualnie skorelowane z wierszami w dataSheet
+8. selectList jest stanem przechowującym tablicę, w której i-ty element jest tablicą zawierającą podobieństwa
+rekordów z dataSheet dla i-tego wiersza w relationSheet, posortowane malejąco, zawierające informacje o podobieństwie
+oraz wartości wyświetlanej w podpowiadajce (na podstawie zaznaczonych przez użytkownika kolumn).
+
+Struktura pojedynczego elementu w tablicy to:
+ [
+    {
+        dataRowIndex: 23,
+        relationRowIndex: 0,
+        similarity: '92',
+        value: '1234 - Fajerwerki'
+    }
+ ]
+
+Na starcie są to po prostu tablice rekordów z przypisanym similarity -1.
+9. correlationMatrix to dwuwymiarowa tablica, gdzie i-ty element jest tablicą, w której j-ty element
+oznacza wartość podobieństwa miedzy i-tym wierszem w relationSheet i j-tym wierszem w dataSheet
 
 TODO:
 - problem szybkości renderowania drugiego arkusza
