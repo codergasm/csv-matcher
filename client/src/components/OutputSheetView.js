@@ -80,10 +80,6 @@ const OutputSheetView = () => {
         }
     }
 
-    useEffect(() => {
-        console.log(outputSheetExportColumns);
-    }, [outputSheetExportColumns]);
-
     return <div className="sheetWrapper">
         <button className="btn btn--export"
                 onClick={() => { exportOutputSheet(); }}>

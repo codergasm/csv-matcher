@@ -11,7 +11,14 @@ const LoadFilesView = () => {
             Papa.parse(files[0], {
                 header: true,
                 complete: function(results) {
-                    setRelationSheet(results.data);
+                    const obj = results.data.map((item, index) => {
+                        return {
+                            '0': index+1,
+                            ...item
+                        }
+                    });
+
+                    setRelationSheet(obj);
                 }}
             );
         }
@@ -23,7 +30,14 @@ const LoadFilesView = () => {
             Papa.parse(files[0], {
                 header: true,
                 complete: function(results) {
-                    setDataSheet(results.data);
+                    const obj = results.data.map((item, index) => {
+                        return {
+                            '0': index+1,
+                            ...item
+                        }
+                    });
+
+                    setDataSheet(obj);
                 }}
             );
         }

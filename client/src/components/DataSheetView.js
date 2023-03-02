@@ -14,15 +14,27 @@ const DataSheetView = () => {
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
+    const [columnsVisibility, setColumnsVisibility] = useState([]);
+    const [minColumnWidth, setMinColumnWidth] = useState(0);
 
     let exportLegend = useRef(null);
 
     useEffect(() => {
         if(dataSheet) {
-            setColumnsNames(['Id'].concat(Object.entries(dataSheet[0]).map((item) => (item[0]))));
+            setColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] !== '0' ? item[0] : 'l.p.')));
             setRowsToRender(dataSheet.slice(0, 20));
         }
     }, [dataSheet]);
+
+    useEffect(() => {
+        if(columnsNames?.length) {
+            setColumnsVisibility(columnsNames.map(() => true));
+        }
+    }, [columnsNames]);
+
+    useEffect(() => {
+        setMinColumnWidth(100 / (columnsVisibility.filter((item) => (item)).length));
+    }, [columnsVisibility]);
 
     const handleSelectMenuColumnsChange = (i) => {
         if(i === -2) {
@@ -83,14 +95,63 @@ const DataSheetView = () => {
         }
     }
 
+    const getColumnsForModal = (n) => {
+        if(n === 1) {
+            return showInSelectMenuColumns;
+        }
+        else if(n === 2) {
+            return outputSheetExportColumns.slice(1, columnsNames.length);
+        }
+        else {
+            return columnsVisibility;
+        }
+    }
+
+    const getSetColumnsForModal = (n) => {
+        if(n === 1) {
+            return setShowInSelectMenuColumns;
+        }
+        else if(n === 2) {
+            return setOutputSheetExportColumns;
+        }
+        else {
+            return setColumnsVisibility;
+        }
+    }
+
+    const getSettingsModalHeader = (n) => {
+        if(n === 1) {
+            return 'Pokazuj w podpowiadajce';
+        }
+        else if(n === 2) {
+            return 'Uwzględnij w eksporcie';
+        }
+        else {
+            return 'Ustaw widoczność';
+        }
+    }
+
     return <div className="sheet scroll"
                 onScroll={(e) => { checkScrollToBottom(e); }}>
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
-                                                             columns={columnsSettingsModalVisible === 1 ? showInSelectMenuColumns : outputSheetExportColumns.slice(1, columnsNames.length)}
-                                                             setColumns={columnsSettingsModalVisible === 1 ? setShowInSelectMenuColumns : setOutputSheetExportColumns}
-                                                             header={columnsSettingsModalVisible === 1 ? 'Pokazuj w podpowiadajce' : 'Uwzględnij w eksporcie'} /> : ''}
+                                                             hideFirstColumn={columnsSettingsModalVisible === 2}
+                                                             columns={getColumnsForModal(columnsSettingsModalVisible)}
+                                                             setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
+                                                             header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
+
+
+                <div className="sheet__table__info">
+                    <div className="cell--legend">
+                        Widoczność
+
+                        <button className="btn btn--selectAll"
+                                onClick={() => { setColumnsSettingsModalVisible(3); }}>
+                            Konfiguruj w okienku
+                        </button>
+                    </div>
+                </div>
 
                 <div className="sheet__table__info">
                     <div className="cell--legend">
@@ -114,13 +175,21 @@ const DataSheetView = () => {
                 <div className="sheet__table">
                     <div className="line">
                         {showInSelectMenuColumns.map((item, index) => {
-                            return <div className="check__cell check__cell--borderBottom"
-                                       key={index}>
-                                <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleSelectMenuColumnsChange(index); }}>
+                            if(columnsVisibility[index]) {
+                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                            style={{
+                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                            }}
+                                            key={index}>
+                                    <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleSelectMenuColumnsChange(index); }}>
 
-                                </button>
-                            </div>
+                                    </button>
+                                </div>
+                            }
+                            else {
+                                return '';
+                            }
                         })}
                     </div>
 
@@ -144,9 +213,12 @@ const DataSheetView = () => {
                     </div>
                     <div className="line">
                         {outputSheetExportColumns.map((item, index) => {
-                            if(index < columnsNames?.length) {
+                            if((index < columnsNames?.length) && (columnsVisibility[index])) {
                                 if(index === 0) {
-                                    return <div className="check__cell"
+                                    return <div className="check__cell check__cell--first"
+                                                style={{
+                                                    minWidth: `min(300px, ${minColumnWidth}%)`
+                                                }}
                                                 key={index}>
                                         <button className="btn btn--check btn--notVisible"
                                                 disabled={true}>
@@ -156,6 +228,9 @@ const DataSheetView = () => {
                                 }
                                 else {
                                     return <div className="check__cell"
+                                                style={{
+                                                    minWidth: `min(300px, ${minColumnWidth}%)`
+                                                }}
                                                 key={index}>
                                         <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                                 onClick={() => { handleExportColumnsChange(index); }}>
@@ -169,10 +244,18 @@ const DataSheetView = () => {
 
                     <div className="line">
                         {columnsNames.map((item, index) => {
-                            return <div className="sheet__header__cell"
-                                       key={index}>
-                                {item}
-                            </div>
+                            if(columnsVisibility[index]) {
+                                return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
+                                            style={{
+                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                            }}
+                                            key={index}>
+                                    {item}
+                                </div>
+                            }
+                            else {
+                                return '';
+                            }
                         })}
                     </div>
                 </div>
@@ -180,17 +263,21 @@ const DataSheetView = () => {
         {rowsToRender.map((item, index) => {
             return <div className="line line--tableRow"
                        key={index}>
-                <div className="sheet__body__row__cell">
-                    {index+1}
-                </div>
-
                 {Object.entries(item).map((item, index) => {
                     const cellValue = item[1];
 
-                    return <div className="sheet__body__row__cell"
-                               key={index}>
-                        {cellValue}
-                    </div>
+                    if(columnsVisibility[index]) {
+                        return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
+                                    style={{
+                                        minWidth: `min(300px, ${minColumnWidth}%)`
+                                    }}
+                                    key={index}>
+                            {cellValue}
+                        </div>
+                    }
+                    else {
+                        return '';
+                    }
                 })}
             </div>
         })}

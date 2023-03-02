@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, header}) => {
+const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, header, hideFirstColumn, extraIndex}) => {
     const [allColumnsSelected, setAllColumnsSelected] = useState(false);
 
     const handleColumnsChange = (i) => {
@@ -35,23 +35,29 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, he
                 {header}
             </h3>
 
-            <button className="btn btn--selectAll btn--selectAll--modal" onClick={() => { allColumnsSelected ? removeAllColumns() : selectAllColumns(); }}>
+            <button className="btn btn--selectAll btn--selectAll--modal"
+                    onClick={() => { allColumnsSelected ? removeAllColumns() : selectAllColumns(); }}>
                 {allColumnsSelected ? 'Odznacz' : 'Zaznacz'} wszystkie
             </button>
 
             <div className="modal__inner__columns">
                 {columnsNames.map((item, index) => {
-                    return <label className="modal__inner__column"
-                                key={index}>
-                    <span className="modal__inner__column__name">
-                        {item}
-                    </span>
+                    if(!hideFirstColumn || index !== 0) {
+                        return <label className="modal__inner__column"
+                                      key={index}>
+                            <span className="modal__inner__column__name">
+                                {item}
+                            </span>
 
-                        <button className={columns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { handleColumnsChange(index); }}>
+                            <button className={columns[hideFirstColumn ? index-(extraIndex ? 0 : 1) : index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleColumnsChange(index+(extraIndex ? extraIndex : 0)); }}>
 
-                        </button>
-                    </label>
+                            </button>
+                        </label>
+                    }
+                    else {
+                        return '';
+                    }
                 })}
             </div>
 

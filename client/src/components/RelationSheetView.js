@@ -23,7 +23,9 @@ const RelationSheetView = () => {
     const [currentSelectMenuFiltered, setCurrentSelectMenuFiltered] = useState([]);
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
     const [searchInputValue, setSearchInputValue] = useState('');
-    const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(false);
+    const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
+    const [columnsVisibility, setColumnsVisibility] = useState([]);
+    const [minColumnWidth, setMinColumnWidth] = useState(0);
 
     useEffect(() => {
         setRowsToRender(relationSheet.slice(0, ROWS_PER_PAGE));
@@ -106,7 +108,7 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(relationSheet && dataSheet) {
-            setColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0])));
+            setColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
             setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0])));
         }
     }, [relationSheet, dataSheet]);
@@ -116,6 +118,16 @@ const RelationSheetView = () => {
             setAutoMatchModalVisible(false);
         }
     }, [outputSheet]);
+
+    useEffect(() => {
+        if(columnsNames?.length) {
+            setColumnsVisibility(columnsNames.map(() => true));
+        }
+    }, [columnsNames]);
+
+    useEffect(() => {
+        setMinColumnWidth(125 / (columnsVisibility.filter((item) => (item)).length));
+    }, [columnsVisibility]);
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {
@@ -191,11 +203,13 @@ const RelationSheetView = () => {
                                                  closeModal={() => { setAutoMatchModalVisible(false); }}
                                                  relationSheetColumns={columnsNames} /> : ''}
 
-        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(false); }}
+        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
-                                                             columns={outputSheetExportColumns.slice(dataSheetColumnsNames.length)}
-                                                             setColumns={setOutputSheetExportColumns}
-                                                             header='Uwzględnij w eksporcie' /> : ''}
+                                                             extraIndex={columnsSettingsModalVisible === 1 ? dataSheetColumnsNames.length : 0}
+                                                             hideFirstColumn={columnsSettingsModalVisible === 1}
+                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetExportColumns.slice(dataSheetColumnsNames.length) : columnsVisibility}
+                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetExportColumns : setColumnsVisibility}
+                                                             header={columnsSettingsModalVisible === 1 ? 'Uwzględnij w eksporcie' : 'Widoczność kolumn'} /> : ''}
 
         <button className="btn btn--autoMatch"
                 onClick={() => { setAutoMatchModalVisible(true); }}>
@@ -211,6 +225,18 @@ const RelationSheetView = () => {
 
         <div className="sheet scroll"
              onScroll={(e) => { checkScrollToBottom(e); }}>
+
+            <div className="sheet__table__info">
+                <div className="cell--legend">
+                    Widoczność
+
+                    <button className="btn btn--selectAll"
+                            onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                        Konfiguruj w okienku
+                    </button>
+                </div>
+            </div>
+
             <div className="sheet__table__info">
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
@@ -224,7 +250,7 @@ const RelationSheetView = () => {
                     </button>}
 
                     <button className="btn btn--selectAll"
-                            onClick={() => { setColumnsSettingsModalVisible(true); }}>
+                            onClick={() => { setColumnsSettingsModalVisible(1); }}>
                         Konfiguruj w okienku
                     </button>
                 </div>
@@ -233,14 +259,31 @@ const RelationSheetView = () => {
             <div className="sheet__table">
                 <div className="line">
                     {outputSheetExportColumns.map((item, index) => {
-                        if(index >= dataSheetColumnsNames?.length) {
-                            return <div className="check__cell"
-                                       key={index}>
-                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleExportColumnsChange(index); }}>
+                        if((index >= dataSheetColumnsNames?.length) && columnsVisibility[index-dataSheetColumnsNames?.length]) {
+                            if(index === dataSheetColumnsNames?.length) {
+                                return <div className="check__cell check__cell--first"
+                                            style={{
+                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                            }}
+                                            key={index}>
+                                    <button className="btn btn--check btn--notVisible"
+                                            disabled={true}>
 
-                                </button>
-                            </div>
+                                    </button>
+                                </div>
+                            }
+                            else {
+                                return <div className="check__cell"
+                                            style={{
+                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                            }}
+                                            key={index}>
+                                    <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleExportColumnsChange(index); }}>
+
+                                    </button>
+                                </div>
+                            }
                         }
                     })}
                     <div className="check__cell check__cell--relation">
@@ -248,12 +291,19 @@ const RelationSheetView = () => {
                     </div>
                 </div>
 
+
+
                 <div className="line">
                     {columnsNames.map((item, index) => {
-                        return <div className="sheet__header__cell"
-                                   key={index}>
-                            {item}
-                        </div>
+                        if(columnsVisibility[index]) {
+                            return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
+                                        style={{
+                                            minWidth: `min(300px, ${minColumnWidth}%)`
+                                        }}
+                                        key={index}>
+                                {item}
+                            </div>
+                        }
                     })}
                     <div className="sheet__header__cell sheet__header__cell--relation">
                         Rekord z ark. 1, z którym powiązano rekord
@@ -271,11 +321,16 @@ const RelationSheetView = () => {
             </div>
 
             {rowsToRender.map((item, index) => {
-                let correlatedRow = {};
+                let correlatedRow = null;
 
                 if(selectList[index]?.length) {
-                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]))
-                        || selectList[index][0];
+                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
+                }
+
+                let isCorrelatedRowWithHighestSimilarity = false;
+
+                if(correlatedRow) {
+                    isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === selectList[index][0]?.similarity) || (manuallyCorrelatedRows.includes(index)));
                 }
 
                 return <div className="line line--tableRow"
@@ -283,10 +338,15 @@ const RelationSheetView = () => {
                     {Object.entries(item).map((item, index) => {
                         const cellValue = item[1];
 
-                        return <div className="sheet__body__row__cell"
-                                   key={index}>
-                            {cellValue}
-                        </div>
+                        if(columnsVisibility[index]) {
+                            return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
+                                        style={{
+                                            minWidth: `min(300px, ${minColumnWidth}%)`
+                                        }}
+                                        key={index}>
+                                {cellValue}
+                            </div>
+                        }
                     })}
 
                     <div className="sheet__body__row__cell sheet__body__row__cell--relation">
@@ -299,6 +359,7 @@ const RelationSheetView = () => {
                                                              }}>
                             {showSelectMenu !== index ? <span className="select__menu__item"
                                                               key={index}>
+                                {correlatedRow ? <>
                                     <span className="select__menu__item__value">
                                         {correlatedRow.value}
                                     </span>
@@ -306,8 +367,25 @@ const RelationSheetView = () => {
                                         background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
                                         color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
+                                        {!isCorrelatedRowWithHighestSimilarity ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
+                                                                                          followCursor={true}
+                                                                                          size="small"
+                                                                                          position="top">
+                                            <span className="select__menu__item__similarity__info">
+                                                !
+                                            </span>
+                                        </Tooltip> : ''}
+
                                         {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : '-'}
                                     </span>
+                                </> : <>
+                                    <span className="select__menu__item__value">
+                                        -
+                                    </span>
+                                    <span className="select__menu__item__similarity">
+                                        -
+                                    </span>
+                                </>}
                             </span> : <input className="select__input"
                                              value={searchInputValue}
                                              onChange={(e) => { setSearchInputValue(e.target.value); }} />}
@@ -320,7 +398,8 @@ const RelationSheetView = () => {
                         {showSelectMenu === index ? <div className="select__menu scroll">
                             {currentSelectMenuFiltered?.map((item, index) => {
                                 return <button className="select__menu__item"
-                                               onClick={() => { addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
+                                               disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
+                                               onClick={(e) => { indexesOfCorrelatedRows.includes(item.dataRowIndex) ? e.stopPropagation() : addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
                                                key={index}>
                                     <span className="select__menu__item__value">
                                         {item.value}

@@ -160,7 +160,8 @@
 
 .sheet__table {
     table-layout: fixed;
-    width: calc(100% - 15px);
+    /*width: calc(100% - 15px);*/
+    width: 100%;
     position: sticky;
     top: 0;
     z-index: 1002;
@@ -294,6 +295,13 @@ div.check__cell:first-of-type {
     border-right: none;
 }
 
+.check__cell--first,
+.sheet__header__cell--first,
+.sheet__body__row__cell--first {
+    max-width: 8% !important;
+    min-width: 0 !important;
+}
+
 .sheet__table__info {
     height: 40px;
     display: flex;
@@ -301,6 +309,10 @@ div.check__cell:first-of-type {
     align-items: center;
     padding: 5px 10px;
     position: relative;
+}
+
+.sheet__table__info:first-of-type {
+    border-bottom: 1px solid var(--primary);
 }
 
 .btn--check {
@@ -658,6 +670,7 @@ option {
     transform: translate(-50%, 100%);
     max-height: 200px;
     overflow-y: scroll;
+    background: #fff;
 }
 
 .select__menu__item {
@@ -672,11 +685,16 @@ option {
     transition: .2s all;
 }
 
+.select__menu__item:disabled {
+    opacity: .4;
+    cursor: default;
+}
+
 .select__menu__item * {
     background: transparent;
 }
 
-.select__menu__item:hover {
+.select__menu__item:not(:disabled):hover {
     background: #dedede;
 }
 
@@ -693,6 +711,26 @@ option {
     justify-content: center;
     align-items: center;
     height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.select__menu__item__similarity__info {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    background: blue;
+    color: #fff;
+    padding-top: 4px;
+    padding-right: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 10px;
 }
 
 .select__input {
@@ -834,4 +872,86 @@ option {
 
 .btn--notVisible {
     opacity: 0 !important;
+}
+
+.modal__additionalOptions {
+    margin: 30px 0;
+}
+
+.modal__additionalOptions label {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.label--marginLeft {
+    margin-left: 25px;
+}
+
+.modal__additionalOptions label .btn--check {
+    min-width: 20px;
+    margin-right: 15px;
+}
+
+.modal__additionalOptions .label .btn--check {
+    border-radius: 50%;
+}
+
+.modal__slider {
+    width: 100%;
+}
+
+.horizontal-slider {
+    background: transparent;
+}
+
+.track {
+    height: 10px;
+    background: #dedede;
+}
+
+.thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translateY(-5px);
+}
+
+.modal__slider__value {
+    margin-top: 30px;
+    font-size: 32px;
+    text-align: center;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.modal__top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal__top > *:first-child {
+    margin-right: 30px;
+}
+
+.modal--testConfiguration {
+    z-index: 10001;
+}
+
+.btn--openTestConfigurationModal {
+    background: transparent !important;
+    color: grey;
+    text-decoration: underline;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.btn--openTestConfigurationModal:hover {
+    opacity: .7;
 }
