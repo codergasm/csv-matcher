@@ -416,11 +416,11 @@ const RelationSheetView = () => {
                         Rekord z ark. 1, z którym powiązano rekord
 
                         <button className={relationColumnSort === 1 ? "btn--sortRelation btn--sortRelation--left btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--left"}
-                                onClick={() => { sortRelationColumnByMatch(1); }}>
+                                onClick={() => { setSortingClicked(true); sortRelationColumnByMatch(1); }}>
                             Sortuj wg nieprzydzielonych
                         </button>
                         <button className={relationColumnSort === 2 ? "btn--sortRelation btn--sortRelation--right btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--right"}
-                                onClick={() => { sortRelationColumnByMatch(2); }}>
+                                onClick={() => { setSortingClicked(true); sortRelationColumnByMatch(2); }}>
                             Sortuj wg przydzielonych
                         </button>
 
