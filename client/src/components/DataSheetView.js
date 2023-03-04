@@ -2,6 +2,8 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../App";
 import {ViewContext} from "./CorrelationView";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
+import sortIcon from '../static/img/sort-down.svg';
+import {sortByColumn} from "../helpers/others";
 
 const ROWS_PER_PAGE = 20;
 
@@ -11,24 +13,36 @@ const DataSheetView = () => {
         outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
+    const [dataSheetSorted, setDataSheetSorted] = useState([]);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
     const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
+    const [columnsSorting, setColumnsSorting] = useState([]); // 0 - no sorting, 1 - ascending, 2 - descending
 
     let exportLegend = useRef(null);
 
     useEffect(() => {
-        if(dataSheet) {
-            setColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] !== '0' ? item[0] : 'l.p.')));
-            setRowsToRender(dataSheet.slice(0, 20));
+        if(dataSheet?.length) {
+            setDataSheetSorted(dataSheet);
         }
     }, [dataSheet]);
 
     useEffect(() => {
+        if(dataSheetSorted?.length) {
+            setColumnsNames(Object.entries(dataSheetSorted[0]).map((item) => (item[0] !== '0' ? item[0] : 'l.p.')));
+            setRowsToRender(dataSheetSorted.slice(0, 20));
+        }
+    }, [dataSheetSorted]);
+
+    useEffect(() => {
         if(columnsNames?.length) {
             setColumnsVisibility(columnsNames.map(() => true));
+
+            if(!columnsSorting?.length) {
+                setColumnsSorting(columnsNames.map(() => (0)));
+            }
         }
     }, [columnsNames]);
 
@@ -70,7 +84,7 @@ const DataSheetView = () => {
 
     const fetchNextRows = () => {
         setRowsToRender(prevState => {
-            return [...prevState, ...dataSheet.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+            return [...prevState, ...dataSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
         });
         setPage(prevState => (prevState+1));
     }
@@ -82,7 +96,7 @@ const DataSheetView = () => {
         const scrolled = e.target.scrollTop;
 
         if(scrolled + visibleHeight >= scrollHeight) {
-            if((page + 1) * ROWS_PER_PAGE < dataSheet.length) {
+            if((page + 1) * ROWS_PER_PAGE < dataSheetSorted.length) {
                 fetchNextRows();
             }
         }
@@ -129,6 +143,46 @@ const DataSheetView = () => {
         else {
             return 'Ustaw widoczność';
         }
+    }
+
+    const sortSheet = (col, i) => {
+        let sortType = 0;
+
+        if(col === 'l.p.') {
+            col = '0';
+        }
+
+        const newSorting = columnsSorting.map((item, index) => {
+            if(index === i) {
+                if(item === 0 || item === 2) {
+                    sortType = 1;
+                }
+                else if(item === 1) {
+                    sortType = 2;
+                }
+
+                return sortType;
+            }
+            else {
+                return 0;
+            }
+        });
+
+        setColumnsSorting(newSorting);
+        setDataSheetSorted(sortByColumn(dataSheet, col, sortType));
+    }
+
+    const removeSorting = (i) => {
+        setColumnsSorting(prevState => (prevState.map((item, index) => {
+            if(index === i) {
+                return 0;
+            }
+            else {
+                return item;
+            }
+        })));
+
+        setDataSheetSorted(dataSheet);
     }
 
     return <div className="sheet scroll"
@@ -251,6 +305,17 @@ const DataSheetView = () => {
                                             }}
                                             key={index}>
                                     {item}
+
+                                    <div className="sheet__header__cell__sort">
+                                        <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
+                                                onClick={() => { sortSheet(item, index); }}>
+                                            <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
+                                        </button>
+                                        {columnsSorting[index] ? <button className="btn--removeSorting"
+                                                                         onClick={() => { removeSorting(index); }}>
+                                            &times;
+                                        </button> : ''}
+                                    </div>
                                 </div>
                             }
                             else {

@@ -186,6 +186,7 @@
     justify-content: center;
     align-items: center;
     width: 200px;
+    position: relative;
 }
 
 .sheet__header__cell {
@@ -868,6 +869,7 @@ option {
 
 .sheet__header__cell--relation {
     overflow: visible !important;
+    z-index: 11;
 }
 
 .btn--notVisible {
@@ -927,6 +929,9 @@ option {
     text-align: center;
     color: var(--primary);
     font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal__top {
@@ -954,4 +959,156 @@ option {
 
 .btn--openTestConfigurationModal:hover {
     opacity: .7;
+}
+
+.sheet__header__cell__sort {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #fff;
+    z-index: 10;
+}
+
+.btn--removeSorting,
+.btn--sortColumn {
+    width: 15px;
+    height: 15px;
+    border: none;
+    cursor: pointer;
+    background: #fff;
+    transition: .2s all;
+}
+
+.btn--sortColumn {
+    opacity: .4;
+}
+
+.btn--sortColumn--active {
+    opacity: 1;
+}
+
+.btn--sortColumn .img {
+    width: 100%;
+    height: auto;
+}
+
+.btn--removeSorting {
+    background: red;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3px;
+    border-radius: 50%;
+    transform-origin: center;
+}
+
+.btn--removeSorting:hover {
+    transform: scale(1.1);
+}
+
+.img--rotate {
+    transform: rotateX(180deg);
+    transform-origin: center;
+}
+
+.btn--sortRelation {
+    background: transparent;
+    text-decoration: underline;
+    position: absolute;
+    top: -16px;
+    left: 10px;
+    font-size: 11px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    opacity: .8;
+    transition: .2s all;
+}
+
+.btn--sortRelation:hover {
+    opacity: 1;
+}
+
+.btn--sortRelation--right {
+    left: unset;
+    right: 10px;
+}
+
+.btn--sortRelation--current {
+    font-weight: 700;
+    opacity: 1;
+}
+
+.input--matchThreshold {
+    color: var(--primary);
+    font-size: 32px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--primary);
+    padding: 10px 10px 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    text-align: center;
+    outline: none !important;
+}
+
+.input--matchThreshold:active,
+.input--matchThreshold:focus {
+    border-bottom-width: 2px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.priorities__item__condition__search {
+    margin: 10px 0;
+    width: 100%;
+    display: block;
+}
+
+.input--search {
+    outline: none;
+    border: none;
+    border-bottom: 1px solid var(--primary);
+    padding: 0 0 3px;
+}
+
+.noOptions {
+    font-size: 13px;
+    color: red;
+    padding: 10px 0;
+}
+
+.priorities__item__condition__search {
+    position: relative;
+}
+
+.priorities__item__condition__search::after {
+    content: "";
+    background-image: url("../img/search-icon.svg");
+    background-size: 100%;
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+}
+
+.input--search {
+    padding-left: 18px;
 }

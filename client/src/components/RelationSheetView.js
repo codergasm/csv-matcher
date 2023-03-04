@@ -5,8 +5,15 @@ import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import { Tooltip } from 'react-tippy';
+import {sortByColumn, sortRelationColumn} from "../helpers/others";
+import sortIcon from "../static/img/sort-down.svg";
+import { useWorker } from "@koale/useworker";
 
 const ROWS_PER_PAGE = 20;
+
+const updateSelectList = (arr) => {
+    return arr.sort();
+}
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -14,6 +21,7 @@ const RelationSheetView = () => {
         showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
+    const [relationSheetSorted, setRelationSheetSorted] = useState([]);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
@@ -26,10 +34,37 @@ const RelationSheetView = () => {
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
     const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
+    const [columnsSorting, setColumnsSorting] = useState([]);
+    const [relationColumnSort, setRelationColumnSort] = useState(0);
+    const [indexesInSortedSheet, setIndexesInSortedSheet] = useState([]);
+
+    const [updateSelectListWorker] = useWorker(updateSelectList);
 
     useEffect(() => {
-        setRowsToRender(relationSheet.slice(0, ROWS_PER_PAGE));
+        if(indexesOfCorrelatedRows?.length) {
+            if(!indexesInSortedSheet?.length) {
+                // Initial sort map
+                setIndexesInSortedSheet(indexesOfCorrelatedRows.map((_, index) => (index)));
+            }
+        }
+    }, [indexesOfCorrelatedRows]);
+
+    useEffect(() => {
+        setRelationSheetSorted(relationSheet);
     }, [relationSheet]);
+
+    useEffect(() => {
+        if(relationSheetSorted?.length) {
+            setRowsToRender(relationSheetSorted.slice(0, ROWS_PER_PAGE));
+
+            // Change map
+            setIndexesInSortedSheet((prevState) => {
+                return prevState.map((item, index) => {
+                    return relationSheetSorted.indexOf(relationSheet[item]);
+                });
+            });
+        }
+    }, [relationSheetSorted]);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -86,6 +121,13 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(correlationMatrix[0]?.length) {
+
+            async function fetchData() {
+                const res = await updateSelectListWorker([23, 23, 43, 43, -2, 32, 442]);
+                console.log(res);
+            }
+            fetchData()
+
             setSelectList(correlationMatrix.map((relationRowItem, relationRowIndex) => {
                 return relationRowItem.map((dataRowItem, dataRowIndex) => {
                     const value = Object.entries(dataSheet[dataRowIndex])
@@ -103,6 +145,8 @@ const RelationSheetView = () => {
                     }
                 }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
             }));
+
+
         }
     }, [correlationMatrix]);
 
@@ -122,6 +166,7 @@ const RelationSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             setColumnsVisibility(columnsNames.map(() => true));
+            setColumnsSorting(columnsNames.map(() => (0)));
         }
     }, [columnsNames]);
 
@@ -169,7 +214,7 @@ const RelationSheetView = () => {
 
     const fetchNextRows = () => {
         setRowsToRender(prevState => {
-            return [...prevState, ...relationSheet.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+            return [...prevState, ...relationSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
         });
         setPage(prevState => (prevState+1));
     }
@@ -181,7 +226,7 @@ const RelationSheetView = () => {
         const scrolled = e.target.scrollTop;
 
         if(scrolled + visibleHeight >= scrollHeight) {
-            if((page + 1) * ROWS_PER_PAGE < relationSheet.length) {
+            if((page + 1) * ROWS_PER_PAGE < relationSheetSorted.length) {
                 fetchNextRows();
             }
         }
@@ -197,6 +242,56 @@ const RelationSheetView = () => {
             }
         });
     }
+
+    const sortSheet = (col, i) => {
+        let sortType = 0;
+
+        if(col === 'l.p.') {
+            col = '0';
+        }
+
+        const newSorting = columnsSorting.map((item, index) => {
+            if(index === i) {
+                if(item === 0 || item === 2) {
+                    sortType = 1;
+                }
+                else if(item === 1) {
+                    sortType = 2;
+                }
+
+                return sortType;
+            }
+            else {
+                return 0;
+            }
+        });
+
+        setColumnsSorting(newSorting);
+        setRelationSheetSorted(sortByColumn(relationSheet, col, sortType));
+    }
+
+    const removeSorting = (i) => {
+        setColumnsSorting(prevState => (prevState.map((item, index) => {
+            if(index === i) {
+                return 0;
+            }
+            else {
+                return item;
+            }
+        })));
+
+        setRelationSheetSorted(relationSheet);
+    }
+
+    const sortRelationColumnByMatch = (type) => {
+        setColumnsSorting(prevState => (prevState.map(() => (0))));
+        setRelationSheetSorted(relationSheet);
+        setRelationColumnSort(prevState => (prevState === type ? 0 : type));
+    }
+
+    useEffect(() => {
+        setRelationSheetSorted(sortRelationColumn(relationSheet, indexesOfCorrelatedRows, relationColumnSort));
+    }, [relationColumnSort]);
 
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
@@ -302,11 +397,31 @@ const RelationSheetView = () => {
                                         }}
                                         key={index}>
                                 {item}
+
+                                <div className="sheet__header__cell__sort">
+                                    <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
+                                            onClick={() => { sortSheet(item, index); }}>
+                                        <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
+                                    </button>
+                                    {columnsSorting[index] ? <button className="btn--removeSorting"
+                                                                     onClick={() => { removeSorting(index); }}>
+                                        &times;
+                                    </button> : ''}
+                                </div>
                             </div>
                         }
                     })}
                     <div className="sheet__header__cell sheet__header__cell--relation">
                         Rekord z ark. 1, z którym powiązano rekord
+
+                        <button className={relationColumnSort === 1 ? "btn--sortRelation btn--sortRelation--left btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--left"}
+                                onClick={() => { sortRelationColumnByMatch(1); }}>
+                            Sortuj wg przydzielonych
+                        </button>
+                        <button className={relationColumnSort === 2 ? "btn--sortRelation btn--sortRelation--right btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--right"}
+                                onClick={() => { sortRelationColumnByMatch(2); }}>
+                            Sortuj wg nieprzydzielonych
+                        </button>
 
                         <Tooltip title="Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1."
                                  followCursor={true}
@@ -322,15 +437,17 @@ const RelationSheetView = () => {
 
             {rowsToRender.map((item, index) => {
                 let correlatedRow = null;
+                const currentSelectList = selectList[indexesInSortedSheet[index]];
 
-                if(selectList[index]?.length) {
-                    correlatedRow = selectList[index].find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[index]));
+                if(currentSelectList?.length) {
+                    correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[indexesInSortedSheet[index]]));
                 }
 
                 let isCorrelatedRowWithHighestSimilarity = false;
 
                 if(correlatedRow) {
-                    isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === selectList[index][0]?.similarity) || (manuallyCorrelatedRows.includes(index)));
+                    isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
+                        || (manuallyCorrelatedRows.includes(indexesInSortedSheet[index])));
                 }
 
                 return <div className="line line--tableRow"
@@ -350,7 +467,7 @@ const RelationSheetView = () => {
                     })}
 
                     <div className="sheet__body__row__cell sheet__body__row__cell--relation">
-                        {selectList[index]?.length ? <button className="select__btn"
+                        {currentSelectList?.length ? <button className="select__btn"
                                                              onClick={(e) => {
                                                                  e.stopPropagation();
                                                                  e.preventDefault();

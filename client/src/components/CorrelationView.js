@@ -108,7 +108,6 @@ const CorrelationView = () => {
             outputArray.push(index);
         }
 
-        console.log(outputArray);
         return outputArray;
     }
 
@@ -122,7 +121,7 @@ const CorrelationView = () => {
             let correlationInRelationSheetNotFound = false;
 
             if(dataSheetMapping[i] >= 0) {
-                console.log(correlationMatrix[dataSheetMapping[i]][i]);
+
                 if(correlationMatrix[dataSheetMapping[i]][i] >= matchThreshold || manuallyCorrelatedRows.includes(dataSheetMapping[i])) {
                     b = arrayB[dataSheetMapping[i]];
                 }
@@ -153,7 +152,6 @@ const CorrelationView = () => {
     }
 
     useEffect(() => {
-        console.log(indexesOfCorrelatedRows);
         if(indexesOfCorrelatedRows && dataSheet && relationSheet) {
             setOutputSheet(joinTwoSheets(dataSheet, relationSheet, indexesOfCorrelatedRows));
         }
@@ -262,34 +260,27 @@ const CorrelationView = () => {
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = getSimilarityScores(priority.conditions, logicalOperators);
 
+            let relationRowIndex = 0;
             for(const relationRowSimilarities of similarityScores) {
-                correlationMatrixTmp.push(relationRowSimilarities);
+                correlationMatrixTmp.push(correlationMatrix[relationRowIndex][0] < relationRowSimilarities[0] ? relationRowSimilarities : correlationMatrix[relationRowIndex]);
+                relationRowIndex++;
             }
 
             priorityIndex++;
         }
 
         let i = 0;
-        let indexesOfCorrelatedRowsTmp = [];
+        let indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item) => (item));
 
-        if(overrideAllRows) {
-            if(avoidOverrideForManuallyCorrelatedRows) {
-                indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item, index) => {
-                    if(manuallyCorrelatedRows.includes(index)) {
-                        return item;
-                    }
-                    else {
-                        return -1;
-                    }
-                });
-            }
-            else {
-                setManuallyCorrelatedRows([]);
-                indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map(() => (-1));
-            }
-        }
-        else {
-            indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item) => (item));
+        if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
+            indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item, index) => {
+                if(manuallyCorrelatedRows.includes(index)) {
+                    return item;
+                }
+                else {
+                    return -1;
+                }
+            });
         }
 
         for(let el of correlationMatrixTmp) {
@@ -319,8 +310,15 @@ const CorrelationView = () => {
                 }
             }
 
-            if(indexesOfCorrelatedRowsTmp[i] === -1) {
-                indexesOfCorrelatedRowsTmp[i] = (newMatch === -2 || el[newMatch] < matchThreshold) ? -1 : newMatch;
+            if(indexesOfCorrelatedRowsTmp[i] === -1 || overrideAllRows) {
+                if(overrideAllRows && (newMatch !== -2 && el[newMatch] >= matchThreshold)) {
+                    if(!(avoidOverrideForManuallyCorrelatedRows && manuallyCorrelatedRows.includes(i))) {
+                        indexesOfCorrelatedRowsTmp[i] = newMatch;
+                    }
+                }
+                else if(!overrideAllRows) {
+                    indexesOfCorrelatedRowsTmp[i] = (newMatch === -2 || el[newMatch] < matchThreshold) ? -1 : newMatch;
+                }
             }
 
             i++;

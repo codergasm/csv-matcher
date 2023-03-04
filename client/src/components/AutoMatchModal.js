@@ -3,6 +3,7 @@ import {ViewContext} from "./CorrelationView";
 import {TailSpin} from "react-loader-spinner";
 import ReactSlider from 'react-slider'
 import TestConfigurationModal from "./TestConfigurationModal";
+import searchIcon from '../static/img/search-icon.svg';
 
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
@@ -14,6 +15,14 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
 
     const [loading, setLoading] = useState(false);
     const [testConfigurationModalVisible, setTestConfigurationModalVisible] = useState(false);
+    const [dataSheetSearch, setDataSheetSearch] = useState('');
+    const [relationSheetSearch, setRelationSheetSearch] = useState('');
+    const [dataSheetColumnsFiltered, setDataSheetColumnsFiltered] = useState([]);
+    const [relationSheetColumnsFiltered, setRelationSheetColumnsFiltered] = useState([]);
+    const [currentDataSheetPriorityIndex, setCurrentDataSheetPriorityIndex] = useState(0);
+    const [currentDataSheetIndex, setCurrentDataSheetIndex] = useState(0);
+    const [currentRelationSheetPriorityIndex, setCurrentRelationSheetPriorityIndex] = useState(0);
+    const [currentRelationSheetIndex, setCurrentRelationSheetIndex] = useState(0);
 
     /*
         Priorities:
@@ -37,6 +46,26 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
             }
         ]
      */
+
+    useEffect(() => {
+        setDataSheetColumnsFiltered(dataSheetColumns?.slice(1));
+    }, [dataSheetColumns]);
+
+    useEffect(() => {
+        setRelationSheetColumnsFiltered(relationSheetColumns?.slice(1));
+    }, [relationSheetColumns]);
+
+    useEffect(() => {
+        setDataSheetColumnsFiltered(dataSheetColumns.slice(1).filter((item) => {
+            return item.toLowerCase().includes(dataSheetSearch?.toLowerCase());
+        }));
+    }, [dataSheetSearch]);
+
+    useEffect(() => {
+        setRelationSheetColumnsFiltered(relationSheetColumns.slice(1).filter((item) => {
+            return item.toLowerCase().includes(relationSheetSearch?.toLowerCase());
+        }));
+    }, [relationSheetSearch]);
 
     useEffect(() => {
         if(correlationStatus === 2) {
@@ -153,6 +182,40 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
         })
     }
 
+    const handleMatchThresholdChange = (val) => {
+        if((parseInt(val) >= 0 && parseInt(val) <= 100)) {
+            setMatchThreshold(parseInt(val));
+        }
+
+        if(!val) {
+            setMatchThreshold('');
+        }
+    }
+
+    useEffect(() => {
+        if(dataSheetColumnsFiltered?.length) {
+            updateCondition(currentDataSheetPriorityIndex, currentDataSheetIndex, 'dataSheet', dataSheetColumnsFiltered[0]);
+        }
+    }, [dataSheetColumnsFiltered]);
+
+    useEffect(() => {
+        if(relationSheetColumnsFiltered?.length) {
+            updateCondition(currentRelationSheetPriorityIndex, currentRelationSheetIndex, 'relationSheet', relationSheetColumnsFiltered[0]);
+        }
+    }, [relationSheetColumnsFiltered]);
+
+    const updateDataSheetSearch = (priorityIndex, index, val) => {
+        setCurrentDataSheetPriorityIndex(priorityIndex);
+        setCurrentDataSheetIndex(index);
+        setDataSheetSearch(val);
+    }
+
+    const updateRelationSheetSearch = (priorityIndex, index, val) => {
+        setCurrentRelationSheetPriorityIndex(priorityIndex);
+        setCurrentRelationSheetIndex(index);
+        setRelationSheetSearch(val);
+    }
+
     return <>
         {testConfigurationModalVisible ? <TestConfigurationModal closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
 
@@ -195,11 +258,14 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
                         <ReactSlider className="horizontal-slider"
                                      thumbClassName="thumb"
                                      trackClassName="track"
-                                     value={matchThreshold}
+                                     value={!isNaN(matchThreshold) ? matchThreshold : 0}
                                      onChange={setMatchThreshold} />
 
                         <div className="modal__slider__value">
-                            {matchThreshold} %
+                            <input className="input--matchThreshold"
+                                   type="number"
+                                   value={matchThreshold}
+                                   onChange={(e) => { handleMatchThresholdChange(e.target.value); }} /> %
                         </div>
                     </div>
 
@@ -236,31 +302,44 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
                                         <p className="priorities__item__condition__text">
                                             Szukaj dopasowania w kolumnie arkusza 1:
                                         </p>
-                                        <select className="priorities__item__condition__select"
-                                                value={item.dataSheet}
-                                                onChange={(e) => { updateCondition(priorityIndex, index, 'dataSheet', e.target.value); }}>
-                                            {dataSheetColumns.map((item, index) => {
-                                                if(index !== 0) {
-                                                    return <option key={index} value={item}>
-                                                        {item}
-                                                    </option>
-                                                }
+                                        <label className="priorities__item__condition__search">
+                                            <input className="input input--search"
+                                                   value={dataSheetSearch}
+                                                   onChange={(e) => { updateDataSheetSearch(priorityIndex, index, e.target.value); }}
+                                                   placeholder="Szukaj..." />
+                                        </label>
+                                        {dataSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
+                                                                                    value={item.dataSheet}
+                                                                                    onChange={(e) => { updateCondition(priorityIndex, index, 'dataSheet', e.target.value); }}>
+                                            {dataSheetColumnsFiltered.map((item, index) => {
+                                                return <option key={index} value={item}>
+                                                    {item}
+                                                </option>
                                             })}
-                                        </select>
+                                        </select> : <p className="noOptions">
+                                            Nie znaleziono żadnych kolumn
+                                        </p>}
+
                                         <p className="priorities__item__condition__text">
                                             Szukaj dopasowania w kolumnie arkusza 2:
                                         </p>
-                                        <select className="priorities__item__condition__select"
-                                                value={item.relationSheet}
-                                                onChange={(e) => { updateCondition(priorityIndex, index, 'relationSheet', e.target.value); }}>
-                                            {relationSheetColumns.map((item, index) => {
-                                                if(index !== 0) {
-                                                    return <option key={index} value={item}>
-                                                        {item}
-                                                    </option>
-                                                }
+                                        <label className="priorities__item__condition__search">
+                                            <input className="input input--search"
+                                                   value={relationSheetSearch}
+                                                   onChange={(e) => { updateRelationSheetSearch(priorityIndex, index, e.target.value); }}
+                                                   placeholder="Szukaj..." />
+                                        </label>
+                                        {relationSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
+                                                                                        value={item.relationSheet}
+                                                                                        onChange={(e) => { updateCondition(priorityIndex, index, 'relationSheet', e.target.value); }}>
+                                            {relationSheetColumnsFiltered.map((item, index) => {
+                                                return <option key={index} value={item}>
+                                                    {item}
+                                                </option>
                                             })}
-                                        </select>
+                                        </select> : <p className="noOptions">
+                                            Nie znaleziono żadnych kolumn
+                                        </p>}
 
                                         {priority?.logicalOperators?.length > index ? <div className="priorities__item__condition__operator">
                                             spójnik logiczny:
