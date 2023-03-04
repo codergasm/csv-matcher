@@ -29,6 +29,9 @@ Struktura pojedynczego elementu w tablicy to:
 Na starcie są to po prostu tablice rekordów z przypisanym similarity -1.
 9. correlationMatrix to dwuwymiarowa tablica, gdzie i-ty element jest tablicą, w której j-ty element
 oznacza wartość podobieństwa miedzy i-tym wierszem w relationSheet i j-tym wierszem w dataSheet
+10. Do kontroli nad położeniem wierszy w drugim arkuszu użyty jest state indexesInRender, gdzie i-ty element tej tablicy
+oznacza indeks wiersza, który jest renderowany jako i-ty w relationSheet/selectList. relationSheet i selectList mają jedną kolejność (stałą),
+natomiast relationSheetSorted i rowsToRender drugą (zmienną w zależności od sortowania).
 
 TODO:
 - problem szybkości renderowania drugiego arkusza

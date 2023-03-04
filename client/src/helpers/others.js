@@ -60,11 +60,9 @@ const sortRelationColumn = (sheet, indexesOfCorrelatedRows, type) => {
             const bIndex = sortedSheet.indexOf(b);
 
             if(indexesOfCorrelatedRows[aIndex] !== -1 && indexesOfCorrelatedRows[bIndex] === -1) {
-                // console.log(`>>> 1: ${aIndex} ${bIndex}`);
                 return -1;
             }
             else if(indexesOfCorrelatedRows[bIndex] !== -1 && indexesOfCorrelatedRows[aIndex] === -1) {
-                // console.log(`>>> 2: ${aIndex} ${bIndex}`);
                 return 1;
             }
             else {
@@ -77,4 +75,15 @@ const sortRelationColumn = (sheet, indexesOfCorrelatedRows, type) => {
     }
 }
 
-export { sortByColumn, sortRelationColumn }
+function addMissingKeys(arrayOfObjects, arrayOfKeys) {
+    arrayOfObjects.forEach(obj => {
+        arrayOfKeys.forEach(key => {
+            if(!obj.hasOwnProperty(key)) {
+                obj[key] = '';
+            }
+        });
+    });
+    return arrayOfObjects;
+}
+
+export { sortByColumn, sortRelationColumn, addMissingKeys }

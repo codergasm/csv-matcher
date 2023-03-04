@@ -38,8 +38,6 @@ const OutputSheetView = () => {
     }
 
     const exportOutputSheet = () => {
-        console.log(finalExportColumns);
-
         const data = outputSheet.map((item) => {
             return Object.fromEntries(Object.entries(item)
                 .filter((item, index) => (finalExportColumns[index])));

@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import Papa from "papaparse";
 import {AppContext} from "../App";
+import {addMissingKeys} from "../helpers/others";
 
 const LoadFilesView = () => {
     const { setCurrentView, dataSheet, setDataSheet, relationSheet, setRelationSheet } = useContext(AppContext);
@@ -18,7 +19,10 @@ const LoadFilesView = () => {
                         }
                     });
 
-                    setRelationSheet(obj);
+                    // Add missing keys
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                    setRelationSheet(objComplete);
                 }}
             );
         }
@@ -37,7 +41,10 @@ const LoadFilesView = () => {
                         }
                     });
 
-                    setDataSheet(obj);
+                    // Add missing keys
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                    setDataSheet(objComplete);
                 }}
             );
         }

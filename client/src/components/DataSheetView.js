@@ -4,6 +4,7 @@ import {ViewContext} from "./CorrelationView";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import sortIcon from '../static/img/sort-down.svg';
 import {sortByColumn} from "../helpers/others";
+import {Tooltip} from "react-tippy";
 
 const ROWS_PER_PAGE = 20;
 
@@ -20,6 +21,7 @@ const DataSheetView = () => {
     const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSorting, setColumnsSorting] = useState([]); // 0 - no sorting, 1 - ascending, 2 - descending
+    const [sortingClicked, setSortingClicked] = useState(false);
 
     let exportLegend = useRef(null);
 
@@ -38,7 +40,9 @@ const DataSheetView = () => {
 
     useEffect(() => {
         if(columnsNames?.length) {
-            setColumnsVisibility(columnsNames.map(() => true));
+            if(!columnsVisibility?.length) {
+                setColumnsVisibility(columnsNames.map(() => true));
+            }
 
             if(!columnsSorting?.length) {
                 setColumnsSorting(columnsNames.map(() => (0)));
@@ -82,6 +86,14 @@ const DataSheetView = () => {
         }
     }
 
+    useEffect(() => {
+        // Sorting changed - fetch next rows from start
+        if(sortingClicked) {
+            setRowsToRender([...dataSheetSorted.slice(0, 20)]);
+            setPage(1);
+        }
+    }, [dataSheetSorted]);
+
     const fetchNextRows = () => {
         setRowsToRender(prevState => {
             return [...prevState, ...dataSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
@@ -96,7 +108,7 @@ const DataSheetView = () => {
         const scrolled = e.target.scrollTop;
 
         if(scrolled + visibleHeight >= scrollHeight) {
-            if((page + 1) * ROWS_PER_PAGE < dataSheetSorted.length) {
+            if((page) * ROWS_PER_PAGE < dataSheetSorted.length) {
                 fetchNextRows();
             }
         }
@@ -169,6 +181,7 @@ const DataSheetView = () => {
         });
 
         setColumnsSorting(newSorting);
+
         setDataSheetSorted(sortByColumn(dataSheet, col, sortType));
     }
 
@@ -251,7 +264,7 @@ const DataSheetView = () => {
                         <div className="cell--legend">
                             Uwzględnij w eksporcie
 
-                            {outputSheetExportColumns.filter((_, index) => (index < columnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                            {outputSheetExportColumns.filter((_, index) => ((index < columnsNames.length) && (index !== 0))).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                                     onClick={() => { handleExportColumnsChange(-1); }}>
                                 Zaznacz wszystkie
                             </button> : <button className="btn btn--selectAll"
@@ -304,11 +317,17 @@ const DataSheetView = () => {
                                                 minWidth: `min(300px, ${minColumnWidth}%)`
                                             }}
                                             key={index}>
-                                    {item}
+
+                                    {item ?  <Tooltip title={item}
+                                                      followCursor={true}
+                                                      size="small"
+                                                      position="top">
+                                        {item}
+                                    </Tooltip> : ''}
 
                                     <div className="sheet__header__cell__sort">
                                         <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
-                                                onClick={() => { sortSheet(item, index); }}>
+                                                onClick={() => { setSortingClicked(true); sortSheet(item, index); }}>
                                             <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
                                         </button>
                                         {columnsSorting[index] ? <button className="btn--removeSorting"
@@ -337,7 +356,12 @@ const DataSheetView = () => {
                                         minWidth: `min(300px, ${minColumnWidth}%)`
                                     }}
                                     key={index}>
-                            {cellValue}
+                            {cellValue ? <Tooltip title={cellValue}
+                                                  followCursor={true}
+                                                  size="small"
+                                                  position="top">
+                                {cellValue}
+                            </Tooltip> : ''}
                         </div>
                     }
                     else {

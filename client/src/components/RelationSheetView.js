@@ -7,13 +7,8 @@ import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import { Tooltip } from 'react-tippy';
 import {sortByColumn, sortRelationColumn} from "../helpers/others";
 import sortIcon from "../static/img/sort-down.svg";
-import { useWorker } from "@koale/useworker";
 
 const ROWS_PER_PAGE = 20;
-
-const updateSelectList = (arr) => {
-    return arr.sort();
-}
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -36,15 +31,14 @@ const RelationSheetView = () => {
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSorting, setColumnsSorting] = useState([]);
     const [relationColumnSort, setRelationColumnSort] = useState(0);
-    const [indexesInSortedSheet, setIndexesInSortedSheet] = useState([]);
-
-    const [updateSelectListWorker] = useWorker(updateSelectList);
+    const [indexesInRender, setIndexesInRender] = useState([]);
+    const [sortingClicked, setSortingClicked] = useState(false);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
-            if(!indexesInSortedSheet?.length) {
+            if(!indexesInRender?.length) {
                 // Initial sort map
-                setIndexesInSortedSheet(indexesOfCorrelatedRows.map((_, index) => (index)));
+                setIndexesInRender(indexesOfCorrelatedRows.map((_, index) => (index)));
             }
         }
     }, [indexesOfCorrelatedRows]);
@@ -58,11 +52,9 @@ const RelationSheetView = () => {
             setRowsToRender(relationSheetSorted.slice(0, ROWS_PER_PAGE));
 
             // Change map
-            setIndexesInSortedSheet((prevState) => {
-                return prevState.map((item, index) => {
-                    return relationSheetSorted.indexOf(relationSheet[item]);
-                });
-            });
+            setIndexesInRender(relationSheetSorted.map((item, index) => {
+                return relationSheet.indexOf(item);
+            }));
         }
     }, [relationSheetSorted]);
 
@@ -121,13 +113,6 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(correlationMatrix[0]?.length) {
-
-            async function fetchData() {
-                const res = await updateSelectListWorker([23, 23, 43, 43, -2, 32, 442]);
-                console.log(res);
-            }
-            fetchData()
-
             setSelectList(correlationMatrix.map((relationRowItem, relationRowIndex) => {
                 return relationRowItem.map((dataRowItem, dataRowIndex) => {
                     const value = Object.entries(dataSheet[dataRowIndex])
@@ -145,8 +130,6 @@ const RelationSheetView = () => {
                     }
                 }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
             }));
-
-
         }
     }, [correlationMatrix]);
 
@@ -165,8 +148,12 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(columnsNames?.length) {
-            setColumnsVisibility(columnsNames.map(() => true));
-            setColumnsSorting(columnsNames.map(() => (0)));
+            if(!columnsVisibility?.length) {
+                setColumnsVisibility(columnsNames.map(() => true));
+            }
+            if(!columnsSorting?.length) {
+                setColumnsSorting(columnsNames.map(() => (0)));
+            }
         }
     }, [columnsNames]);
 
@@ -212,6 +199,14 @@ const RelationSheetView = () => {
         }
     }
 
+    useEffect(() => {
+        // Sorting changed - fetch next rows from start
+        if(sortingClicked) {
+            setRowsToRender([...relationSheetSorted.slice(0, 20)]);
+            setPage(1);
+        }
+    }, [relationSheetSorted]);
+
     const fetchNextRows = () => {
         setRowsToRender(prevState => {
             return [...prevState, ...relationSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
@@ -226,7 +221,7 @@ const RelationSheetView = () => {
         const scrolled = e.target.scrollTop;
 
         if(scrolled + visibleHeight >= scrollHeight) {
-            if((page + 1) * ROWS_PER_PAGE < relationSheetSorted.length) {
+            if((page) * ROWS_PER_PAGE < relationSheetSorted.length) {
                 fetchNextRows();
             }
         }
@@ -244,6 +239,7 @@ const RelationSheetView = () => {
     }
 
     const sortSheet = (col, i) => {
+        setRelationColumnSort(0);
         let sortType = 0;
 
         if(col === 'l.p.') {
@@ -336,7 +332,7 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
-                    {outputSheetExportColumns.filter((_, index) => (index >= dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                    {outputSheetExportColumns.filter((_, index) => (index > dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                             onClick={() => { handleExportColumnsChange(-1); }}>
                         Zaznacz wszystkie
                     </button> : <button className="btn btn--selectAll"
@@ -396,11 +392,16 @@ const RelationSheetView = () => {
                                             minWidth: `min(300px, ${minColumnWidth}%)`
                                         }}
                                         key={index}>
-                                {item}
+                                {item ? <Tooltip title={item}
+                                                 followCursor={true}
+                                                 size="small"
+                                                 position="top">
+                                    {item}
+                                </Tooltip> : ''}
 
                                 <div className="sheet__header__cell__sort">
                                     <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
-                                            onClick={() => { sortSheet(item, index); }}>
+                                            onClick={() => { setSortingClicked(true); sortSheet(item, index); }}>
                                         <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
                                     </button>
                                     {columnsSorting[index] ? <button className="btn--removeSorting"
@@ -416,11 +417,11 @@ const RelationSheetView = () => {
 
                         <button className={relationColumnSort === 1 ? "btn--sortRelation btn--sortRelation--left btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--left"}
                                 onClick={() => { sortRelationColumnByMatch(1); }}>
-                            Sortuj wg przydzielonych
+                            Sortuj wg nieprzydzielonych
                         </button>
                         <button className={relationColumnSort === 2 ? "btn--sortRelation btn--sortRelation--right btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--right"}
                                 onClick={() => { sortRelationColumnByMatch(2); }}>
-                            Sortuj wg nieprzydzielonych
+                            Sortuj wg przydzielonych
                         </button>
 
                         <Tooltip title="Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1."
@@ -437,17 +438,17 @@ const RelationSheetView = () => {
 
             {rowsToRender.map((item, index) => {
                 let correlatedRow = null;
-                const currentSelectList = selectList[indexesInSortedSheet[index]];
+                const currentSelectList = selectList[indexesInRender[index]];
 
                 if(currentSelectList?.length) {
-                    correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[indexesInSortedSheet[index]]));
+                    correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === indexesOfCorrelatedRows[indexesInRender[index]]));
                 }
 
                 let isCorrelatedRowWithHighestSimilarity = false;
 
                 if(correlatedRow) {
                     isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
-                        || (manuallyCorrelatedRows.includes(indexesInSortedSheet[index])));
+                        || (manuallyCorrelatedRows.includes(indexesInRender[index])));
                 }
 
                 return <div className="line line--tableRow"
@@ -461,7 +462,12 @@ const RelationSheetView = () => {
                                             minWidth: `min(300px, ${minColumnWidth}%)`
                                         }}
                                         key={index}>
-                                {cellValue}
+                                {cellValue ? <Tooltip title={cellValue}
+                                                      followCursor={true}
+                                                      size="small"
+                                                      position="top">
+                                    {cellValue}
+                                </Tooltip> : ''}
                             </div>
                         }
                     })}
@@ -472,9 +478,9 @@ const RelationSheetView = () => {
                                                                  e.stopPropagation();
                                                                  e.preventDefault();
                                                                  changeZIndex(index);
-                                                                 setShowSelectMenu(prevState => (prevState === index ? prevState : index));
+                                                                 setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index])); // Kontrola, ktorą rozwijajke wyswietlic
                                                              }}>
-                            {showSelectMenu !== index ? <span className="select__menu__item"
+                            {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
                                                               key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
@@ -512,7 +518,7 @@ const RelationSheetView = () => {
                                  alt="arrow-down" />
                         </button> : ''}
 
-                        {showSelectMenu === index ? <div className="select__menu scroll">
+                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll">
                             {currentSelectMenuFiltered?.map((item, index) => {
                                 return <button className="select__menu__item"
                                                disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
