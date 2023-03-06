@@ -41,7 +41,7 @@ const DataSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             if(!columnsVisibility?.length) {
-                setColumnsVisibility(columnsNames.map(() => true));
+                setColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
             }
 
             if(!columnsSorting?.length) {

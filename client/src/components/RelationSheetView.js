@@ -7,12 +7,13 @@ import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import { Tooltip } from 'react-tippy';
 import {sortByColumn, sortRelationColumn} from "../helpers/others";
 import sortIcon from "../static/img/sort-down.svg";
+import Loader from "./Loader";
 
 const ROWS_PER_PAGE = 20;
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { outputSheetExportColumns, setOutputSheetExportColumns, correlationMatrix, manuallyCorrelatedRows,
+    const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList,
         showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
@@ -21,8 +22,8 @@ const RelationSheetView = () => {
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [autoMatchModalVisible, setAutoMatchModalVisible] = useState(false);
-    const [selectList, setSelectList] = useState([]);
     const [currentSelectMenu, setCurrentSelectMenu] = useState([]);
+    const [currentSelectMenuToDisplay, setCurrentSelectMenuToDisplay] = useState([]);
     const [currentSelectMenuFiltered, setCurrentSelectMenuFiltered] = useState([]);
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
     const [searchInputValue, setSearchInputValue] = useState('');
@@ -33,6 +34,7 @@ const RelationSheetView = () => {
     const [relationColumnSort, setRelationColumnSort] = useState(0);
     const [indexesInRender, setIndexesInRender] = useState([]);
     const [sortingClicked, setSortingClicked] = useState(false);
+    const [currentListPage, setCurrentListPage] = useState(0);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -57,6 +59,15 @@ const RelationSheetView = () => {
             }));
         }
     }, [relationSheetSorted]);
+
+    useEffect(() => {
+        if(currentSelectMenuFiltered?.length) {
+            setCurrentSelectMenuToDisplay(currentSelectMenuFiltered.slice(0, ROWS_PER_PAGE));
+        }
+        else {
+            setCurrentSelectMenuToDisplay([]);
+        }
+    }, [currentSelectMenuFiltered]);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -92,48 +103,6 @@ const RelationSheetView = () => {
     }, [searchInputValue]);
 
     useEffect(() => {
-        if(relationSheet?.length && dataSheet?.length) {
-            setSelectList(relationSheet.map((relationSheetItem, relationRowIndex) => {
-                return dataSheet.map((dataSheetItem, dataRowIndex) => {
-                    const value = Object.entries(dataSheet[dataRowIndex])
-                        .filter((_, index) => (showInSelectMenuColumns[index]))
-                        .map((item) => (item[1]))
-                        .join(' - ');
-
-                    return {
-                        relationRowIndex,
-                        dataRowIndex,
-                        similarity: '-1',
-                        value
-                    }
-                });
-            }));
-        }
-    }, [relationSheet, dataSheet]);
-
-    useEffect(() => {
-        if(correlationMatrix[0]?.length) {
-            setSelectList(correlationMatrix.map((relationRowItem, relationRowIndex) => {
-                return relationRowItem.map((dataRowItem, dataRowIndex) => {
-                    const value = Object.entries(dataSheet[dataRowIndex])
-                        .filter((_, index) => (showInSelectMenuColumns[index]))
-                        .map((item) => (item[1]))
-                        .join(' - ');
-                    const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
-                        .toFixed(0);
-
-                    return {
-                        dataRowIndex,
-                        relationRowIndex,
-                        value,
-                        similarity: isNaN(similarity) ? 0 : similarity
-                    }
-                }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
-            }));
-        }
-    }, [correlationMatrix]);
-
-    useEffect(() => {
         if(relationSheet && dataSheet) {
             setColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
             setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0])));
@@ -149,7 +118,7 @@ const RelationSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             if(!columnsVisibility?.length) {
-                setColumnsVisibility(columnsNames.map(() => true));
+                setColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
             }
             if(!columnsSorting?.length) {
                 setColumnsSorting(columnsNames.map(() => (0)));
@@ -214,6 +183,13 @@ const RelationSheetView = () => {
         setPage(prevState => (prevState+1));
     }
 
+    const fetchNextRowsForSelectMenu = () => {
+        setCurrentSelectMenuToDisplay(prevState => {
+            return [...prevState, ...currentSelectMenuFiltered.slice(currentListPage * ROWS_PER_PAGE, currentListPage * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+        });
+        setCurrentListPage(prevState => (prevState+1));
+    }
+
     const checkScrollToBottom = (e) => {
         const visibleHeight = e.target.clientHeight;
         const scrollHeight = e.target.scrollHeight;
@@ -223,6 +199,19 @@ const RelationSheetView = () => {
         if(scrolled + visibleHeight >= scrollHeight) {
             if((page) * ROWS_PER_PAGE < relationSheetSorted.length) {
                 fetchNextRows();
+            }
+        }
+    }
+
+    const checkListScrollToBottom = (e) => {
+        const visibleHeight = e.target.clientHeight;
+        const scrollHeight = e.target.scrollHeight;
+
+        const scrolled = e.target.scrollTop;
+
+        if(scrolled + visibleHeight + 1 >= scrollHeight) {
+            if((currentListPage) * ROWS_PER_PAGE < currentSelectMenuFiltered.length) {
+                fetchNextRowsForSelectMenu();
             }
         }
     }
@@ -314,8 +303,8 @@ const RelationSheetView = () => {
                             </span>
                         </span> : ''}
 
-        <div className="sheet scroll"
-             onScroll={(e) => { checkScrollToBottom(e); }}>
+        {selectList?.length ? <div className="sheet scroll"
+                                   onScroll={(e) => { checkScrollToBottom(e); }}>
 
             <div className="sheet__table__info">
                 <div className="cell--legend">
@@ -333,7 +322,7 @@ const RelationSheetView = () => {
                     Uwzględnij w eksporcie
 
                     {outputSheetExportColumns.filter((_, index) => (index > dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                            onClick={() => { handleExportColumnsChange(-1); }}>
+                                                                                                                                                         onClick={() => { handleExportColumnsChange(-1); }}>
                         Zaznacz wszystkie
                     </button> : <button className="btn btn--selectAll"
                                         onClick={() => { handleExportColumnsChange(-2); }}>
@@ -452,7 +441,8 @@ const RelationSheetView = () => {
                 }
 
                 return <div className="line line--tableRow"
-                           key={index}>
+                            key={index}>
+                    {/* Relation sheet columns */}
                     {Object.entries(item).map((item, index) => {
                         const cellValue = item[1];
 
@@ -472,6 +462,7 @@ const RelationSheetView = () => {
                         }
                     })}
 
+                    {/* Column with relation selection */}
                     <div className="sheet__body__row__cell sheet__body__row__cell--relation">
                         {currentSelectList?.length ? <button className="select__btn"
                                                              onClick={(e) => {
@@ -481,7 +472,7 @@ const RelationSheetView = () => {
                                                                  setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index])); // Kontrola, ktorą rozwijajke wyswietlic
                                                              }}>
                             {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
-                                                              key={index}>
+                                                                               key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
                                         {correlatedRow.value}
@@ -518,8 +509,8 @@ const RelationSheetView = () => {
                                  alt="arrow-down" />
                         </button> : ''}
 
-                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll">
-                            {currentSelectMenuFiltered?.map((item, index) => {
+                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll" onScroll={(e) => { checkListScrollToBottom(e) }}>
+                            {currentSelectMenuToDisplay?.map((item, index) => {
                                 return <button className="select__menu__item"
                                                disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
                                                onClick={(e) => { indexesOfCorrelatedRows.includes(item.dataRowIndex) ? e.stopPropagation() : addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
@@ -538,7 +529,9 @@ const RelationSheetView = () => {
                     </div>
                 </div>
             })}
-        </div>
+        </div> : <div className="sheet__loader">
+            <Loader />
+        </div>}
     </div>
 };
 

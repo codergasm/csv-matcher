@@ -3,6 +3,9 @@ import 'react-tippy/dist/tippy.css'
 import './static/style/style.css';
 import LoadFilesView from "./components/LoadFilesView";
 import CorelationView from "./components/CorrelationView";
+import axios from "axios";
+
+axios.defaults.baseURL = 'http://localhost:5000';
 
 const AppContext = React.createContext(null);
 

@@ -1112,3 +1112,12 @@ input[type=number] {
 .input--search {
     padding-left: 18px;
 }
+
+.sheet__loader {
+    width: 100%;
+    height: 400px;
+}
+
+.sheet__loader > .center {
+    height: 100%;
+}

@@ -1,14 +1,32 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Papa from "papaparse";
 import {AppContext} from "../App";
 import {addMissingKeys} from "../helpers/others";
+import Loader from "./Loader";
 
 const LoadFilesView = () => {
     const { setCurrentView, dataSheet, setDataSheet, relationSheet, setRelationSheet } = useContext(AppContext);
 
+    const [dataSheetLoading, setDataSheetLoading] = useState(false);
+    const [relationSheetLoading, setRelationSheetLoading] = useState(false);
+
+    useEffect(() => {
+        if(relationSheet?.length) {
+            setRelationSheetLoading(false);
+        }
+    }, [relationSheet]);
+
+    useEffect(() => {
+        if(dataSheet?.length) {
+            setDataSheetLoading(false);
+        }
+    }, [dataSheet]);
+
     const handleRelationSheetChange = (e) => {
         const files = e.target.files;
         if(files) {
+            setRelationSheetLoading(true);
+
             Papa.parse(files[0], {
                 header: true,
                 complete: function(results) {
@@ -31,6 +49,8 @@ const LoadFilesView = () => {
     const handleDataSheetChange = (e) => {
         const files = e.target.files;
         if(files) {
+            setDataSheetLoading(true);
+
             Papa.parse(files[0], {
                 header: true,
                 complete: function(results) {
@@ -60,18 +80,22 @@ const LoadFilesView = () => {
                 <span>
                     Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.
                 </span>
-                {!dataSheet?.length ? <input className="loadFiles__input"
+                {!dataSheet?.length && !dataSheetLoading ? <input className="loadFiles__input"
                                      type="file"
                                      accept=".csv,.xlsx,.xls"
                                      onChange={(e) => { handleDataSheetChange(e); }} /> :
                     <div className="sheetLoaded">
-                        <p className="sheetLoaded__text">
-                            Plik został dodany
-                        </p>
-                        <button className="btn btn--remove"
-                                onClick={() => { setDataSheet([]); }}>
-                            Usuń
-                        </button>
+                        {dataSheetLoading ? <div className="center">
+                            <Loader />
+                        </div> : <>
+                            <p className="sheetLoaded__text">
+                                Plik został dodany
+                            </p>
+                            <button className="btn btn--remove"
+                                    onClick={() => { setDataSheet([]); }}>
+                                Usuń
+                            </button>
+                        </>}
                 </div>}
             </div>
 
@@ -80,18 +104,22 @@ const LoadFilesView = () => {
                     Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
                     do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)
                 </span>
-                {!relationSheet?.length ? <input className="loadFiles__input"
+                {!relationSheet?.length && !relationSheetLoading ? <input className="loadFiles__input"
                                                  type="file"
                                                  accept=".csv,.xlsx,.xls"
                                                  onChange={(e) => { handleRelationSheetChange(e); }} /> :
                     <div className="sheetLoaded">
-                        <p className="sheetLoaded__text">
-                            Plik został dodany
-                        </p>
-                        <button className="btn btn--remove"
-                                onClick={() => { setRelationSheet([]); }}>
-                            Usuń
-                        </button>
+                        {relationSheetLoading ? <div className="center">
+                            <Loader />
+                        </div> : <>
+                            <p className="sheetLoaded__text">
+                                Plik został dodany
+                            </p>
+                            <button className="btn btn--remove"
+                                    onClick={() => { setRelationSheet([]); }}>
+                                Usuń
+                            </button>
+                        </>}
                     </div>}
             </div>
         </div>

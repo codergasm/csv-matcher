@@ -3,7 +3,6 @@ import {ViewContext} from "./CorrelationView";
 import {TailSpin} from "react-loader-spinner";
 import ReactSlider from 'react-slider'
 import TestConfigurationModal from "./TestConfigurationModal";
-import searchIcon from '../static/img/search-icon.svg';
 
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
