@@ -185,33 +185,46 @@ const CorrelationView = () => {
         if(correlationMatrix[0]?.length) {
             setSelectListLoading(true);
             console.log('getting new selectList');
-            getSelectList(priorities, dataFile, relationFile,
-                dataDelimiter, relationDelimiter,
-                correlationMatrix[0][0] === -1, showInSelectMenuColumns,
-                dataSheet.length, relationSheet.length)
-                .then((res) => {
-                    console.log('GOT IT');
-                    console.log(res);
-                    if(res?.data) {
-                        if(selectList?.length) {
-                            const newSelectList = res.data;
+            if(selectList?.length) {
+                getSelectList(priorities, dataFile, relationFile,
+                    dataDelimiter, relationDelimiter,
+                    correlationMatrix[0][0] === -1, showInSelectMenuColumns,
+                    dataSheet.length, relationSheet.length)
+                    .then((res) => {
+                        console.log('GOT IT');
+                        console.log(res);
+                        if(res?.data) {
+                            if(selectList?.length) {
+                                const newSelectList = res.data;
 
-                            setSelectList(prevState => {
-                                return prevState.map((item, index) => {
-                                   if(indexesInSelectListToOverride.includes(index)) {
-                                       return newSelectList[index];
-                                   }
-                                   else {
-                                       return item;
-                                   }
-                                });
-                            })
+                                setSelectList(prevState => {
+                                    return prevState.map((item, index) => {
+                                        if(indexesInSelectListToOverride.includes(index)) {
+                                            return newSelectList[index];
+                                        }
+                                        else {
+                                            return item;
+                                        }
+                                    });
+                                })
+                            }
+                            else {
+                                setSelectList(res.data);
+                            }
                         }
-                        else {
-                            setSelectList(res.data);
+                    });
+            }
+            else {
+                setSelectList(relationSheet.map((relationRowItem, relationRowIndex) => {
+                    return dataSheet.map((dataRowItem, dataRowIndex) => {
+                        return {
+                            dataRowIndex,
+                            relationRowIndex,
+                            similarity: -1
                         }
-                    }
-                });
+                    });
+                }));
+            }
         }
     }, [correlationMatrix]);
 
