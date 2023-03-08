@@ -7,9 +7,7 @@ import * as papa from 'papaparse';
 @Injectable()
 export class AppService {
     async convertToArray(file, delimiter) {
-        console.log(file);
         const fileContent = fs.readFileSync(file.path, 'utf-8');
-        console.log('converted file');
 
         return papa.parse(fileContent, { header: true }).data;
     }
@@ -26,6 +24,7 @@ export class AppService {
       showInSelectMenuColumns = JSON.parse(showInSelectMenuColumns);
 
       if(isCorrelationMatrixEmpty === 'true') {
+          console.log('initial');
           try {
               return relationSheet.map((relationRowItem, relationRowIndex) => {
                   return dataSheet.map((dataRowItem, dataRowIndex) => {
@@ -43,8 +42,6 @@ export class AppService {
           }
       }
       else {
-          console.log('second option');
-
           const correlationMatrix = this.getCorrelationMatrix(JSON.parse(priorities), null,
               dataSheet, relationSheet,
               [], true);

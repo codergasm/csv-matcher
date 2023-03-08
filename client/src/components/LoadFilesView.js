@@ -33,29 +33,21 @@ const LoadFilesView = () => {
             Papa.parse(files[0], {
                 complete: function(results) {
                     setRelationDelimiter(results.meta.delimiter);
+
+                    const obj = results.data.map((item, index) => {
+                        return {
+                            '0': index+1,
+                            ...item
+                        }
+                    });
+
+                    // Add missing keys
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                    setRelationSheet(objComplete);
+                    setRelationFile(files[0]);
                 }
             });
-
-            convertCsvToArray(files[0], '\t')
-                .then((res) => {
-                    if(res?.data) {
-                        const obj = res.data.map((item, index) => {
-                            return {
-                                '0': index+1,
-                                ...item
-                            }
-                        });
-
-                        // Add missing keys
-                        const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
-
-                        setRelationSheet(objComplete);
-                        setRelationFile(files[0]);
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
         }
     }
 
@@ -67,29 +59,21 @@ const LoadFilesView = () => {
             Papa.parse(files[0], {
                 complete: function(results) {
                     setDataDelimiter(results.meta.delimiter);
+
+                    const obj = results.data.map((item, index) => {
+                        return {
+                            '0': index+1,
+                            ...item
+                        }
+                    });
+
+                    // Add missing keys
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                    setDataSheet(objComplete);
+                    setDataFile(files[0]);
                 }
             });
-
-            convertCsvToArray(files[0], '\t')
-                .then((res) => {
-                    if(res?.data) {
-                        const obj = res.data.map((item, index) => {
-                            return {
-                                '0': index+1,
-                                ...item
-                            }
-                        });
-
-                        // Add missing keys
-                        const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
-
-                        setDataSheet(objComplete);
-                        setDataFile(files[0]);
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
         }
     }
 
