@@ -5,6 +5,7 @@ import LoadFilesView from "./components/LoadFilesView";
 import CorelationView from "./components/CorrelationView";
 import axios from "axios";
 
+// axios.defaults.baseURL = 'http://localhost:5000';
 axios.defaults.baseURL = 'http://192.168.77.31:5000';
 
 const AppContext = React.createContext(null);
@@ -14,6 +15,10 @@ const App = () => {
   const [mainComponent, setMainComponent] = useState(<LoadFilesView />);
   const [dataSheet, setDataSheet] = useState({});
   const [relationSheet, setRelationSheet] = useState({});
+  const [dataFile, setDataFile] = useState(null);
+  const [relationFile, setRelationFile] = useState(null);
+  const [dataDelimiter, setDataDelimiter] = useState('');
+  const [relationDelimiter, setRelationDelimiter] = useState('');
 
   useEffect(() => {
     switch(currentView) {
@@ -29,7 +34,10 @@ const App = () => {
   }, [currentView]);
 
   return <AppContext.Provider value={{
-    currentView, setCurrentView, dataSheet, setDataSheet, relationSheet, setRelationSheet
+    currentView, setCurrentView,
+    dataFile, setDataFile, relationFile, setRelationFile,
+    dataSheet, setDataSheet, relationSheet, setRelationSheet,
+    dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter
   }}>
     {mainComponent}
   </AppContext.Provider>

@@ -1,11 +1,14 @@
 import React, {useContext, useEffect, useState} from 'react';
-import Papa from "papaparse";
 import {AppContext} from "../App";
 import {addMissingKeys} from "../helpers/others";
 import Loader from "./Loader";
+import {convertCsvToArray} from "../helpers/matching";
+import Papa from 'papaparse';
 
 const LoadFilesView = () => {
-    const { setCurrentView, dataSheet, setDataSheet, relationSheet, setRelationSheet } = useContext(AppContext);
+    const { setCurrentView, dataSheet, setDataSheet,
+        setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
+        relationSheet, setRelationSheet } = useContext(AppContext);
 
     const [dataSheetLoading, setDataSheetLoading] = useState(false);
     const [relationSheetLoading, setRelationSheetLoading] = useState(false);
@@ -28,21 +31,31 @@ const LoadFilesView = () => {
             setRelationSheetLoading(true);
 
             Papa.parse(files[0], {
-                header: true,
                 complete: function(results) {
-                    const obj = results.data.map((item, index) => {
-                        return {
-                            '0': index+1,
-                            ...item
-                        }
-                    });
+                    setRelationDelimiter(results.meta.delimiter);
+                }
+            });
 
-                    // Add missing keys
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+            convertCsvToArray(files[0], '\t')
+                .then((res) => {
+                    if(res?.data) {
+                        const obj = res.data.map((item, index) => {
+                            return {
+                                '0': index+1,
+                                ...item
+                            }
+                        });
 
-                    setRelationSheet(objComplete);
-                }}
-            );
+                        // Add missing keys
+                        const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                        setRelationSheet(objComplete);
+                        setRelationFile(files[0]);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     }
 
@@ -52,21 +65,31 @@ const LoadFilesView = () => {
             setDataSheetLoading(true);
 
             Papa.parse(files[0], {
-                header: true,
                 complete: function(results) {
-                    const obj = results.data.map((item, index) => {
-                        return {
-                            '0': index+1,
-                            ...item
-                        }
-                    });
+                    setDataDelimiter(results.meta.delimiter);
+                }
+            });
 
-                    // Add missing keys
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+            convertCsvToArray(files[0], '\t')
+                .then((res) => {
+                    if(res?.data) {
+                        const obj = res.data.map((item, index) => {
+                            return {
+                                '0': index+1,
+                                ...item
+                            }
+                        });
 
-                    setDataSheet(objComplete);
-                }}
-            );
+                        // Add missing keys
+                        const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+
+                        setDataSheet(objComplete);
+                        setDataFile(files[0]);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     }
 

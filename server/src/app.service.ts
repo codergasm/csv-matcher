@@ -1,31 +1,81 @@
 import {HttpException, Injectable} from '@nestjs/common';
 import { stringSimilarity } from "string-similarity-js";
+import * as csv from "csvtojson";
+import * as fs from "fs";
+import * as papa from 'papaparse';
 
 @Injectable()
 export class AppService {
-  getSelectList(dataSheet, correlationMatrix, showInSelectMenuColumns) {
-    try {
-        return correlationMatrix.map((relationRowItem, relationRowIndex) => {
-            return relationRowItem.map((dataRowItem, dataRowIndex) => {
-                const value = Object.entries(dataSheet[dataRowIndex])
-                    .filter((_, index) => (showInSelectMenuColumns[index]))
-                    .map((item) => (item[1]))
-                    .join(' - ');
-                const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
-                    .toFixed(0);
+    async convertToArray(file, delimiter) {
+        const fileContent = fs.readFileSync(file.path, 'utf-8');
 
-                return {
-                    dataRowIndex,
-                    relationRowIndex,
-                    value,
-                    similarity: isNaN(similarity) ? 0 : similarity
-                }
-            }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
-        });
+        return papa.parse(fileContent, { header: true }).data;
     }
-    catch(e) {
-        throw new HttpException(e, 500);
-    }
+
+  async getSelectList(priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
+                      isCorrelationMatrixEmpty, showInSelectMenuColumns) {
+      // Convert files to array of objects
+      const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
+      const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
+
+      const dataSheet = papa.parse(dataFileContent, { header: true }).data;
+      const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+
+      showInSelectMenuColumns = JSON.parse(showInSelectMenuColumns);
+
+      if(isCorrelationMatrixEmpty === 'true') {
+          try {
+              return relationSheet.map((relationRowItem, relationRowIndex) => {
+                  return dataSheet.map((dataRowItem, dataRowIndex) => {
+                      const value = Object.entries(dataSheet[dataRowIndex])
+                          .filter((_, index) => (showInSelectMenuColumns[index]))
+                          .map((item) => (item[1]))
+                          .join(' - ');
+
+                      return {
+                          dataRowIndex,
+                          relationRowIndex,
+                          value,
+                          similarity: -1
+                      }
+                  });
+              });
+          }
+          catch(e) {
+              console.log(e);
+              throw new HttpException(e, 500, {cause: new Error('error')});
+          }
+      }
+      else {
+          console.log('second option');
+
+          const correlationMatrix = this.getCorrelationMatrix(JSON.parse(priorities), null,
+              dataSheet, relationSheet,
+              [], true);
+
+          try {
+              return correlationMatrix.map((relationRowItem, relationRowIndex) => {
+                  return relationRowItem.map((dataRowItem, dataRowIndex) => {
+                      const value = Object.entries(dataSheet[dataRowIndex])
+                          .filter((_, index) => (showInSelectMenuColumns[index]))
+                          .map((item) => (item[1]))
+                          .join(' - ');
+                      const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
+                          .toFixed(0);
+
+                      return {
+                          dataRowIndex,
+                          relationRowIndex,
+                          value,
+                          similarity: isNaN(similarity) ? 0 : similarity
+                      }
+                  }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
+              });
+          }
+          catch(e) {
+              throw new HttpException(e, 500);
+          }
+      }
   }
 
     getSimilarityScores(conditions, logicalOperators, correlationMatrix, dataSheet,
@@ -37,7 +87,7 @@ export class AppService {
         for(const relationRow of relationSheet) {
             let relationRowSimilarities = [];
 
-            if((indexesOfCorrelatedRows[i] !== -1) && (!overrideAllRows)) {
+            if((indexesOfCorrelatedRows[i] !== -1) && (!overrideAllRows) && correlationMatrix) {
                 // Already have match - don't override if option 'no override' selected
                 relationRowSimilarities = correlationMatrix[i];
             }
@@ -101,32 +151,55 @@ export class AppService {
         return indexWithMaxValue;
     }
 
-  correlate(priorities, correlationMatrix, dataSheet, relationSheet, indexesOfCorrelatedRows, overrideAllRows,
+    getCorrelationMatrix(priorities, correlationMatrix, dataSheet, relationSheet, indexesOfCorrelatedRows, overrideAllRows) {
+        let correlationMatrixTmp = [];
+        let priorityIndex = 0;
+
+        for(const priority of priorities) {
+            // Get similarities for all rows for current priority
+            // [[relation row 1 similarities], [relation row 2 similarities] ...]
+
+            const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
+            const similarityScores = this.getSimilarityScores(priority.conditions, logicalOperators, correlationMatrix, dataSheet, relationSheet,
+                indexesOfCorrelatedRows, overrideAllRows);
+
+            let relationRowIndex = 0;
+            for(const relationRowSimilarities of similarityScores) {
+                correlationMatrixTmp.push(relationRowSimilarities);
+
+                // if(correlationMatrix[relationRowIndex]) {
+                //     correlationMatrixTmp.push(correlationMatrix[relationRowIndex][0] < relationRowSimilarities[0]
+                //         ? relationRowSimilarities : correlationMatrix[relationRowIndex]);
+                // }
+                // else {
+                //     correlationMatrixTmp.push(relationRowSimilarities);
+                // }
+                relationRowIndex++;
+            }
+
+            priorityIndex++;
+        }
+
+        return correlationMatrixTmp;
+    }
+
+  async correlate(dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
-      let priorityIndex = 0;
-      let correlationMatrixTmp = [];
+      // Convert files to array of objects
+      const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
+      const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
 
-      for(const priority of priorities) {
-          // Get similarities for all rows for current priority
-          // [[relation row 1 similarities], [relation row 2 similarities] ...]
-          const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
-          const similarityScores = this.getSimilarityScores(priority.conditions, logicalOperators, correlationMatrix, dataSheet, relationSheet,
-              indexesOfCorrelatedRows, overrideAllRows);
+      const dataSheet = papa.parse(dataFileContent, { header: true }).data;
+      const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
-          let relationRowIndex = 0;
-          for(const relationRowSimilarities of similarityScores) {
-              correlationMatrixTmp.push(correlationMatrix[relationRowIndex][0] < relationRowSimilarities[0] ? relationRowSimilarities : correlationMatrix[relationRowIndex]);
-              relationRowIndex++;
-          }
-
-          priorityIndex++;
-      }
-
+      let correlationMatrixTmp = this.getCorrelationMatrix(JSON.parse(priorities), correlationMatrix,
+          dataSheet, relationSheet,
+          indexesOfCorrelatedRows, overrideAllRows)
       let i = 0;
-      let indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item) => (item));
+      let indexesOfCorrelatedRowsTmp = JSON.parse(indexesOfCorrelatedRows).map((item) => (item));
 
       if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
-          indexesOfCorrelatedRowsTmp = indexesOfCorrelatedRows.map((item, index) => {
+          indexesOfCorrelatedRowsTmp = JSON.parse(indexesOfCorrelatedRows).map((item, index) => {
               if(manuallyCorrelatedRows.includes(index)) {
                   return item;
               }
@@ -163,16 +236,18 @@ export class AppService {
               }
           }
 
-          if(indexesOfCorrelatedRowsTmp[i] === -1 || overrideAllRows) {
-              if(overrideAllRows && (newMatch !== -2 && el[newMatch] >= matchThreshold)) {
-                  if(!(avoidOverrideForManuallyCorrelatedRows && manuallyCorrelatedRows.includes(i))) {
-                      indexesOfCorrelatedRowsTmp[i] = newMatch;
-                  }
-              }
-              else if(!overrideAllRows) {
-                  indexesOfCorrelatedRowsTmp[i] = (newMatch === -2 || el[newMatch] < matchThreshold) ? -1 : newMatch;
-              }
-          }
+          // if(indexesOfCorrelatedRowsTmp[i] === -1 || overrideAllRows) {
+          //     if(overrideAllRows && (newMatch !== -2 && el[newMatch] >= matchThreshold)) {
+          //         if(!(avoidOverrideForManuallyCorrelatedRows && manuallyCorrelatedRows.includes(i))) {
+          //             indexesOfCorrelatedRowsTmp[i] = newMatch;
+          //         }
+          //     }
+          //     else if(!overrideAllRows) {
+          //
+          //     }
+          // }
+
+          indexesOfCorrelatedRowsTmp[i] = (newMatch === -2 || el[newMatch] < matchThreshold) ? -1 : newMatch;
 
           i++;
       }

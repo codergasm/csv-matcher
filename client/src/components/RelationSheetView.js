@@ -14,7 +14,7 @@ const ROWS_PER_PAGE = 20;
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList,
-        showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
+        showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [relationSheetSorted, setRelationSheetSorted] = useState([]);
@@ -303,7 +303,7 @@ const RelationSheetView = () => {
                             </span>
                         </span> : ''}
 
-        {selectList?.length ? <div className="sheet scroll"
+        {selectList?.length && !selectListLoading ? <div className="sheet scroll"
                                    onScroll={(e) => { checkScrollToBottom(e); }}>
 
             <div className="sheet__table__info">
