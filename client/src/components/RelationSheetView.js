@@ -98,7 +98,11 @@ const RelationSheetView = () => {
         const searchValue = searchInputValue.toLowerCase();
 
         setCurrentSelectMenuFiltered(currentSelectMenu.filter((item) => {
-            return item.value.toLowerCase().includes(searchValue);
+            const value = Object.entries(dataSheet[item.dataRowIndex])
+                .filter((_, index) => (showInSelectMenuColumns[index]))
+                .map((item) => (item[1]))
+                .join(' - ');
+            return value.toLowerCase().includes(searchValue);
         }));
     }, [searchInputValue]);
 
