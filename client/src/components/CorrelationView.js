@@ -182,8 +182,7 @@ const CorrelationView = () => {
     }, [correlationStatus]);
 
     useEffect(() => {
-        if(correlationMatrix[0]?.length && showInSelectMenuColumns?.length) {
-
+        if(correlationMatrix[0]?.length) {
             setSelectListLoading(true);
             console.log('getting new selectList');
             getSelectList(priorities, dataFile, relationFile,
@@ -213,7 +212,7 @@ const CorrelationView = () => {
                     }
                 });
         }
-    }, [showInSelectMenuColumns, correlationMatrix]);
+    }, [correlationMatrix]);
 
     useEffect(() => {
         setSelectListLoading(false);

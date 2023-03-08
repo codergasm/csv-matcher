@@ -434,11 +434,18 @@ const RelationSheetView = () => {
                 }
 
                 let isCorrelatedRowWithHighestSimilarity = false;
+                let correlatedRowValue = '-';
 
                 if(correlatedRow) {
                     isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
                         || (manuallyCorrelatedRows.includes(indexesInRender[index])));
+
+                    correlatedRowValue = Object.entries(dataSheet[correlatedRow.dataRowIndex])
+                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .map((item) => (item[1]))
+                        .join(' - ');
                 }
+
 
                 return <div className="line line--tableRow"
                             key={index}>
@@ -475,7 +482,7 @@ const RelationSheetView = () => {
                                                                                key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
-                                        {correlatedRow.value}
+                                        {correlatedRowValue}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
                                         background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
@@ -511,12 +518,17 @@ const RelationSheetView = () => {
 
                         {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll" onScroll={(e) => { checkListScrollToBottom(e) }}>
                             {currentSelectMenuToDisplay?.map((item, index) => {
+                                const value = Object.entries(dataSheet[item.dataRowIndex])
+                                    .filter((_, index) => (showInSelectMenuColumns[index]))
+                                    .map((item) => (item[1]))
+                                    .join(' - ');
+
                                 return <button className="select__menu__item"
                                                disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
                                                onClick={(e) => { indexesOfCorrelatedRows.includes(item.dataRowIndex) ? e.stopPropagation() : addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
                                                key={index}>
                                     <span className="select__menu__item__value">
-                                        {item.value}
+                                        {value}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
                                         background: getSimilarityColor(item.similarity, -1)

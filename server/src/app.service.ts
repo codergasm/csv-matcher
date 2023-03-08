@@ -10,7 +10,7 @@ export class AppService {
         console.log(file);
         const fileContent = fs.readFileSync(file.path, 'utf-8');
         console.log('converted file');
-        
+
         return papa.parse(fileContent, { header: true }).data;
     }
 
@@ -29,15 +29,9 @@ export class AppService {
           try {
               return relationSheet.map((relationRowItem, relationRowIndex) => {
                   return dataSheet.map((dataRowItem, dataRowIndex) => {
-                      const value = Object.entries(dataSheet[dataRowIndex])
-                          .filter((_, index) => (showInSelectMenuColumns[index]))
-                          .map((item) => (item[1]))
-                          .join(' - ');
-
                       return {
                           dataRowIndex,
                           relationRowIndex,
-                          value,
                           similarity: -1
                       }
                   });
@@ -58,17 +52,12 @@ export class AppService {
           try {
               return correlationMatrix.map((relationRowItem, relationRowIndex) => {
                   return relationRowItem.map((dataRowItem, dataRowIndex) => {
-                      const value = Object.entries(dataSheet[dataRowIndex])
-                          .filter((_, index) => (showInSelectMenuColumns[index]))
-                          .map((item) => (item[1]))
-                          .join(' - ');
                       const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
                           .toFixed(0);
 
                       return {
                           dataRowIndex,
                           relationRowIndex,
-                          value,
                           similarity: isNaN(similarity) ? 0 : similarity
                       }
                   }).sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
