@@ -31,6 +31,7 @@ const LoadFilesView = () => {
             setRelationSheetLoading(true);
 
             Papa.parse(files[0], {
+                header: true,
                 complete: function(results) {
                     setRelationDelimiter(results.meta.delimiter);
 
@@ -57,6 +58,7 @@ const LoadFilesView = () => {
             setDataSheetLoading(true);
 
             Papa.parse(files[0], {
+                header: true,
                 complete: function(results) {
                     setDataDelimiter(results.meta.delimiter);
 
