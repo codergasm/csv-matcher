@@ -7,8 +7,10 @@ import * as papa from 'papaparse';
 @Injectable()
 export class AppService {
     async convertToArray(file, delimiter) {
+        console.log(file);
         const fileContent = fs.readFileSync(file.path, 'utf-8');
-
+        console.log('converted file');
+        
         return papa.parse(fileContent, { header: true }).data;
     }
 
