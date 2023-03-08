@@ -13,21 +13,13 @@ export class AppService {
     }
 
   async getSelectList(priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
-                      isCorrelationMatrixEmpty, showInSelectMenuColumns) {
-      // Convert files to array of objects
-      const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
-      const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
-
-      const dataSheet = papa.parse(dataFileContent, { header: true }).data;
-      const relationSheet = papa.parse(relationFileContent, { header: true }).data;
-
-      showInSelectMenuColumns = JSON.parse(showInSelectMenuColumns);
+                      isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
 
       if(isCorrelationMatrixEmpty === 'true') {
           console.log('initial');
           try {
-              return relationSheet.map((relationRowItem, relationRowIndex) => {
-                  return dataSheet.map((dataRowItem, dataRowIndex) => {
+              return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
+                  return Array.from(Array(parseInt(dataSheetLength)).keys()).map((dataRowItem, dataRowIndex) => {
                       return {
                           dataRowIndex,
                           relationRowIndex,
@@ -42,6 +34,13 @@ export class AppService {
           }
       }
       else {
+          // Convert files to array of objects
+          const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
+          const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
+
+          const dataSheet = papa.parse(dataFileContent, { header: true }).data;
+          const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+
           const correlationMatrix = this.getCorrelationMatrix(JSON.parse(priorities), null,
               dataSheet, relationSheet,
               [], true);

@@ -187,7 +187,8 @@ const CorrelationView = () => {
             console.log('getting new selectList');
             getSelectList(priorities, dataFile, relationFile,
                 dataDelimiter, relationDelimiter,
-                correlationMatrix[0][0] === -1, showInSelectMenuColumns)
+                correlationMatrix[0][0] === -1, showInSelectMenuColumns,
+                dataSheet.length, relationSheet.length)
                 .then((res) => {
                     console.log('GOT IT');
                     console.log(res);

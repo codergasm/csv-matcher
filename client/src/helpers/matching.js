@@ -15,7 +15,7 @@ const convertCsvToArray = (file, separator) => {
 }
 
 const getSelectList = (priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
-                       isCorrelationMatrixEmpty, showInSelectMenuColumns) => {
+                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -30,6 +30,8 @@ const getSelectList = (priorities, dataFile, relationFile, dataDelimiter, relati
     formData.append('relationDelimiter', relationDelimiter);
     formData.append('isCorrelationMatrixEmpty', isCorrelationMatrixEmpty);
     formData.append('showInSelectMenuColumns', JSON.stringify(showInSelectMenuColumns));
+    formData.append('dataSheetLength', dataSheetLength);
+    formData.append('relationSheetLength', relationSheetLength);
 
     return axios.post('/getSelectList', formData, config);
 }

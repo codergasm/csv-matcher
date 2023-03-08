@@ -18,7 +18,7 @@ export class AppController {
                       @Body() body) {
     return this.appService.getSelectList(body.priorities, files[0], files[1],
         body.dataDelimiter, body.relationDelimiter,
-        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns);
+        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength, body.relationSheetLength);
   }
 
   @Post('/correlate')
