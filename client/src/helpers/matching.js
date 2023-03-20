@@ -1,4 +1,5 @@
 import axios from "axios";
+import io from 'socket.io-client';
 
 const convertCsvToArray = (file, separator) => {
     const formData = new FormData();
@@ -20,6 +21,9 @@ const getSelectList = (priorities, dataFile, relationFile, dataDelimiter, relati
     const config = {
         headers: {
             'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+            // console.log(progressEvent);
         }
     }
 
@@ -41,27 +45,45 @@ const matching = (priorities, correlationMatrix,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
                   manuallyCorrelatedRows, matchThreshold) => {
+    // WebSocket
+    const socket = io('http://localhost:5000');
 
-    const formData = new FormData();
-    const config = {
-        headers: {
-            'Content-Type': 'multipart/form-data'
+    const dataFileReader = new FileReader();
+    const relationFileReader = new FileReader();
+
+    dataFileReader.onload = () => {
+        relationFileReader.onload = () => {
+            const dataFileResult = dataFileReader.result;
+            const relationFileResult = relationFileReader.result;
+
+            socket.emit('correlate', {
+                formData: {
+                    dataFile: dataFileResult,
+                    relationFile: relationFileResult,
+                    dataDelimiter,
+                    relationDelimiter,
+                    correlationMatrix,
+                    priorities: JSON.stringify(priorities),
+                    indexesOfCorrelatedRows: JSON.stringify(indexesOfCorrelatedRows),
+                    overrideAllRows,
+                    avoidOverrideForManuallyCorrelatedRows,
+                    manuallyCorrelatedRows,
+                    matchThreshold
+                }
+            }, (response) => {
+                console.log(response);
+            });
+
+            // Listen for progress
+            socket.on('correlate', (d) => {
+                console.log(d);
+            });
         }
+
+        relationFileReader.readAsArrayBuffer(relationFile);
     }
 
-    formData.append('files', dataFile);
-    formData.append('files', relationFile);
-    formData.append('dataFileDelimiter', dataDelimiter);
-    formData.append('relationFileDelimiter', relationDelimiter);
-    formData.append('correlationMatrix', correlationMatrix);
-    formData.append('priorities', JSON.stringify(priorities));
-    formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));
-    formData.append('overrideAllRows', overrideAllRows);
-    formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
-    formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
-    formData.append('matchThreshold', matchThreshold);
-
-    return axios.post('/correlate', formData, config);
+    dataFileReader.readAsArrayBuffer(dataFile);
 }
 
 export { getSelectList, matching, convertCsvToArray }

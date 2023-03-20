@@ -12,13 +12,22 @@ export class AppService {
         return papa.parse(fileContent, { header: true }).data;
     }
 
-  async getSelectList(priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
+  async getSelectList(res, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
+
+      res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+      });
 
       if(isCorrelationMatrixEmpty === 'true') {
           console.log('initial');
           try {
-              return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
+              const result = Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
+                  const progress = (relationRowIndex / relationSheetLength) * 100;
+                  res.write(`data: ${JSON.stringify({ progress })}\n\n`);
+
                   return Array.from(Array(parseInt(dataSheetLength)).keys()).map((dataRowItem, dataRowIndex) => {
                       return {
                           dataRowIndex,
@@ -27,6 +36,8 @@ export class AppService {
                       }
                   });
               });
+
+              return result;
           }
           catch(e) {
               console.log(e);
@@ -172,6 +183,7 @@ export class AppService {
 
   async correlate(dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
+
       // Convert files to array of objects
       const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
       const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
@@ -195,6 +207,8 @@ export class AppService {
               }
           });
       }
+
+      console.log('after first if');
 
       for(let el of correlationMatrixTmp) {
           let numberOfTrials = 0;

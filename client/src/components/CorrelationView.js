@@ -191,8 +191,6 @@ const CorrelationView = () => {
                     correlationMatrix[0][0] === -1, showInSelectMenuColumns,
                     dataSheet.length, relationSheet.length)
                     .then((res) => {
-                        console.log('GOT IT');
-                        console.log(res);
                         if(res?.data) {
                             if(selectList?.length) {
                                 const newSelectList = res.data;
@@ -262,94 +260,94 @@ const CorrelationView = () => {
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
             manuallyCorrelatedRows, matchThreshold)
-            .then((res) => {
-               if(res?.data) {
-                   const newIndexesOfCorrelatedRows = res.data.indexesOfCorrelatedRowsTmp;
-                   const newCorrelationMatrix = res.data.correlationMatrixTmp;
-                   const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
-
-                   if(!overrideAllRows) {
-                       // dopasuj tylko te, ktore jeszcze nie maja dopasowania
-                       setCorrelationMatrix(prevState => {
-                           return prevState.map((item, index) => {
-                              if(prevIndexesOfCorrelatedRows[index] === -1) {
-                                  return newCorrelationMatrix[index];
-                              }
-                              else {
-                                  return item;
-                              }
-                           });
-                       });
-
-                       setIndexesOfCorrelatedRows(prevState => {
-                           return prevState.map((item, index) => {
-                               if(item === -1) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
-                                   return newIndexesOfCorrelatedRows[index];
-                               }
-                               else {
-                                   return item;
-                               }
-                           });
-                       });
-                   }
-                   else if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
-                       // nadpisz wszystkie rekordy jesli znajdziesz nowe dopasowanie
-                       setCorrelationMatrix(prevState => {
-                           return prevState.map((item, index) => {
-                               if(newIndexesOfCorrelatedRows[index] !== -1) {
-                                   return newCorrelationMatrix[index];
-                               }
-                               else {
-                                   return item;
-                               }
-                           });
-                       });
-
-                       setIndexesOfCorrelatedRows(prevState => {
-                           return prevState.map((item, index) => {
-                               if(newIndexesOfCorrelatedRows[index] !== -1) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
-                                   return newIndexesOfCorrelatedRows[index];
-                               }
-                               else {
-                                   return item;
-                               }
-                           });
-                       });
-                   }
-                   else {
-                       // nadpisz wszystkie automatycznie dopasowane rekordy jesli znajdziesz nowe dopasowanie
-                       setCorrelationMatrix(prevState => {
-                           return prevState.map((item, index) => {
-                               if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {
-                                   return newCorrelationMatrix[index];
-                               }
-                               else {
-                                   return item;
-                               }
-                           });
-                       });
-
-                       setIndexesOfCorrelatedRows(prevState => {
-                           return prevState.map((item, index) => {
-                               if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
-                                   return newIndexesOfCorrelatedRows[index];
-                               }
-                               else {
-                                   return item;
-                               }
-                           });
-                       });
-                   }
-
-                   setCorrelationStatus(2);
-               }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+            // .then((res) => {
+            //    if(res?.data) {
+            //        const newIndexesOfCorrelatedRows = res.data.indexesOfCorrelatedRowsTmp;
+            //        const newCorrelationMatrix = res.data.correlationMatrixTmp;
+            //        const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
+            //
+            //        if(!overrideAllRows) {
+            //            // dopasuj tylko te, ktore jeszcze nie maja dopasowania
+            //            setCorrelationMatrix(prevState => {
+            //                return prevState.map((item, index) => {
+            //                   if(prevIndexesOfCorrelatedRows[index] === -1) {
+            //                       return newCorrelationMatrix[index];
+            //                   }
+            //                   else {
+            //                       return item;
+            //                   }
+            //                });
+            //            });
+            //
+            //            setIndexesOfCorrelatedRows(prevState => {
+            //                return prevState.map((item, index) => {
+            //                    if(item === -1) {
+            //                        setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+            //                        return newIndexesOfCorrelatedRows[index];
+            //                    }
+            //                    else {
+            //                        return item;
+            //                    }
+            //                });
+            //            });
+            //        }
+            //        else if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
+            //            // nadpisz wszystkie rekordy jesli znajdziesz nowe dopasowanie
+            //            setCorrelationMatrix(prevState => {
+            //                return prevState.map((item, index) => {
+            //                    if(newIndexesOfCorrelatedRows[index] !== -1) {
+            //                        return newCorrelationMatrix[index];
+            //                    }
+            //                    else {
+            //                        return item;
+            //                    }
+            //                });
+            //            });
+            //
+            //            setIndexesOfCorrelatedRows(prevState => {
+            //                return prevState.map((item, index) => {
+            //                    if(newIndexesOfCorrelatedRows[index] !== -1) {
+            //                        setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+            //                        return newIndexesOfCorrelatedRows[index];
+            //                    }
+            //                    else {
+            //                        return item;
+            //                    }
+            //                });
+            //            });
+            //        }
+            //        else {
+            //            // nadpisz wszystkie automatycznie dopasowane rekordy jesli znajdziesz nowe dopasowanie
+            //            setCorrelationMatrix(prevState => {
+            //                return prevState.map((item, index) => {
+            //                    if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {
+            //                        return newCorrelationMatrix[index];
+            //                    }
+            //                    else {
+            //                        return item;
+            //                    }
+            //                });
+            //            });
+            //
+            //            setIndexesOfCorrelatedRows(prevState => {
+            //                return prevState.map((item, index) => {
+            //                    if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {
+            //                        setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+            //                        return newIndexesOfCorrelatedRows[index];
+            //                    }
+            //                    else {
+            //                        return item;
+            //                    }
+            //                });
+            //            });
+            //        }
+            //
+            //        setCorrelationStatus(2);
+            //    }
+            // })
+            // .catch((err) => {
+            //     console.log(err);
+            // });
     }
 
     return <div className="container container--correlation">

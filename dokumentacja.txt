@@ -34,6 +34,4 @@ oznacza indeks wiersza, który jest renderowany jako i-ty w relationSheet/select
 natomiast relationSheetSorted i rowsToRender drugą (zmienną w zależności od sortowania).
 
 TODO:
-- problem szybkości renderowania drugiego arkusza
 - priorytety
-- zaznaczanie wszystkich kolumn w arkuszach 1 i 2
