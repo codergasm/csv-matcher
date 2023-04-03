@@ -5,8 +5,8 @@ import LoadFilesView from "./components/LoadFilesView";
 import CorelationView from "./components/CorrelationView";
 import axios from "axios";
 
-// axios.defaults.baseURL = 'http://localhost:5000';
-axios.defaults.baseURL = 'http://192.168.77.31:5000';
+axios.defaults.baseURL = 'http://localhost:5000';
+// axios.defaults.baseURL = 'http://192.168.77.31:5000';
 
 const AppContext = React.createContext(null);
 

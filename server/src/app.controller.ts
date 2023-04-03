@@ -1,10 +1,17 @@
-import {Body, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, MessageEvent, Post, Sse, UploadedFile, UploadedFiles, UseInterceptors} from '@nestjs/common';
 import { AppService } from './app.service';
 import {FileInterceptor, FilesInterceptor} from "@nestjs/platform-express";
+import {interval, map, Observable} from "rxjs";
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  @Sse('sse')
+  sse() {
+    console.log('sse');
+    return this.appService.getCorrelationProgress();
+  }
 
   @Post('/convertToArray')
   @UseInterceptors(FileInterceptor('file'))

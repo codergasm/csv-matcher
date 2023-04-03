@@ -1,22 +1,40 @@
-import {HttpException, Injectable} from '@nestjs/common';
+import {HttpException, Injectable, Sse, MessageEvent} from '@nestjs/common';
 import { stringSimilarity } from "string-similarity-js";
 import * as csv from "csvtojson";
 import * as fs from "fs";
 import * as papa from 'papaparse';
+import {fromEvent, interval, map, Observable} from "rxjs";
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppService {
+    constructor(
+        private eventEmitter: EventEmitter2
+    ) {
+        this.progressCount = 0;
+    }
+
+    private progressCount: number;
+
     async convertToArray(file, delimiter) {
         const fileContent = fs.readFileSync(file.path, 'utf-8');
 
         return papa.parse(fileContent, { header: true }).data;
     }
 
+
+    getCorrelationProgress() {
+        return interval(1000).pipe(map((_) => {
+            return  {
+                data: this.progressCount
+            }
+        }));
+    }
+
   async getSelectList(priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
 
       if(isCorrelationMatrixEmpty === 'true') {
-          console.log('initial');
           try {
               return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
                   return Array.from(Array(parseInt(dataSheetLength)).keys()).map((dataRowItem, dataRowIndex) => {
@@ -86,28 +104,28 @@ export class AppService {
                         const dataSheetPart = dataRow[conditions[i].dataSheet];
                         const relationSheetPart = relationRow[conditions[i].relationSheet];
 
-                        if(typeof dataSheetPart === 'string' && typeof relationSheetPart === 'string') {
-                            const pairSimilarity = stringSimilarity(dataSheetPart, relationSheetPart);
-                            similarities.push(pairSimilarity);
-                        }
+                        const pairSimilarity = stringSimilarity(dataSheetPart.toString(), relationSheetPart.toString());
+                        similarities.push(pairSimilarity);
                     }
 
                     // Calculate final similarity based on conditions - default first similarity
                     // (if no conditions, loop will be omitted)
                     let finalSimilarity = similarities[0];
 
-                    for(let i=0; i<similarities.length-1; i++) {
-                        if(logicalOperators[i] === 1) { // or
-                            let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
-                            let secondNumber = similarities[i+1];
+                    if(similarities.length > 1) {
+                        for(let i=0; i<similarities.length-1; i++) {
+                            if(logicalOperators[i] === 1) { // or
+                                let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
+                                let secondNumber = similarities[i+1];
 
-                            finalSimilarity = Math.max(firstNumber, secondNumber);
-                        }
-                        else { // and
-                            let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
-                            let secondNumber = similarities[i+1];
+                                finalSimilarity = Math.max(firstNumber, secondNumber);
+                            }
+                            else { // and
+                                let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
+                                let secondNumber = similarities[i+1];
 
-                            finalSimilarity = Math.min(firstNumber, secondNumber);
+                                finalSimilarity = Math.min(firstNumber, secondNumber);
+                            }
                         }
                     }
 
@@ -117,6 +135,8 @@ export class AppService {
 
             allSimilarities.push(relationRowSimilarities);
             i++;
+
+            this.progressCount++;
         }
 
         return allSimilarities;
@@ -154,13 +174,6 @@ export class AppService {
             for(const relationRowSimilarities of similarityScores) {
                 correlationMatrixTmp.push(relationRowSimilarities);
 
-                // if(correlationMatrix[relationRowIndex]) {
-                //     correlationMatrixTmp.push(correlationMatrix[relationRowIndex][0] < relationRowSimilarities[0]
-                //         ? relationRowSimilarities : correlationMatrix[relationRowIndex]);
-                // }
-                // else {
-                //     correlationMatrixTmp.push(relationRowSimilarities);
-                // }
                 relationRowIndex++;
             }
 
@@ -175,10 +188,10 @@ export class AppService {
       // Convert files to array of objects
       const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
       const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
-
       const dataSheet = papa.parse(dataFileContent, { header: true }).data;
       const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
+      // Get correlation matrix
       let correlationMatrixTmp = this.getCorrelationMatrix(JSON.parse(priorities), correlationMatrix,
           dataSheet, relationSheet,
           indexesOfCorrelatedRows, overrideAllRows)
@@ -222,17 +235,6 @@ export class AppService {
                   newMatch = -2;
               }
           }
-
-          // if(indexesOfCorrelatedRowsTmp[i] === -1 || overrideAllRows) {
-          //     if(overrideAllRows && (newMatch !== -2 && el[newMatch] >= matchThreshold)) {
-          //         if(!(avoidOverrideForManuallyCorrelatedRows && manuallyCorrelatedRows.includes(i))) {
-          //             indexesOfCorrelatedRowsTmp[i] = newMatch;
-          //         }
-          //     }
-          //     else if(!overrideAllRows) {
-          //
-          //     }
-          // }
 
           indexesOfCorrelatedRowsTmp[i] = (newMatch === -2 || el[newMatch] < matchThreshold) ? -1 : newMatch;
 
