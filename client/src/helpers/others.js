@@ -87,18 +87,23 @@ function addMissingKeys(arrayOfObjects, arrayOfKeys) {
 }
 
 const findSubstrings = (A, B) => {
-    const result = [];
+    if(A && B) {
+        const result = [];
+        const a = A.toLowerCase();
+        const b = B.toLowerCase();
 
-    for (let i = 0; i < B.length - 2; i++) {
-        const substring = B.substring(i, i + 3);
-        if (A.includes(substring)) {
-            for (let j = 0; j < substring.length; j++) {
-                result.push(i + j);
+        for (let i = 0; i < b.length - 2; i++) {
+            const substring = b.substring(i, i + 3);
+            if (a.includes(substring)) {
+                for (let j = 0; j < substring.length; j++) {
+                    result.push(i + j);
+                }
             }
         }
-    }
 
-    return result;
+        return [...new Set(result)];
+    }
+    return [];
 }
 
 function makeId(length) {
@@ -113,4 +118,14 @@ function makeId(length) {
     return result;
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, makeId }
+function checkCommonElement(arr1, arr2) {
+    for (let i = 0; i < arr1?.length || 0; i++) {
+        if (arr2.includes(arr1[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings,
+    checkCommonElement, makeId }

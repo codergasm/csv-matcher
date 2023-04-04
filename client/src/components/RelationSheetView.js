@@ -5,17 +5,18 @@ import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import { Tooltip } from 'react-tippy';
-import {findSubstrings, sortByColumn, sortRelationColumn} from "../helpers/others";
+import {checkCommonElement, findSubstrings, sortByColumn, sortRelationColumn} from "../helpers/others";
 import sortIcon from "../static/img/sort-down.svg";
 import Loader from "./Loader";
 import CellsFormatModal from "./CellsFormatModal";
 import FullValueModal from "./FullValueModal";
+import ColorMarkedText from "./ColorMarkedText";
 
 const ROWS_PER_PAGE = 20;
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList,
+    const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList, priorities,
         showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
@@ -39,6 +40,7 @@ const RelationSheetView = () => {
     const [currentListPage, setCurrentListPage] = useState(0);
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
+    const [fullCellValueSubstringsIndexes, setFullCellValueSubstringsIndexes] = useState([]);
     const [showFullCellValue, setShowFullCellValue] = useState('');
     const [markLettersRows, setMarkLettersRows] = useState([]);
 
@@ -122,12 +124,6 @@ const RelationSheetView = () => {
     }, [relationSheet, dataSheet]);
 
     useEffect(() => {
-        if(outputSheet?.length) {
-            // setAutoMatchModalVisible(false);
-        }
-    }, [outputSheet]);
-
-    useEffect(() => {
         if(columnsNames?.length) {
             if(!columnsVisibility?.length) {
                 setColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
@@ -189,9 +185,6 @@ const RelationSheetView = () => {
     }, [relationSheetSorted]);
 
     const fetchNextRows = () => {
-        console.log('fetch next rows');
-        console.log(page);
-
         setRowsToRender(prevState => {
             return [...prevState, ...relationSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
         });
@@ -323,7 +316,8 @@ const RelationSheetView = () => {
                                                      closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
 
         {showFullCellValue ? <FullValueModal value={showFullCellValue}
-                                          closeModal={() => { setShowFullCellValue(''); }}  /> : ''}
+                                             indexes={fullCellValueSubstringsIndexes}
+                                             closeModal={() => { setShowFullCellValue(''); }}  /> : ''}
 
         <button className="btn btn--autoMatch"
                 onClick={() => { setAutoMatchModalVisible(true); }}>
@@ -464,7 +458,9 @@ const RelationSheetView = () => {
             </div>
 
             {rowsToRender.map((item, index) => {
+                let relationRowIndex = index;
                 let correlatedRow = null;
+                let substringIndexes = [];
                 const currentSelectList = selectList[indexesInRender[index]];
 
                 if(currentSelectList?.length) {
@@ -473,6 +469,9 @@ const RelationSheetView = () => {
 
                 let isCorrelatedRowWithHighestSimilarity = false;
                 let correlatedRowValue = '-';
+                let joinStringOfColumnsFromRelationSheet = '';
+                let colorLettersActive = false;
+                let correlatedRowValueToDisplay = '';
 
                 if(correlatedRow) {
                     isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
@@ -482,10 +481,33 @@ const RelationSheetView = () => {
                         .filter((_, index) => (showInSelectMenuColumns[index]))
                         .map((item) => (item[1]))
                         .join(' - ');
+
+                    correlatedRowValueToDisplay = correlatedRowValue.length <= 50 ?
+                        correlatedRowValue : `${correlatedRowValue.substring(0, 50)}...`;
                 }
 
-                let correlatedRowValueToDisplay = correlatedRowValue.length <= 50 ?
-                    correlatedRowValue : `${correlatedRowValue.substring(0, 50)}...`;
+                if(markLettersRows.includes(index)) {
+                    const columnsNamesInConditions = priorities.map((item) => (item.conditions.map((item) => (item.dataSheet)))).flat();
+                    const columnsNamesInSelectMenu = Object.entries(dataSheet[0])
+                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .map((item) => (item[0]));
+
+                    joinStringOfColumnsFromRelationSheet = priorities.map((item) => {
+                        return item.conditions.map((item) => {
+                            return item.relationSheet;
+                        });
+                    })
+                        .flat()
+                        .map((item, i) => {
+                            return relationSheet[index][item];
+                        })
+                        .join(' ');
+
+                    if(correlatedRowValueToDisplay && checkCommonElement(columnsNamesInConditions, columnsNamesInSelectMenu)) {
+                        colorLettersActive = true;
+                        substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, correlatedRowValueToDisplay);
+                    }
+                }
 
                 return <div className="line line--tableRow"
                             key={index}>
@@ -524,11 +546,18 @@ const RelationSheetView = () => {
                                                                                    key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
-                                        {correlatedRowValueToDisplay.length === correlatedRowValue.length ? correlatedRowValue : <>
-                                            {correlatedRowValueToDisplay} <button className="btn btn--showFullValue"
-                                                                                  onClick={(e) => { e.stopPropagation(); setShowFullCellValue(correlatedRowValue); }}>
-                                            (zobacz wszystko)
-                                        </button>
+                                        {correlatedRowValueToDisplay.length === correlatedRowValue.length ?
+                                            <ColorMarkedText string={correlatedRowValueToDisplay}
+                                                             indexes={substringIndexes} /> : <>
+                                            <ColorMarkedText string={correlatedRowValueToDisplay}
+                                                             indexes={substringIndexes} />
+
+                                            <button className="btn btn--showFullValue"
+                                                                                  onClick={(e) => { e.stopPropagation();
+                                                                                      setFullCellValueSubstringsIndexes(findSubstrings(joinStringOfColumnsFromRelationSheet, correlatedRowValue))
+                                                                                      setShowFullCellValue(correlatedRowValue); }}>
+                                                (zobacz wszystko)
+                                            </button>
                                         </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
@@ -583,17 +612,27 @@ const RelationSheetView = () => {
                                     .join(' - ');
 
                                 const valueToDisplay = value.length <= 50 ? value : `${value.substring(0, 50)}...`;
+                                let substringIndexes = [];
+
+                                if(colorLettersActive || markLettersRows.includes(relationRowIndex)) {
+                                    substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, valueToDisplay);
+                                }
 
                                 return <button className="select__menu__item"
                                                disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
                                                onClick={(e) => { indexesOfCorrelatedRows.includes(item.dataRowIndex) ? e.stopPropagation() : addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
                                                key={index}>
                                     <span className="select__menu__item__value">
-                                        {valueToDisplay.length === value.length ? value : <>
-                                            {valueToDisplay} <button className="btn btn--showFullValue"
-                                                                     onClick={(e) => { e.stopPropagation(); setShowFullCellValue(value); }}>
-                                            (zobacz wszystko)
-                                        </button>
+                                        {valueToDisplay.length === value.length ? <ColorMarkedText string={value}
+                                                                                                   indexes={substringIndexes} /> : <>
+                                            <ColorMarkedText string={valueToDisplay}
+                                                             indexes={substringIndexes} />
+                                            <button className="btn btn--showFullValue"
+                                                    onClick={(e) => { e.stopPropagation();
+                                                        setFullCellValueSubstringsIndexes(findSubstrings(joinStringOfColumnsFromRelationSheet, value))
+                                                        setShowFullCellValue(value); }}>
+                                                (zobacz wszystko)
+                                            </button>
                                         </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{

@@ -338,7 +338,7 @@ const CorrelationView = () => {
                        });
                    }
                    else {
-                       // nadpisz wszystkie automatycznie dopasowane rekordy jesli znajdziesz nowe dopasowanie
+                       // nadpisz wszystkie automatycznie dopasowane rekordy jeśli znajdziesz nowe dopasowanie
                        setCorrelationMatrix(prevState => {
                            return prevState.map((item, index) => {
                                if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {

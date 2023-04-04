@@ -1235,3 +1235,72 @@ input[type=number] {
 .btn--markLetters--selected {
     opacity: 1;
 }
+
+.color {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.modal--testConfiguration .modal__inner {
+    width: 1000px;
+}
+
+.modal--testConfiguration .line--tableRow {
+    border-bottom: 1px solid var(--primary) !important;
+}
+
+.btn--startAutoMatchTest {
+    width: 900px;
+    max-width: 100%;
+    margin: 20px auto;
+    transform: none;
+}
+
+.container--scrollX {
+    max-width: 900px;
+    overflow-x: auto;
+    width: fit-content;
+    width: -moz-max-content;
+    border-right: 1px solid var(--primary);
+}
+
+.container--scrollX.scroll {
+    overflow-y: visible !important;
+}
+
+.container--scrollX.scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.modal--testConfiguration .sheet__body__row__cell {
+    padding: 5px;
+}
+
+.modal--testConfiguration .sheet__header__cell {
+    border: 1px solid var(--primary) !important;
+    border-right: none !important;
+    padding: 5px;
+}
+
+.testConfiguration__selectList p {
+    margin: 15px 0;
+}
+
+.modal--testConfiguration .marginTop {
+    margin-top: 20px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.sheet__body__row__cell--center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.emptySpan {
+    min-width: 5px;
+}

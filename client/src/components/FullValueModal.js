@@ -1,6 +1,7 @@
 import React from 'react';
+import ColorMarkedText from "./ColorMarkedText";
 
-const FullValueModal = ({closeModal, value}) => {
+const FullValueModal = ({closeModal, indexes, value}) => {
     return <div className="modal modal--cellsFormat">
         <button className="btn btn--closeModal"
                 onClick={(e) => { e.stopPropagation(); closeModal(); }}>
@@ -9,7 +10,8 @@ const FullValueModal = ({closeModal, value}) => {
 
         <div className="modal__inner">
            <div>
-               {value}
+               <ColorMarkedText string={value}
+                                indexes={indexes || []} />
            </div>
         </div>
     </div>
