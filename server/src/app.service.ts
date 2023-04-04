@@ -1,39 +1,30 @@
-import {HttpException, Injectable, Sse, MessageEvent} from '@nestjs/common';
+import {HttpException, Injectable} from '@nestjs/common';
 import { stringSimilarity } from "string-similarity-js";
-import * as csv from "csvtojson";
 import * as fs from "fs";
 import * as papa from 'papaparse';
-import {fromEvent, interval, map, Observable} from "rxjs";
-import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {Repository} from "typeorm";
+import {CorrelationJobs} from "./entities/correlation_jobs.entity";
+import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
 export class AppService {
     constructor(
-        private eventEmitter: EventEmitter2
+        @InjectRepository(CorrelationJobs)
+        private readonly correlationJobs: Repository<CorrelationJobs>
     ) {
         this.progressCount = 0;
     }
 
     private progressCount: number;
 
-    async convertToArray(file, delimiter) {
-        const fileContent = fs.readFileSync(file.path, 'utf-8');
-
-        return papa.parse(fileContent, { header: true }).data;
+    async getProgressByJobId(jobId) {
+        return this.correlationJobs.findOneBy({
+            id: jobId
+        });
     }
 
-
-    getCorrelationProgress() {
-        return interval(1000).pipe(map((_) => {
-            return  {
-                data: this.progressCount
-            }
-        }));
-    }
-
-  async getSelectList(priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
+  async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
-
       if(isCorrelationMatrixEmpty === 'true') {
           try {
               return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
@@ -55,15 +46,28 @@ export class AppService {
           // Convert files to array of objects
           const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
           const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
-
           const dataSheet = papa.parse(dataFileContent, { header: true }).data;
           const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
-          const correlationMatrix = this.getCorrelationMatrix(JSON.parse(priorities), null,
+          // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
+          const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
               dataSheet, relationSheet,
-              [], true);
+              [], true, true);
+
+          // Finish correlation process in database
+          await this.correlationJobs
+              .createQueryBuilder()
+              .update({
+                  rowCount: relationSheet.length,
+                  status: 'finished'
+              })
+              .where({
+                  id: jobId
+              })
+              .execute();
 
           try {
+              // Convert correlation matrix
               return correlationMatrix.map((relationRowItem, relationRowIndex) => {
                   return relationRowItem.map((dataRowItem, dataRowIndex) => {
                       const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
@@ -83,8 +87,8 @@ export class AppService {
       }
   }
 
-    getSimilarityScores(conditions, logicalOperators, correlationMatrix, dataSheet,
-                        relationSheet, indexesOfCorrelatedRows, overrideAllRows) {
+    async getSimilarityScores(jobId, conditions, logicalOperators, correlationMatrix, dataSheet,
+                        relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect) {
         let allSimilarities = [];
         let i = 0;
 
@@ -104,8 +108,13 @@ export class AppService {
                         const dataSheetPart = dataRow[conditions[i].dataSheet];
                         const relationSheetPart = relationRow[conditions[i].relationSheet];
 
-                        const pairSimilarity = stringSimilarity(dataSheetPart.toString(), relationSheetPart.toString());
-                        similarities.push(pairSimilarity);
+                        if(dataSheetPart && relationSheetPart) {
+                            const pairSimilarity = stringSimilarity(dataSheetPart.toString(), relationSheetPart.toString());
+                            similarities.push(pairSimilarity);
+                        }
+                        else {
+                            similarities.push(0);
+                        }
                     }
 
                     // Calculate final similarity based on conditions - default first similarity
@@ -136,7 +145,17 @@ export class AppService {
             allSimilarities.push(relationRowSimilarities);
             i++;
 
-            this.progressCount++;
+            if(!(i % 20) && jobId) {
+                await this.correlationJobs
+                    .createQueryBuilder()
+                    .update({
+                        rowCount: fromSelect ? ((relationSheet.length / 2) + (i / 2)) : (i / 2)
+                    })
+                    .where({
+                        id: jobId
+                    })
+                    .execute();
+            }
         }
 
         return allSimilarities;
@@ -158,17 +177,17 @@ export class AppService {
         return indexWithMaxValue;
     }
 
-    getCorrelationMatrix(priorities, correlationMatrix, dataSheet, relationSheet, indexesOfCorrelatedRows, overrideAllRows) {
+    async getCorrelationMatrix(jobId, priorities, correlationMatrix, dataSheet, relationSheet,
+                               indexesOfCorrelatedRows, overrideAllRows, fromSelect = false) {
         let correlationMatrixTmp = [];
         let priorityIndex = 0;
 
         for(const priority of priorities) {
             // Get similarities for all rows for current priority
             // [[relation row 1 similarities], [relation row 2 similarities] ...]
-
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
-            const similarityScores = this.getSimilarityScores(priority.conditions, logicalOperators, correlationMatrix, dataSheet, relationSheet,
-                indexesOfCorrelatedRows, overrideAllRows);
+            const similarityScores = await this.getSimilarityScores(jobId, priority.conditions, logicalOperators, correlationMatrix, dataSheet, relationSheet,
+                indexesOfCorrelatedRows, overrideAllRows, fromSelect);
 
             let relationRowIndex = 0;
             for(const relationRowSimilarities of similarityScores) {
@@ -183,7 +202,7 @@ export class AppService {
         return correlationMatrixTmp;
     }
 
-  async correlate(dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
+  async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
       // Convert files to array of objects
       const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
@@ -191,13 +210,23 @@ export class AppService {
       const dataSheet = papa.parse(dataFileContent, { header: true }).data;
       const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
-      // Get correlation matrix
-      let correlationMatrixTmp = this.getCorrelationMatrix(JSON.parse(priorities), correlationMatrix,
+      // Insert new job to database (progress tracking)
+      await this.correlationJobs.save({
+          id: jobId,
+          creation_datetime: new Date(),
+          totalRows: relationSheet.length,
+          rowCount: 0,
+          status: 'running'
+      });
+
+      // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
+      let correlationMatrixTmp = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), correlationMatrix,
           dataSheet, relationSheet,
           indexesOfCorrelatedRows, overrideAllRows)
       let i = 0;
       let indexesOfCorrelatedRowsTmp = JSON.parse(indexesOfCorrelatedRows).map((item) => (item));
 
+      // Get indexesOfCorrelatedRows based on overriding settings
       if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
           indexesOfCorrelatedRowsTmp = JSON.parse(indexesOfCorrelatedRows).map((item, index) => {
               if(manuallyCorrelatedRows.includes(index)) {
@@ -209,6 +238,8 @@ export class AppService {
           });
       }
 
+      // Update indexesOfCorrelatedRows based on availability
+      // (record already matched can't be matched to another record - one-to-one relation)
       for(let el of correlationMatrixTmp) {
           let numberOfTrials = 0;
           let newMatch = -1;

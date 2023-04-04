@@ -40,6 +40,7 @@ const RelationSheetView = () => {
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
     const [showFullCellValue, setShowFullCellValue] = useState('');
+    const [markLettersRows, setMarkLettersRows] = useState([]);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -122,7 +123,7 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(outputSheet?.length) {
-            setAutoMatchModalVisible(false);
+            // setAutoMatchModalVisible(false);
         }
     }, [outputSheet]);
 
@@ -291,6 +292,17 @@ const RelationSheetView = () => {
     useEffect(() => {
         setRelationSheetSorted(sortRelationColumn(relationSheet, indexesOfCorrelatedRows, relationColumnSort));
     }, [relationColumnSort]);
+
+    const markLetters = (relationRowIndex) => {
+        setMarkLettersRows((prevState) => {
+            if(prevState.includes(relationRowIndex)) {
+                return prevState.filter((item) => (item !== relationRowIndex));
+            }
+            else {
+                return [...prevState, relationRowIndex];
+            }
+        });
+    }
 
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
@@ -470,8 +482,6 @@ const RelationSheetView = () => {
                         .filter((_, index) => (showInSelectMenuColumns[index]))
                         .map((item) => (item[1]))
                         .join(' - ');
-
-                    // console.log(findSubstrings())
                 }
 
                 let correlatedRowValueToDisplay = correlatedRowValue.length <= 50 ?
@@ -502,15 +512,16 @@ const RelationSheetView = () => {
 
                     {/* Column with relation selection */}
                     <div className="sheet__body__row__cell sheet__body__row__cell--relation">
-                        {currentSelectList?.length ? <button className="select__btn"
-                                                             onClick={(e) => {
-                                                                 e.stopPropagation();
-                                                                 e.preventDefault();
-                                                                 changeZIndex(index);
-                                                                 setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index])); // Kontrola, ktorą rozwijajke wyswietlic
-                                                             }}>
-                            {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
-                                                                               key={index}>
+                        {currentSelectList?.length ? <>
+                            <button className="select__btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        changeZIndex(index);
+                                        setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index])); // Kontrola, ktorą rozwijajke wyswietlic
+                                    }}>
+                                {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
+                                                                                   key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
                                         {correlatedRowValueToDisplay.length === correlatedRowValue.length ? correlatedRowValue : <>
@@ -547,11 +558,23 @@ const RelationSheetView = () => {
                                              value={searchInputValue}
                                              onChange={(e) => { setSearchInputValue(e.target.value); }} />}
 
-                            <img className="select__btn__img"
-                                 src={arrowDown}
-                                 alt="arrow-down" />
-                        </button> : ''}
+                                <img className="select__btn__img"
+                                     src={arrowDown}
+                                     alt="arrow-down" />
+                            </button>
 
+                            <Tooltip title={markLettersRows.includes(index) ? "Wyłącz zaznaczanie dopasowanych fragmentów" : "Włącz zaznaczanie dopasowanych fragmentów"}
+                                     followCursor={true}
+                                     size="small"
+                                     position="top">
+                                <button className={markLettersRows.includes(index) ? "btn btn--markLetters btn--markLetters--selected" : "btn btn--markLetters"}
+                                        onClick={() => { markLetters(index); }}>
+                                    Aa
+                                </button>
+                            </Tooltip>
+                        </> : ''}
+
+                        {/* Dropdown menu */}
                         {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll" onScroll={(e) => { checkListScrollToBottom(e) }}>
                             {currentSelectMenuToDisplay?.map((item, index) => {
                                 const value = Object.entries(dataSheet[item.dataRowIndex])

@@ -1,32 +1,19 @@
 import axios from "axios";
-import io from 'socket.io-client';
 
-const convertCsvToArray = (file, separator) => {
-    const formData = new FormData();
-    const config = {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    }
-
-    formData.append('file', file);
-    formData.append('separator', separator);
-
-    return axios.post('/convertToArray', formData, config);
+const getProgressByJobId = (jobId) => {
+    return axios.get(`/getProgress/${jobId}`);
 }
 
-const getSelectList = (priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
+const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
                        isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) => {
     const formData = new FormData();
     const config = {
         headers: {
             'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: (progressEvent) => {
-            // console.log(progressEvent);
         }
     }
 
+    formData.append('jobId', jobId);
     formData.append('priorities', JSON.stringify(priorities));
     formData.append('files', dataFile);
     formData.append('files', relationFile);
@@ -40,50 +27,33 @@ const getSelectList = (priorities, dataFile, relationFile, dataDelimiter, relati
     return axios.post('/getSelectList', formData, config);
 }
 
-const matching = (priorities, correlationMatrix,
+const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
                   manuallyCorrelatedRows, matchThreshold) => {
-    // WebSocket
-    const socket = io('http://localhost:5000');
 
-    const dataFileReader = new FileReader();
-    const relationFileReader = new FileReader();
-
-    dataFileReader.onload = () => {
-        relationFileReader.onload = () => {
-            const dataFileResult = dataFileReader.result;
-            const relationFileResult = relationFileReader.result;
-
-            socket.emit('correlate', {
-                formData: {
-                    dataFile: dataFileResult,
-                    relationFile: relationFileResult,
-                    dataDelimiter,
-                    relationDelimiter,
-                    correlationMatrix,
-                    priorities: JSON.stringify(priorities),
-                    indexesOfCorrelatedRows: JSON.stringify(indexesOfCorrelatedRows),
-                    overrideAllRows,
-                    avoidOverrideForManuallyCorrelatedRows,
-                    manuallyCorrelatedRows,
-                    matchThreshold
-                }
-            }, (response) => {
-                console.log(response);
-            });
-
-            // Listen for progress
-            socket.on('correlate', (d) => {
-                console.log(d);
-            });
+    const formData = new FormData();
+    const config = {
+        headers: {
+            'Content-Type': 'multipart/form-data'
         }
-
-        relationFileReader.readAsArrayBuffer(relationFile);
     }
 
-    dataFileReader.readAsArrayBuffer(dataFile);
+    formData.append('jobId', jobId);
+    formData.append('files', dataFile);
+    formData.append('files', relationFile);
+    formData.append('dataFileDelimiter', dataDelimiter);
+    formData.append('relationFileDelimiter', relationDelimiter);
+    formData.append('correlationMatrix', correlationMatrix);
+    formData.append('priorities', JSON.stringify(priorities));
+    formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));
+    formData.append('overrideAllRows', overrideAllRows);
+    formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
+    formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
+    formData.append('matchThreshold', matchThreshold);
+
+    return axios.post('/correlate', formData, config);
 }
 
-export { getSelectList, matching, convertCsvToArray }
+export { getSelectList, matching, getProgressByJobId }

@@ -1,14 +1,16 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
-import {TailSpin} from "react-loader-spinner";
 import ReactSlider from 'react-slider'
 import TestConfigurationModal from "./TestConfigurationModal";
+import ProgressBar from "./ProgressBar";
+import {AppContext} from "../App";
 
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
 
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility}) => {
-    const { priorities, setPriorities, matchType, setMatchType,
+    const { relationSheet } = useContext(AppContext);
+    const { priorities, setPriorities, matchType, setMatchType, progressCount,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows, matchThreshold, setMatchThreshold,
         avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows } = useContext(ViewContext);
 
@@ -402,10 +404,15 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                         Uruchom automatyczne dopasowanie
                     </button>
                 </> : <div className="center">
-                    <TailSpin />
-                    <h5 className="center__header">
-                        Trwa korelowanie rekordów...
-                    </h5>
+                    <ProgressBar progress={progressCount / relationSheet?.length} />
+
+                    {progressCount === 0 ? <h5 className="center__header">
+                        Trwa przesyłanie plików na serwer...
+                    </h5> : (progressCount < relationSheet?.length ? <h5 className="center__header">
+                        Trwa korelowanie rekordów ({progressCount} / {relationSheet?.length})
+                    </h5> : <h5 className="center__header">
+                        Trwa przesyłanie wyników...
+                    </h5>)}
                 </div>}
             </div>
         </div>

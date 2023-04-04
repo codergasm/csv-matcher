@@ -722,7 +722,7 @@ option {
 }
 
 .select__menu__item__value {
-    font-size: 14px;
+    font-size: 12px;
     width: 80%;
     color: #313131;
 }
@@ -1199,4 +1199,39 @@ input[type=number] {
 
 .modal__line .red {
     margin-top: 10px;
+}
+
+.progressBar {
+    width: 90%;
+    height: 35px;
+    border: 2px solid #313131;
+    background: transparent;
+    margin-bottom: 20px;
+}
+
+.progressBar > span {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+}
+
+.btn--markLetters {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    position: relative;
+    top: 50%;
+    margin-right: 5px;
+    transform: translateY(-50%);
+    opacity: .5;
+    transition: .2s all;
+}
+
+.btn--markLetters:not(.btn--markLetters--selected):hover {
+    opacity: .75;
+}
+
+.btn--markLetters--selected {
+    opacity: 1;
 }
