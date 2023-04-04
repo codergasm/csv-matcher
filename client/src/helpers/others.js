@@ -86,4 +86,19 @@ function addMissingKeys(arrayOfObjects, arrayOfKeys) {
     return arrayOfObjects;
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys }
+const findSubstrings = (A, B) => {
+    const result = [];
+
+    for (let i = 0; i < B.length - 2; i++) {
+        const substring = B.substring(i, i + 3);
+        if (A.includes(substring)) {
+            for (let j = 0; j < substring.length; j++) {
+                result.push(i + j);
+            }
+        }
+    }
+
+    return result;
+}
+
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings }

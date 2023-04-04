@@ -5,6 +5,7 @@ import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import sortIcon from '../static/img/sort-down.svg';
 import {sortByColumn} from "../helpers/others";
 import {Tooltip} from "react-tippy";
+import CellsFormatModal from "./CellsFormatModal";
 
 const ROWS_PER_PAGE = 20;
 
@@ -18,10 +19,12 @@ const DataSheetView = () => {
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
+    const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
     const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSorting, setColumnsSorting] = useState([]); // 0 - no sorting, 1 - ascending, 2 - descending
     const [sortingClicked, setSortingClicked] = useState(false);
+    const [cellsHeight, setCellsHeight] = useState(-1);
 
     let exportLegend = useRef(null);
 
@@ -208,6 +211,10 @@ const DataSheetView = () => {
                                                              setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
                                                              header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
 
+        {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
+                                                     setCellsHeight={setCellsHeight}
+                                                     closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
+
 
                 <div className="sheet__table__info">
                     <div className="cell--legend">
@@ -216,6 +223,10 @@ const DataSheetView = () => {
                         <button className="btn btn--selectAll"
                                 onClick={() => { setColumnsSettingsModalVisible(3); }}>
                             Konfiguruj w okienku
+                        </button>
+                        <button className="btn btn--selectAll"
+                                onClick={() => { setCellsFormatModalVisible(true); }}>
+                            Formatuj widoczność komórek
                         </button>
                     </div>
                 </div>
@@ -240,7 +251,7 @@ const DataSheetView = () => {
                 </div>
 
                 <div className="sheet__table">
-                    <div className="line">
+                    <div className="line line--noFlex">
                         {showInSelectMenuColumns.map((item, index) => {
                             if(columnsVisibility[index]) {
                                 return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
@@ -278,7 +289,7 @@ const DataSheetView = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="line">
+                    <div className="line line--noFlex">
                         {outputSheetExportColumns.map((item, index) => {
                             if((index < columnsNames?.length) && (columnsVisibility[index])) {
                                 if(index === 0) {
@@ -309,7 +320,7 @@ const DataSheetView = () => {
                         })}
                     </div>
 
-                    <div className="line">
+                    <div className="line line--noFlex">
                         {columnsNames.map((item, index) => {
                             if(columnsVisibility[index]) {
                                 return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
@@ -353,7 +364,8 @@ const DataSheetView = () => {
                     if(columnsVisibility[index]) {
                         return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                     style={{
-                                        minWidth: `min(300px, ${minColumnWidth}%)`
+                                        minWidth: `min(300px, ${minColumnWidth}%)`,
+                                        maxHeight: cellsHeight !== -1 ? `${cellsHeight}px` : 'unset'
                                     }}
                                     key={index}>
                             {cellValue ? <Tooltip title={cellValue}

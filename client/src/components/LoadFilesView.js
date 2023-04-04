@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import {AppContext} from "../App";
 import {addMissingKeys} from "../helpers/others";
 import Loader from "./Loader";
-import {convertCsvToArray} from "../helpers/matching";
 import Papa from 'papaparse';
 
 const LoadFilesView = () => {
@@ -42,8 +41,10 @@ const LoadFilesView = () => {
                         }
                     });
 
-                    // Add missing keys
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+                    // Add missing keys and convert values to string
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
+                        return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
+                    });
 
                     setRelationSheet(objComplete);
                     setRelationFile(files[0]);
@@ -69,8 +70,10 @@ const LoadFilesView = () => {
                         }
                     });
 
-                    // Add missing keys
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0]));
+                    // Add missing keys and convert values to string
+                    const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
+                        return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
+                    });
 
                     setDataSheet(objComplete);
                     setDataFile(files[0]);

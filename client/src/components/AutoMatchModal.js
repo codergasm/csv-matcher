@@ -7,7 +7,7 @@ import TestConfigurationModal from "./TestConfigurationModal";
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
 
-const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) => {
+const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility}) => {
     const { priorities, setPriorities, matchType, setMatchType,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows, matchThreshold, setMatchThreshold,
         avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows } = useContext(ViewContext);
@@ -216,7 +216,8 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal}) =>
     }
 
     return <>
-        {testConfigurationModalVisible ? <TestConfigurationModal closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
+        {testConfigurationModalVisible ? <TestConfigurationModal relationSheetColumnsVisibility={columnsVisibility}
+                                                                 closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
 
         <div className="modal">
             <button className="btn btn--closeModal"

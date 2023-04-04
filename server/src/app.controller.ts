@@ -1,10 +1,17 @@
-import {Body, Controller, Post, Res, UploadedFile, UploadedFiles, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, MessageEvent, Post, Sse, UploadedFile, UploadedFiles, UseInterceptors} from '@nestjs/common';
 import { AppService } from './app.service';
 import {FileInterceptor, FilesInterceptor} from "@nestjs/platform-express";
+import {interval, map, Observable} from "rxjs";
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  @Sse('sse')
+  sse() {
+    console.log('sse');
+    return this.appService.getCorrelationProgress();
+  }
 
   @Post('/convertToArray')
   @UseInterceptors(FileInterceptor('file'))
@@ -15,8 +22,8 @@ export class AppController {
   @Post('/getSelectList')
   @UseInterceptors(FilesInterceptor('files'))
   async getSelectList(@UploadedFiles() files: Array<Express.Multer.File>,
-                      @Body() body, @Res() res) {
-    return this.appService.getSelectList(res, body.priorities, files[0], files[1],
+                      @Body() body) {
+    return this.appService.getSelectList(body.priorities, files[0], files[1],
         body.dataDelimiter, body.relationDelimiter,
         body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength, body.relationSheetLength);
   }
@@ -24,11 +31,13 @@ export class AppController {
   @Post('/correlate')
   @UseInterceptors(FilesInterceptor('files'))
   async correlate(@UploadedFiles() files: Array<Express.Multer.File>,
-                  @Body() body, @Res() res) {
+                  @Body() body) {
     const { priorities, correlationMatrix,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
       manuallyCorrelatedRows, matchThreshold } = body;
+
+    console.log(body);
 
     return this.appService.correlate(files[0], files[1], dataFileDelimiter, relationFileDelimiter,
         priorities, correlationMatrix, indexesOfCorrelatedRows,
