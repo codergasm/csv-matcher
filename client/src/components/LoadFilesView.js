@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {AppContext} from "../App";
+import {AppContext} from "../pages/CorrelationPage";
 import {addMissingKeys} from "../helpers/others";
 import Loader from "./Loader";
 import Papa from 'papaparse';

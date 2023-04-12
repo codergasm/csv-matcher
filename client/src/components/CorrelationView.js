@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import DataSheetView from "./DataSheetView";
 import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
-import {AppContext} from "../App";
+import {AppContext} from "../pages/CorrelationPage";
 import {getProgressByJobId, getSelectList, matching} from "../helpers/matching";
 import {makeId} from "../helpers/others";
 

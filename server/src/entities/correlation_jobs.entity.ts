@@ -1,11 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
-export class CorrelationJobs {
+@Entity('correlation_jobs')
+export class CorrelationJobsEntity {
     @PrimaryGeneratedColumn()
     id: string;
 
-    @Column()
+    @Column({
+        nullable: true,
+        default: null
+    })
     creation_datetime: Date;
 
     @Column()

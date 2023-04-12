@@ -127,5 +127,22 @@ function checkCommonElement(arr1, arr2) {
     return false;
 }
 
+const isEmail = (email) => {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+}
+
+const isPasswordStrength = (password) => {
+    if(!password) return false;
+    if(password.length < 8) return false; // min. 8 characters
+    if(!(/\d/.test(password))) return false; // number
+    if(password.toLowerCase() === password) return false; // uppercase
+
+    return true;
+}
+
 export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings,
-    checkCommonElement, makeId }
+    checkCommonElement, makeId, isEmail, isPasswordStrength }

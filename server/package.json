@@ -21,10 +21,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
     "@nestjs/event-emitter": "^1.4.1",
+    "@nestjs/jwt": "^10.0.3",
+    "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/platform-socket.io": "9.1.6",
     "@nestjs/typeorm": "^9.0.1",
@@ -32,6 +35,8 @@
     "csvtojson": "^2.0.10",
     "mysql2": "^3.2.0",
     "papaparse": "^5.4.0",
+    "passport": "^0.6.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",

@@ -1,9 +1,9 @@
 import React from 'react';
 import { TailSpin } from "react-loader-spinner";
 
-const Loader = () => {
+const Loader = ({width}) => {
     return <div className="center">
-        <TailSpin />
+        <TailSpin width={width ? width : 80} />
     </div>
 };
 

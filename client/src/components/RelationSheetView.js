@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {AppContext} from "../App";
+import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
 import arrowDown from '../static/img/arrow-down.svg';

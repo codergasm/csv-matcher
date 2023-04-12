@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import {AppContext} from "../App";
+import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import sortIcon from '../static/img/sort-down.svg';

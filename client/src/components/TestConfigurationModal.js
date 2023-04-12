@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
-import {AppContext} from "../App";
+import {AppContext} from "../pages/CorrelationPage";
 import { stringSimilarity } from "string-similarity-js";
 import {Tooltip} from "react-tippy";
 import sortIcon from "../static/img/sort-down.svg";

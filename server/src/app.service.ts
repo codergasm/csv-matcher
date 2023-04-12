@@ -3,14 +3,14 @@ import { stringSimilarity } from "string-similarity-js";
 import * as fs from "fs";
 import * as papa from 'papaparse';
 import {Repository} from "typeorm";
-import {CorrelationJobs} from "./entities/correlation_jobs.entity";
+import {CorrelationJobsEntity} from "./entities/correlation_jobs.entity";
 import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
 export class AppService {
     constructor(
-        @InjectRepository(CorrelationJobs)
-        private readonly correlationJobs: Repository<CorrelationJobs>
+        @InjectRepository(CorrelationJobsEntity)
+        private readonly correlationJobs: Repository<CorrelationJobsEntity>
     ) {
         this.progressCount = 0;
     }
