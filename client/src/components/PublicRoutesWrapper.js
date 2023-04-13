@@ -16,13 +16,16 @@ const PublicRoutesWrapper = ({page}) => {
     const selectPage = () => {
         switch(page) {
             case 1:
-                setRender(<Homepage />);
+                setRender(<StartPage />);
+                break;
+            case 2:
+                setRender(<LoginPage />);
+                break;
+            case 3:
+                setRender(<RegisterPage />);
                 break;
             case 4:
-                setRender(<CorrelationPage />);
-                break;
-            case 6:
-                setRender(<ChangePassword />);
+                setRender(<VerificationPage />);
                 break;
             default:
                 window.location = '/';

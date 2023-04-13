@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, PrimaryColumn} from 'typeorm';
 
 @Entity('teams')
 export class TeamsEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn()
     id: number;
 
     @Column()
@@ -15,5 +15,5 @@ export class TeamsEntity {
     team_url: string;
 
     @Column()
-    owner_id: string;
+    owner_id: number;
 }

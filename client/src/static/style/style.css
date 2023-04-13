@@ -1343,6 +1343,7 @@ input[type=number] {
     background: transparent;
     border: none;
     cursor: pointer;
+    outline: none !important;
     transition: .2s all;
 }
 
@@ -1456,6 +1457,10 @@ input[type=number] {
     font-size: 17px;
 }
 
+.afterRegister__header--center {
+    margin: auto;
+}
+
 .btn--afterRegister {
     width: 100%;
     height: 55px;
@@ -1559,18 +1564,18 @@ input[type=number] {
 }
 
 .input--teamId {
-    width: 100px;
+    width: 200px;
     height: 45px;
     border-radius: 45px;
-    border: none;
+    border: 2px solid var(--primary);
     text-align: center;
     outline: none !important;
+    margin: auto;
 }
 
 .input--teamId:focus,
 .input--teamId:active {
-    box-shadow: none !important;
-    border: 1px solid var(--primary);
+    border: 3px solid var(--primary);
 }
 
 .input--teamId::placeholder {
@@ -1580,7 +1585,94 @@ input[type=number] {
 .btn--joinTeam {
     font-size: 13px;
     margin: 15px auto;
-    width: 100px;
+    width: 100%;
     height: 40px;
+    border-radius: 40px;
+    max-width: 200px;
+}
+
+.label--teamName {
+    width: 100%;
+}
+
+.input--teamName {
+    width: 100%;
+    height: 50px;
+    padding: 8px 15px;
+    border-radius: 50px;
+    border: 2px solid var(--primary);
+    outline: none;
+    transition: .2s all;
+}
+
+.input--teamName:focus,
+.input--teamName:active {
+    border-width: 3px;
+}
+
+.btn--submitFormNewTeam {
+    border-radius: 50px;
+    margin-bottom: 20px;
+}
+
+.modal--createNewTeam .modal__inner {
+    height: auto;
+    min-height: unset;
+}
+
+.modal--createNewTeam .modal__header {
+    text-align: center;
+    margin: 20px auto;
+}
+
+.modal .error {
+    text-align: center;
+}
+
+.modal--createNewTeam .error {
+    padding-bottom: 20px;
+    display: block;
+    width: 100%;
+}
+
+.btn--backToHomepage {
+    text-decoration: none;
+    height: 50px;
     border-radius: 5px;
+    padding: 5px 15px;
+}
+
+.waitingForRequestAccept__header {
+    font-size: 24px;
+}
+
+.waitingForRequestAccept__subheader {
+    margin: 20px auto 40px;
+    font-weight: 400;
+    font-size: 17px;
+}
+
+.green {
+    color: var(--primary);
+}
+
+.flex--waitingRequest {
+    gap: 20px;
+}
+
+.btn--deleteRequest {
+    height: 50px;
+    padding: 5px 15px;
+    background: #dd1111;
+    border-radius: 5px;
+}
+
+.btn--deleteRequest:hover {
+    background: #ee0101;
+}
+
+.error--deleteRequest {
+    font-size: 16px;
+    font-weight: 700;
+    padding-bottom: 30px;
 }

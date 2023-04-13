@@ -1,19 +1,26 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import createTeamIcon from '../static/img/people.svg';
 import joinTeamIcon from '../static/img/request.svg';
+import CreateNewTeamModal from "./CreateNewTeamModal";
+import JoinTeamModal from "./JoinTeamModal";
 
 const UserNotInTeamView = () => {
     const [createNewTeamModalVisible, setCreateNewTeamModalVisible] = useState(false);
     const [joinTeamModalVisible, setJoinTeamModalVisible] = useState(false);
-    const [teamId, setTeamId] = useState('');
 
-    const joinTeam = () => {
-        if(teamId) {
-
-        }
-    }
+    useEffect(() => {
+        document.addEventListener('keyup', (e) => {
+            if(e.key === 'Escape') {
+                setCreateNewTeamModalVisible(false);
+                setJoinTeamModalVisible(false);
+            }
+        });
+    }, []);
 
     return <div className="container">
+        {createNewTeamModalVisible ? <CreateNewTeamModal closeModal={() => { setCreateNewTeamModalVisible(false); }} /> : ''}
+        {joinTeamModalVisible ? <JoinTeamModal closeModal={() => { setJoinTeamModalVisible(false); }} /> : ''}
+
         <div className="homepage">
             <h1 className="homepage__header">
                 RowMatcher.com
@@ -21,15 +28,6 @@ const UserNotInTeamView = () => {
             <h2 className="homepage__subheader homepage__subheader--notInTeam">
                 Nie należysz do żadnego zespołu
             </h2>
-
-            {/*<input className="input input--teamId shadow"*/}
-            {/*       value={teamId}*/}
-            {/*       onChange={(e) => { setTeamId(e.target.value); }}*/}
-            {/*       placeholder="id zespołu" />*/}
-            {/*<button className="btn btn--joinTeam"*/}
-            {/*        onClick={() => { joinTeam(); }}>*/}
-            {/*    Dołącz*/}
-            {/*</button>*/}
 
             <div className="userNotInTeamChoice flex">
                 <button className="homepage__menu__item shadow" onClick={() => { setCreateNewTeamModalVisible(true); }}>

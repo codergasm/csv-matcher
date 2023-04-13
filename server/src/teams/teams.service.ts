@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {TeamsEntity} from "../entities/teams.entity";
 import {Repository} from "typeorm";
+import {UsersEntity} from "../entities/users.entity";
 
 @Injectable()
 export class TeamsService {
     constructor(
         @InjectRepository(TeamsEntity)
-        private readonly teamsRepository: Repository<TeamsEntity>
+        private readonly teamsRepository: Repository<TeamsEntity>,
+        @InjectRepository(UsersEntity)
+        private readonly usersRepository: Repository<UsersEntity>
     ) {
     }
 
@@ -15,5 +18,50 @@ export class TeamsService {
         return this.teamsRepository.findOneBy({
             id
         });
+    }
+
+    async getAllTeams() {
+        return this.teamsRepository.find();
+    }
+
+    generateUniqueSixDigitNumber(inputArray) {
+        let number;
+        do {
+            number = Math.floor(Math.random() * 900000) + 100000;
+        } while (inputArray.includes(number));
+
+        return number;
+    }
+
+    async createTeam(name, teamUrl, email) {
+        const user = await this.usersRepository.findOneBy({email});
+
+        if(user) {
+            const allTeams = await this.teamsRepository.find();
+            const allTeamsIds = allTeams.map((item) => (item.id));
+
+            const newTeamId = this.generateUniqueSixDigitNumber(allTeamsIds);
+
+            await this.teamsRepository.save({
+                id: newTeamId,
+                creator_id: user.id,
+                name: name,
+                team_url: teamUrl,
+                owner_id: user.id
+            });
+
+            return this.usersRepository
+                .createQueryBuilder()
+                .update({
+                    team_id: newTeamId
+                })
+                .where({
+                    id: user.id
+                })
+                .execute();
+        }
+        else {
+            throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
+        }
     }
 }

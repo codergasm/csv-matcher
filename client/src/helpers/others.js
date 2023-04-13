@@ -1,3 +1,5 @@
+import Cookies from "universal-cookie";
+
 const sortByColumn = (sheet, column, type) => {
     const sortSheet = [...sheet];
 
@@ -135,6 +137,12 @@ const isEmail = (email) => {
         );
 }
 
+const getAuthHeader = () => {
+    const cookies = new Cookies();
+    const jwt = cookies.get('access_token');
+    return `Bearer ${jwt}`;
+}
+
 const isPasswordStrength = (password) => {
     if(!password) return false;
     if(password.length < 8) return false; // min. 8 characters
@@ -148,5 +156,5 @@ const isObjectEmpty = (obj) => {
     return Object.keys(obj).length === 0;
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings,
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader,
     checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty }

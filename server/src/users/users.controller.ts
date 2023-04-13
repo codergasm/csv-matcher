@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Patch, Post, Req, UnauthorizedException, UseGuards} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, Req, UnauthorizedException, UseGuards} from '@nestjs/common';
 import {UsersService} from "./users.service";
 import {JwtAuthGuard} from "../common/jwt-auth.guard";
 import {JwtService} from "@nestjs/jwt";
@@ -53,5 +53,23 @@ export class UsersController {
     @Patch('/changePassword')
     changePassword(@Body() body) {
         return this.usersService.changePassword(body.oldPassword, body.newPassword, body.email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/joinTeam')
+    joinTeam(@Body() body) {
+        return this.usersService.joinTeam(body.teamId, body.email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/getWaitingJoinTeamRequest/:email')
+    getWaitingJoinTeamRequest(@Param('email') email) {
+        return this.usersService.getUserWaitingJoinTeamRequest(email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('/deleteJoinTeamRequest/:email')
+    deleteJoinTeamRequest(@Param('email') email) {
+        return this.usersService.deleteJoinTeamRequest(email);
     }
 }

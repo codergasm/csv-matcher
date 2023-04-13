@@ -1,11 +1,6 @@
 import axios from "axios";
 import Cookies from "universal-cookie";
-
-const getAuthHeader = () => {
-    const cookies = new Cookies();
-    const jwt = cookies.get('access_token');
-    return `Bearer ${jwt}`;
-}
+import {getAuthHeader} from "./others";
 
 const getLoggedUserEmail = () => {
     const cookies = new Cookies();
@@ -74,4 +69,34 @@ const getUserTeam = () => {
     return axios.get(`/users/getTeam/${getLoggedUserEmail()}`);
 }
 
-export { registerUser, loginUser, verifyUser, authUser, getUserData, logout, changeUserPassword, getUserTeam }
+const sendRequestToJoinTeam = (teamId) => {
+    return axios.post(`/users/joinTeam`, {
+        teamId,
+        email: getLoggedUserEmail()
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const getUserWaitingJoinTeamRequest = () => {
+    return axios.get(`/users/getWaitingJoinTeamRequest/${getLoggedUserEmail()}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const deleteJoinTeamRequest = () => {
+    return axios.delete(`/users/deleteJoinTeamRequest/${getLoggedUserEmail()}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+export { registerUser, loginUser, verifyUser, authUser, getLoggedUserEmail, getUserWaitingJoinTeamRequest,
+    getUserData, logout, changeUserPassword, getUserTeam, sendRequestToJoinTeam,
+    deleteJoinTeamRequest
+}

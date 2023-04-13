@@ -4,6 +4,8 @@ import LoadingPage from "./LoadingPage";
 import UserNotInTeamView from "../components/UserNotInTeamView";
 import {isObjectEmpty} from "../helpers/others";
 import TeamView from "../components/TeamView";
+import {getUserWaitingJoinTeamRequest} from "../helpers/users";
+import WaitingForRequestAcceptView from "../components/WaitingForRequestAcceptView";
 
 const TeamPage = ({user}) => {
     const [team, setTeam] = useState({});
@@ -11,8 +13,8 @@ const TeamPage = ({user}) => {
 
     useEffect(() => {
         if(user) {
-            if(user.team) {
-                getTeamById(user.team)
+            if(user.teamId) {
+                getTeamById(user.teamId)
                     .then((res) => {
                         if(res?.data) {
                             setTeam(res.data);
@@ -26,7 +28,21 @@ const TeamPage = ({user}) => {
                     });
             }
             else {
-                setTeam(null);
+                getUserWaitingJoinTeamRequest()
+                    .then((res) => {
+                        console.log(res);
+                        if(res?.data) {
+                            setTeam({
+                                waiting: res.data.team_id
+                            });
+                        }
+                        else {
+                            setTeam(null);
+                        }
+                    })
+                    .catch(() => {
+                        setTeam(null);
+                    });
             }
         }
     }, [user]);
@@ -36,7 +52,14 @@ const TeamPage = ({user}) => {
             setRender(<UserNotInTeamView />);
         }
         else if(!isObjectEmpty(team)) {
-            setRender(<TeamView />);
+            if(team.waiting) {
+                // Waiting for accept join request
+                setRender(<WaitingForRequestAcceptView requestedTeamId={team.waiting} />);
+            }
+            else {
+                // Already in team
+                setRender(<TeamView />);
+            }
         }
         else {
             setRender(<LoadingPage />);

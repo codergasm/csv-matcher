@@ -187,4 +187,55 @@ export class UsersService {
             throw new BadRequestException('Niepoprawne hasło');
         }
     }
+
+    async joinTeam(teamId, email) {
+        const user = await this.usersRepository.findOneBy({email});
+
+        if(user) {
+            const team = await this.teamsRepository.findOneBy({id: teamId});
+
+            if(team) {
+                return this.addToTeamUsersRequestsRepository.save({
+                    user_id: user.id,
+                    team_id: teamId,
+                    created_datetime: new Date(),
+                    status: 'waiting'
+                });
+            }
+            else {
+                throw new BadRequestException('Zespół o podanym id nie istnieje');
+            }
+        }
+        else {
+            throw new BadRequestException('Podany użytkownik nie istnieje');
+        }
+    }
+
+    async deleteJoinTeamRequest(email) {
+        const user = await this.usersRepository.findOneBy({email});
+
+        if(user) {
+            return this.addToTeamUsersRequestsRepository.delete({
+                user_id: user.id,
+                status: 'waiting'
+            });
+        }
+        else {
+            throw new BadRequestException('Podany użytkownik nie istnieje');
+        }
+    }
+
+    async getUserWaitingJoinTeamRequest(email) {
+        const user = await this.usersRepository.findOneBy({email});
+
+        if(user) {
+            return this.addToTeamUsersRequestsRepository.findOneBy({
+                user_id: user.id,
+                status: 'waiting'
+            });
+        }
+        else {
+            throw new BadRequestException('Podany użytkownik nie istnieje');
+        }
+    }
 }
