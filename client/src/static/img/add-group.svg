@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" id="svg1770" width="682.66669" height="682.66669" viewBox="0 0 682.66669 682.66669">
+  <defs id="defs1774">
+    <clipPath clipPathUnits="userSpaceOnUse" id="clipPath1784">
+      <path d="M 0,512 H 512 V 0 H 0 Z" id="path1782"/>
+    </clipPath>
+  </defs>
+  <mask id="custom"><rect id="bg" x="0" y="0" width="100%" height="100%" fill="white"/><g transform="matrix(1.3333333,0,0,-1.3333333,0,682.66667)"><path transform="matrix(1,0,0,1,264,176.8975)" d="m 0,0 c -22.232,9.082 -46.539,14.103 -72,14.103 v -40 c 26.054,0 50.586,-6.633 72,-18.299 z" style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none" id="path1788"/><path transform="matrix(1,0,0,1,474.8848,249)" d="M 0,0 C -34.802,47.268 -90.818,77 -153.885,77 V 38 c 38.341,0 73.382,-14.372 100.041,-38 z" style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none" id="path1792"/></g></mask><g mask="url(#custom)"><g id="g1776" transform="matrix(1.3333333,0,0,-1.3333333,0,682.66667)">
+    <g id="g1778">
+      <g id="g1780" clip-path="url(#clipPath1784)">
+        <g id="g1786" transform="translate(264,176.8975)">
+          <path d="m 0,0 c -22.232,9.082 -46.539,14.103 -72,14.103 v -40 c 26.054,0 50.586,-6.633 72,-18.299 z" style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none" id="path1788"/>
+        </g>
+        <g id="g1790" transform="translate(474.8848,249)">
+          <path d="M 0,0 C -34.802,47.268 -90.818,77 -153.885,77 V 38 c 38.341,0 73.382,-14.372 100.041,-38 z" style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none" id="path1792"/>
+        </g>
+        <g id="g1794" transform="translate(408,188)">
+          <path d="M 0,0 V -168" style="fill:none;stroke:#000000;stroke-width:40;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1" id="path1796"/>
+        </g>
+        <g id="g1798" transform="translate(324,104)">
+          <path d="M 0,0 H 168" style="fill:none;stroke:#000000;stroke-width:40;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1" id="path1800"/>
+        </g>
+        <g id="g1802" transform="translate(96,264)">
+          <path d="M 0,0 C 0,51.362 41.638,93 93,93 144.362,93 186,51.362 186,0 186,-51.362 144.362,-93 93,-93 41.638,-93 0,-51.362 0,0 Z" style="fill:none;stroke:#000000;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1" id="path1804"/>
+        </g>
+        <g id="g1806" transform="translate(20)">
+          <path d="M 0,0 C 0,94.44 76.56,171 171,171" style="fill:none;stroke:#000000;stroke-width:40;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1" id="path1808"/>
+        </g>
+        <g id="g1810" transform="translate(228,399.2544)">
+          <path d="m 0,0 c 0,51.222 41.523,92.746 92.746,92.746 51.222,0 92.745,-41.524 92.745,-92.746 0,-51.222 -41.523,-92.746 -92.745,-92.746 C 41.523,-92.746 0,-51.222 0,0 Z" style="fill:none;stroke:#000000;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1" id="path1812"/>
+        </g>
+      </g>
+    </g>
+  </g></g>
+</svg>

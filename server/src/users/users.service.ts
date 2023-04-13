@@ -1,4 +1,4 @@
-import {HttpException, Injectable} from '@nestjs/common';
+import {BadRequestException, HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import {Repository} from "typeorm";
@@ -152,5 +152,39 @@ export class UsersService {
         }
     }
 
+    async getUserData(email) {
+        return this.usersRepository.findOneBy({email});
+    }
 
+    async changePassword(oldPassword, newPassword, email) {
+        const passwordHash = crypto
+            .createHash('sha256')
+            .update(oldPassword)
+            .digest('hex');
+
+        const user = await this.usersRepository.findBy({
+            email,
+            password: passwordHash
+        });
+
+        if(user?.length) {
+            const newPasswordHash = crypto
+                .createHash('sha256')
+                .update(newPassword)
+                .digest('hex');
+
+            return this.usersRepository
+                .createQueryBuilder()
+                .update({
+                    password: newPasswordHash
+                })
+                .where({
+                    email
+                })
+                .execute();
+        }
+        else {
+            throw new BadRequestException('Niepoprawne hasło');
+        }
+    }
 }

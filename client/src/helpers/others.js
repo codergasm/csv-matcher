@@ -144,5 +144,9 @@ const isPasswordStrength = (password) => {
     return true;
 }
 
+const isObjectEmpty = (obj) => {
+    return Object.keys(obj).length === 0;
+}
+
 export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings,
-    checkCommonElement, makeId, isEmail, isPasswordStrength }
+    checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty }

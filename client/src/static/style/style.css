@@ -1340,6 +1340,9 @@ input[type=number] {
     align-items: center;
     margin-bottom: 50px;
     text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
     transition: .2s all;
 }
 
@@ -1459,4 +1462,125 @@ input[type=number] {
     text-decoration: none;
     margin: 30px auto 0;
     max-width: 400px;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    box-shadow: 0 2px 2px -2px rgba(0,0,0,.2);
+    z-index: 10;
+    overflow: visible;
+}
+
+.header > .w {
+    height: 100%;
+    position: relative;
+    overflow: visible;
+}
+
+.header__logo {
+    color: var(--primary);
+    font-size: 21px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transform-origin: center;
+    transition: .2s all;
+}
+
+.header__logo:hover {
+    transform: scale(1.05);
+}
+
+.header__profileImage {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.dropdownMenu {
+    position: absolute;
+    bottom: -10px;
+    right: 0;
+    transform: translate(0, 100%);
+    width: 160px;
+    height: auto;
+}
+
+.dropdownMenu__item {
+    width: 100%;
+    height: 45px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    border-top: 1px solid var(--primary);
+    background: transparent;
+    outline: none;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 700;
+    color: #313131;
+    font-size: 14px;
+    padding: 5px 10px;
+    transition: .2s all;
+}
+
+.dropdownMenu__item:hover {
+    background: #efffef;
+}
+
+.dropdownMenu__item .img {
+    width: 15px;
+    margin-right: 10px;
+}
+
+.dropdownMenu__item:first-child {
+    border-top: none;
+}
+
+.userNotInTeamChoice {
+    width: 800px;
+}
+
+.homepage__subheader--notInTeam {
+    margin-bottom: 60px;
+    font-weight: 500;
+}
+
+.userNotInTeamChoice .homepage__menu__item {
+    width: 48%;
+}
+
+.input--teamId {
+    width: 100px;
+    height: 45px;
+    border-radius: 45px;
+    border: none;
+    text-align: center;
+    outline: none !important;
+}
+
+.input--teamId:focus,
+.input--teamId:active {
+    box-shadow: none !important;
+    border: 1px solid var(--primary);
+}
+
+.input--teamId::placeholder {
+    text-align: center;
+}
+
+.btn--joinTeam {
+    font-size: 13px;
+    margin: 15px auto;
+    width: 100px;
+    height: 40px;
+    border-radius: 5px;
 }

@@ -16,32 +16,32 @@ const Homepage = () => {
                     <img className="img" src={icon1} alt="moje-pliki" />
 
                     <span>
-                    Moje pliki
-                </span>
+                        Moje pliki
+                    </span>
                 </a>
                 <a className="homepage__menu__item shadow"
                    href="/schematy-dopasowania">
                     <img className="img" src={icon2} alt="moje-schematy-dopasowania" />
 
                     <span>
-                    Moje schematy dopasowania
-                </span>
+                        Moje schematy dopasowania
+                    </span>
                 </a>
                 <a className="homepage__menu__item shadow"
                    href="/edytor-dopasowania">
                     <img className="img" src={icon3} alt="uwtorz-nowe-dopasowanie" />
 
                     <span>
-                    Utwórz nowe dopasowanie
-                </span>
+                        Utwórz nowe dopasowanie
+                    </span>
                 </a>
                 <a className="homepage__menu__item shadow"
                    href="/zespol">
                     <img className="img" src={icon4} alt="zarzadzaj-zespolem" />
 
                     <span>
-                    Zarządzaj zespołem i użytkownikami
-                </span>
+                        Zarządzaj zespołem i użytkownikami
+                    </span>
                 </a>
             </div>
         </div>

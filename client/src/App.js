@@ -3,35 +3,46 @@ import 'react-tippy/dist/tippy.css'
 import './static/style/style.css';
 import axios from "axios";
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import CorrelationPage from "./pages/CorrelationPage";
-import StartPage from "./pages/StartPage";
-import Homepage from "./pages/Homepage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import VerificationPage from "./pages/VerificationPage";
+import LoggedUserWrapper from "./components/LoggedUserWrapper";
+import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
 
 const App = () => {
   return <Router>
+    {/* Public */}
     <Route exact path="/">
-      <StartPage />
-    </Route>
-    <Route path="/home">
-      <Homepage />
+      <PublicRoutesWrapper page={1} />
     </Route>
     <Route path="/zaloguj-sie">
-      <LoginPage />
+      <PublicRoutesWrapper page={2} />
     </Route>
     <Route path="/zarejestruj-sie">
-      <RegisterPage />
+      <PublicRoutesWrapper page={3} />
     </Route>
     <Route path="/weryfikacja">
-      <VerificationPage />
+      <PublicRoutesWrapper page={4} />
+    </Route>
+
+    {/* Logged user */}
+    <Route path="/home">
+      <LoggedUserWrapper page={1} />
+    </Route>
+    <Route path="/pliki">
+      <LoggedUserWrapper page={2} />
+    </Route>
+    <Route path="/schematy-dopasowania">
+      <LoggedUserWrapper page={3} />
     </Route>
     <Route path="/edytor-dopasowania">
-      <CorrelationPage />
+      <LoggedUserWrapper page={4} />
+    </Route>
+    <Route path="/zespol">
+      <LoggedUserWrapper page={5} />
+    </Route>
+    <Route path="/zmien-haslo">
+      <LoggedUserWrapper page={6} />
     </Route>
   </Router>
 }

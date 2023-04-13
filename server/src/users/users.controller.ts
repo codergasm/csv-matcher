@@ -1,4 +1,4 @@
-import {Body, Controller, Post, Req, UnauthorizedException, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, Param, Patch, Post, Req, UnauthorizedException, UseGuards} from '@nestjs/common';
 import {UsersService} from "./users.service";
 import {JwtAuthGuard} from "../common/jwt-auth.guard";
 import {JwtService} from "@nestjs/jwt";
@@ -41,5 +41,17 @@ export class UsersController {
     @Post('/addToTeamRequest')
     async addToTeamRequest(@Body() body) {
         return this.usersService.addToTeamRequest(body.userId, body.teamId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/getUserData/:email')
+    getUserData(@Param('email') email) {
+        return this.usersService.getUserData(email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('/changePassword')
+    changePassword(@Body() body) {
+        return this.usersService.changePassword(body.oldPassword, body.newPassword, body.email);
     }
 }
