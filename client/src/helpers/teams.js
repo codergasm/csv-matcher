@@ -33,4 +33,31 @@ const createTeam = (name) => {
     });
 }
 
-export { getTeamById, getAllTeams, generateTeamUrl, createTeam }
+const updateTeamName = (id, name) => {
+    return axios.patch(`/teams/updateTeamName`, {
+        id, name
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const getWaitingJoinTeamRequests = (id) => {
+    return axios.get(`/teams/getWaitingJoinTeamRequests/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const getTeamMembers = (id) => {
+    return axios.get(`/teams/getTeamMembers/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+export { getTeamById, getAllTeams, generateTeamUrl, createTeam, updateTeamName,
+    getWaitingJoinTeamRequests, getTeamMembers }

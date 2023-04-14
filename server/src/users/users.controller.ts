@@ -72,4 +72,31 @@ export class UsersController {
     deleteJoinTeamRequest(@Param('email') email) {
         return this.usersService.deleteJoinTeamRequest(email);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('/leaveTeam')
+    leaveTeam(@Body() body) {
+        return this.usersService.leaveTeam(body.email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('/updateUserRights')
+    updateUserRights(@Body() body) {
+        const { email, can_edit_team_match_schemas, can_delete_team_match_schemas,
+            can_edit_team_files, can_delete_team_files } = body;
+        return this.usersService.updateUserRights(email, can_edit_team_match_schemas, can_delete_team_match_schemas,
+            can_edit_team_files, can_delete_team_files);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/acceptJoinRequest')
+    acceptJoinRequest(@Body() body) {
+        return this.usersService.acceptJoinRequest(body.userId, body.teamId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/rejectJoinRequest')
+    rejectJoinRequest(@Body() body) {
+        return this.usersService.rejectJoinRequest(body.userId, body.teamId);
+    }
 }

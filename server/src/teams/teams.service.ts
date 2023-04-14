@@ -3,6 +3,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {TeamsEntity} from "../entities/teams.entity";
 import {Repository} from "typeorm";
 import {UsersEntity} from "../entities/users.entity";
+import {AddToTeamUsersRequestsEntity} from "../entities/add_to_team_users_requests.entity";
 
 @Injectable()
 export class TeamsService {
@@ -10,7 +11,9 @@ export class TeamsService {
         @InjectRepository(TeamsEntity)
         private readonly teamsRepository: Repository<TeamsEntity>,
         @InjectRepository(UsersEntity)
-        private readonly usersRepository: Repository<UsersEntity>
+        private readonly usersRepository: Repository<UsersEntity>,
+        @InjectRepository(AddToTeamUsersRequestsEntity)
+        private readonly addToTeamUsersRequestsRepository: Repository<AddToTeamUsersRequestsEntity>
     ) {
     }
 
@@ -63,5 +66,31 @@ export class TeamsService {
         else {
             throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
         }
+    }
+
+    async updateTeamName(name, id) {
+        return this.teamsRepository
+            .createQueryBuilder()
+            .update({
+                name
+            })
+            .where({
+                id
+            })
+            .execute();
+    }
+
+    async getWaitingJoinTeamRequests(id) {
+        return this.addToTeamUsersRequestsRepository
+            .createQueryBuilder('r')
+            .innerJoinAndSelect('users', 'u', 'u.id = r.user_id')
+            .where('r.team_id = :id', {id})
+            .getMany();
+    }
+
+    async getTeamMembers(id) {
+        return this.usersRepository.findBy({
+            team_id: id
+        });
     }
 }

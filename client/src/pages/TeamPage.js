@@ -12,7 +12,7 @@ const TeamPage = ({user}) => {
     const [render, setRender] = useState(<LoadingPage />);
 
     useEffect(() => {
-        if(user) {
+        if(!isObjectEmpty(user)) {
             if(user.teamId) {
                 getTeamById(user.teamId)
                     .then((res) => {
@@ -23,14 +23,13 @@ const TeamPage = ({user}) => {
                             setTeam(null);
                         }
                     })
-                    .catch(() => {
+                    .catch((err) => {
                         setTeam(null);
                     });
             }
             else {
                 getUserWaitingJoinTeamRequest()
                     .then((res) => {
-                        console.log(res);
                         if(res?.data) {
                             setTeam({
                                 waiting: res.data.team_id
@@ -58,7 +57,7 @@ const TeamPage = ({user}) => {
             }
             else {
                 // Already in team
-                setRender(<TeamView />);
+                setRender(<TeamView team={team} setTeam={setTeam} user={user} />);
             }
         }
         else {

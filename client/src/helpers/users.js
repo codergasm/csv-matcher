@@ -96,7 +96,55 @@ const deleteJoinTeamRequest = () => {
     });
 }
 
+const leaveTeam = () => {
+    return axios.patch(`/users/leaveTeam`, {
+        email: getLoggedUserEmail()
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const updateUserRights = (email,
+                          can_edit_team_files,
+                          can_delete_team_files,
+                          can_edit_team_match_schemas,
+                          can_delete_team_match_schemas) => {
+    return axios.patch(`/users/updateUserRights`, {
+        email,
+        can_edit_team_match_schemas,
+        can_delete_team_match_schemas,
+        can_edit_team_files,
+        can_delete_team_files
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const acceptJoinRequest = (userId, teamId) => {
+    return axios.post(`/users/acceptJoinRequest`, {
+        userId, teamId
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const rejectJoinRequest = (userId, teamId) => {
+    return axios.post(`/users/rejectJoinRequest`, {
+        userId, teamId
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
 export { registerUser, loginUser, verifyUser, authUser, getLoggedUserEmail, getUserWaitingJoinTeamRequest,
     getUserData, logout, changeUserPassword, getUserTeam, sendRequestToJoinTeam,
-    deleteJoinTeamRequest
+    deleteJoinTeamRequest, updateUserRights, leaveTeam, acceptJoinRequest, rejectJoinRequest
 }

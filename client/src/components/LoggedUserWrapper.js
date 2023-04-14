@@ -20,14 +20,18 @@ const LoggedUserWrapper = ({page}) => {
                         getUserData()
                             .then((res) => {
                                 if(res?.status === 200) {
+                                    let userTmp = {};
+
                                     if(res?.data) {
                                         let data = res.data;
-                                        setUser({
+                                        userTmp = {
                                             id: data.id,
                                             teamId: data.team_id,
                                             email: data.email
-                                        });
+                                        }
                                     }
+
+                                    setUser(userTmp);
 
                                     switch(page) {
                                         case 1:
@@ -37,7 +41,7 @@ const LoggedUserWrapper = ({page}) => {
                                             setRender(<CorrelationPage />);
                                             break;
                                         case 5:
-                                            setRender(<TeamPage user={user} />);
+                                            setRender(<TeamPage user={userTmp} />);
                                             break;
                                         case 6:
                                             setRender(<ChangePassword />);

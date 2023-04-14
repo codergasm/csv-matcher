@@ -225,6 +225,18 @@ export class UsersService {
         }
     }
 
+    async leaveTeam(email) {
+        return this.usersRepository
+            .createQueryBuilder()
+            .update({
+                team_id: null
+            })
+            .where({
+                email
+            })
+            .execute();
+    }
+
     async getUserWaitingJoinTeamRequest(email) {
         const user = await this.usersRepository.findOneBy({email});
 
@@ -237,5 +249,61 @@ export class UsersService {
         else {
             throw new BadRequestException('Podany użytkownik nie istnieje');
         }
+    }
+
+
+    async updateUserRights(email,
+                           can_edit_team_match_schemas,
+                           can_delete_team_match_schemas,
+                           can_edit_team_files,
+                           can_delete_team_files) {
+        return this.usersRepository
+            .createQueryBuilder()
+            .update({
+                can_edit_team_match_schemas,
+                can_delete_team_match_schemas,
+                can_edit_team_files,
+                can_delete_team_files
+            })
+            .where({
+                email
+            })
+            .execute();
+    }
+
+    async acceptJoinRequest(user_id, team_id) {
+        await this.usersRepository
+            .createQueryBuilder()
+            .update({
+                team_id
+            })
+            .where({
+                id: user_id
+            })
+            .execute();
+
+        return this.addToTeamUsersRequestsRepository
+            .createQueryBuilder()
+            .update({
+                status: 'accept'
+            })
+            .where({
+                user_id,
+                team_id
+            })
+            .execute();
+    }
+
+    async rejectJoinRequest(user_id, team_id) {
+        return this.addToTeamUsersRequestsRepository
+            .createQueryBuilder()
+            .update({
+                status: 'reject'
+            })
+            .where({
+                user_id,
+                team_id
+            })
+            .execute();
     }
 }
