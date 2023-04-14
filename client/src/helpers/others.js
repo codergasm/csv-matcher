@@ -156,5 +156,16 @@ const isObjectEmpty = (obj) => {
     return Object.keys(obj).length === 0;
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader,
-    checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty }
+const addTrailingZero = (n) => {
+    if(n < 10) return `0${n}`;
+    return n;
+}
+
+const getDateFromString = (str) => {
+    const dateObject = new Date(str);
+    return `${addTrailingZero(dateObject.getDate())}.${addTrailingZero(dateObject.getMonth()+1)}.${dateObject.getFullYear()}
+            <br/>${addTrailingZero(dateObject.getHours())}:${addTrailingZero(dateObject.getMinutes())}:${addTrailingZero(dateObject.getSeconds())}`;
+}
+
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader, addTrailingZero,
+    checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty, getDateFromString }

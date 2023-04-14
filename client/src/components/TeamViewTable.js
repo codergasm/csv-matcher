@@ -5,7 +5,7 @@ import yesIcon from '../static/img/yes.svg';
 import {updateUserRights} from "../helpers/users";
 import checkIcon from '../static/img/check.svg';
 
-const TeamViewTable = ({team, isOwner}) => {
+const TeamViewTable = ({team, isOwner, updateTeamMembers}) => {
     const columnsNames = [
         'email', 'pliki usera', 'schematy dopasowania usera',
         'wykorzystanych auto dopasowań rekordów w tym miesiącu',
@@ -25,7 +25,7 @@ const TeamViewTable = ({team, isOwner}) => {
                     }
                 });
         }
-    }, [team]);
+    }, [team, updateTeamMembers]);
 
     const toggleMemberRights = (email, name) => {
         const userToUpdate = members.find((item) => (item.email === email));

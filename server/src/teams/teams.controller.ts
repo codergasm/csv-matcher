@@ -25,7 +25,7 @@ export class TeamsController {
 
     @Patch('/updateTeamName')
     updateTeamName(@Body() body) {
-        return this.teamsService.updateTeamName(body.name, body.id);
+        return this.teamsService.updateTeamName(body.name, body.team_url, body.id);
     }
 
     @Get('/getWaitingJoinTeamRequests/:id')

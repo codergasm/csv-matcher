@@ -68,11 +68,12 @@ export class TeamsService {
         }
     }
 
-    async updateTeamName(name, id) {
+    async updateTeamName(name, team_url, id) {
         return this.teamsRepository
             .createQueryBuilder()
             .update({
-                name
+                name,
+                team_url
             })
             .where({
                 id
@@ -84,8 +85,9 @@ export class TeamsService {
         return this.addToTeamUsersRequestsRepository
             .createQueryBuilder('r')
             .innerJoinAndSelect('users', 'u', 'u.id = r.user_id')
-            .where('r.team_id = :id', {id})
-            .getMany();
+            .andWhere('r.team_id = :id', {id})
+            .andWhere('r.status = :status', {status: 'waiting'})
+            .getRawMany();
     }
 
     async getTeamMembers(id) {

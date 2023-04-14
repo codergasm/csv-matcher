@@ -1307,7 +1307,8 @@ input[type=number] {
 
 .homepage {
     width: 100%;
-    height: 100vh;
+    padding-top: 80px;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1476,7 +1477,8 @@ input[type=number] {
     width: 100%;
     height: 60px;
     box-shadow: 0 2px 2px -2px rgba(0,0,0,.2);
-    z-index: 10;
+    z-index: 1003;
+    background: #fff;
     overflow: visible;
 }
 
@@ -1516,6 +1518,7 @@ input[type=number] {
     transform: translate(0, 100%);
     width: 160px;
     height: auto;
+    background: #fff;
 }
 
 .dropdownMenu__item {
@@ -1715,7 +1718,7 @@ input[type=number] {
 }
 
 .teamId {
-    padding: 0 10px 0 5px;
+    padding: 0 0 0 5px;
     font-size: 21px;
     font-weight: 700;
 }
@@ -1810,4 +1813,125 @@ input[type=number] {
 .modal .btn--leaveTeam {
     width: 150px;
     margin-left: 0;
+}
+
+.btn--save {
+    height: 35px;
+    margin-left: 15px;
+    font-size: 14px;
+    padding: 5px 12px;
+    border-radius: 5px;
+}
+
+.btn--edit {
+    width: 20px;
+    height: auto;
+    background: transparent;
+    border: none;
+    outline: none;
+    margin-left: 15px;
+    cursor: pointer;
+    opacity: .75;
+    transition: .2s all;
+}
+
+.btn--edit:hover {
+    opacity: 1;
+}
+
+.btn--edit .img {
+    width: 100%;
+}
+
+.input--teamNameUpdate {
+    border: none;
+    outline: none !important;
+    border-bottom: 1px solid #3f3f3f;
+    padding: 5px 10px;
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+.input--teamNameUpdate:active,
+.input--teamNameUpdate:focus {
+    border-bottom-width: 2px;
+}
+
+.img--copied {
+    width: 20px;
+    margin-left: 10px;
+}
+
+.btn--copy {
+    margin-left: 10px;
+}
+
+.error--updateTeamName {
+    padding-left: 15px;
+    font-size: 14px !important;
+}
+
+.joinRequests__header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.joinRequests {
+    margin: 50px auto 30px;
+}
+
+.joinRequest {
+    border-radius: 10px;
+    width: 100%;
+    height: 120px;
+    margin-bottom: 20px;
+    padding: 10px 25px;
+}
+
+.joinRequest__buttons {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.joinRequest__buttons > .btn {
+    width: 120px;
+    height: 35px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.btn--accept {
+    background: #508345;
+}
+
+.btn--reject {
+    background: #dd1111;
+}
+
+.btn--reject:hover {
+    background: #ee0101;
+}
+
+.joinRequest__date {
+    font-size: 15px;
+    font-weight: 400;
+    text-align: center;
+}
+
+.joinRequestsLoaderWrapper {
+    margin-top: 50px;
+}
+
+.noJoinRequests {
+    margin-top: -10px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 400;
 }

@@ -33,9 +33,9 @@ const createTeam = (name) => {
     });
 }
 
-const updateTeamName = (id, name) => {
+const updateTeamName = (id, name, team_url) => {
     return axios.patch(`/teams/updateTeamName`, {
-        id, name
+        id, name, team_url
     }, {
         headers: {
             Authorization: getAuthHeader()
