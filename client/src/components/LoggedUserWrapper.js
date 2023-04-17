@@ -28,7 +28,11 @@ const LoggedUserWrapper = ({page}) => {
                                         userTmp = {
                                             id: data.id,
                                             teamId: data.team_id,
-                                            email: data.email
+                                            email: data.email,
+                                            canEditTeamFiles: data.can_edit_team_files,
+                                            canDeleteTeamFiles: data.can_delete_team_files,
+                                            canEditTeamMatchSchemas: data.can_edit_team_match_schemas,
+                                            canDeleteTeamMatchSchemas: data.can_delete_team_match_schemas
                                         }
                                     }
 

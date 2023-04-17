@@ -42,4 +42,31 @@ const assignFileOwnershipToTeam = (fileId, teamId) => {
     });
 }
 
-export { saveSheet, deleteSheet, getFilesByUser, assignFileOwnershipToTeam }
+const updateSheet = (file, teamId, id, name) => {
+    if(file) {
+        const formData = new FormData();
+        const config = {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            Authorization: getAuthHeader()
+        }
+
+        formData.append('email', getLoggedUserEmail());
+        formData.append('sheet', file);
+        formData.append('teamId', teamId);
+        formData.append('name', name);
+        formData.append('id', id);
+
+        return axios.patch(`/files/updateFile`, formData, config);
+    }
+    else {
+        return axios.patch(`/files/updateFileName`, {
+            id, name
+        }, {
+            headers: {
+                Authorization: getAuthHeader()
+            }
+        });
+    }
+}
+
+export { saveSheet, deleteSheet, getFilesByUser, assignFileOwnershipToTeam, updateSheet }

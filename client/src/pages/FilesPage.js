@@ -3,6 +3,7 @@ import {getFilesByUser, saveSheet} from "../helpers/files";
 import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
+import addIcon from '../static/img/add.svg';
 
 const FilesPage = ({user}) => {
     const [userFiles, setUserFiles] = useState([]);
@@ -39,9 +40,9 @@ const FilesPage = ({user}) => {
     }
 
     return <div className="container">
-        {fileSavedModalVisible ? <FileSavedModal closeModal={() => { setFileSavedModalVisible(false); }} /> : ''}
+        {fileSavedModalVisible ? <FileSavedModal closeModal={() => { setUpdateFiles(p => !p); setFileSavedModalVisible(false); }} /> : ''}
 
-        <div className="homepage">
+        <div className="homepage homepage--files">
             <h1 className="homepage__header">
                 RowMatcher.com
             </h1>
@@ -49,7 +50,16 @@ const FilesPage = ({user}) => {
                 Twoje pliki
             </h2>
 
+            <div className="btn btn--addNewFile">
+                <input className="input--addNewFile"
+                       type="file"
+                       onChange={(e) => { addNewFileWrapper(e); }} />
+                Dodaj nowy plik
+                <img className="img--add" src={addIcon} alt="dodaj" />
+            </div>
+
             <MyFilesTable files={userFiles}
+                          teamId={user.teamId}
                           setUpdateFiles={setUpdateFiles} />
 
             <h2 className="homepage__subheader homepage__subheader--marginTop">
@@ -57,16 +67,10 @@ const FilesPage = ({user}) => {
             </h2>
 
             <TeamFilesTable files={teamFiles}
-                            canUpdate={user.can_edit_team_files}
-                            canDelete={user.can_delete_team_files}
+                            teamId={user.teamId}
+                            canUpdate={user.canEditTeamFiles}
+                            canDelete={user.canDeleteTeamFiles}
                             setUpdateFiles={setUpdateFiles} />
-
-            <div className="btn btn--addNewFile">
-                <input className="input--addNewFile"
-                       type="file"
-                       onChange={(e) => { addNewFileWrapper(e); }} />
-                Dodaj nowy plik
-            </div>
         </div>
     </div>
 };

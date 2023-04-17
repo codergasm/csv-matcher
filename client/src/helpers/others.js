@@ -167,5 +167,18 @@ const getDateFromString = (str) => {
             <br/>${addTrailingZero(dateObject.getHours())}:${addTrailingZero(dateObject.getMinutes())}:${addTrailingZero(dateObject.getSeconds())}`;
 }
 
+const getStringWithFileSize = (bytes) => {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    let size = bytes;
+    let unitIndex = 0;
+
+    while (size >= 1000 && unitIndex < units.length - 1) {
+        size /= 1000;
+        unitIndex++;
+    }
+
+    return `${(size).toFixed(2)} ${units[unitIndex]}`;
+}
+
 export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader, addTrailingZero,
-    checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty, getDateFromString }
+    checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty, getDateFromString, getStringWithFileSize }

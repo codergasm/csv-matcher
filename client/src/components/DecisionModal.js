@@ -10,20 +10,39 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
 
     const handleSubmit = () => {
         setLoading(true);
-        submitFunctionParameters ? submitFunction(...submitFunctionParameters) : submitFunction()
-            .then((res) => {
-                if(res?.status === 200) {
-                    setSuccess(true);
-                }
-                else {
+
+        if(submitFunctionParameters) {
+            submitFunction(...submitFunctionParameters)
+                .then((res) => {
+                    if(res?.status === 200) {
+                        setSuccess(true);
+                    }
+                    else {
+                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                    }
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    setLoading(false);
                     setError('Coś poszło nie tak... Prosimy spróbować później');
-                }
-                setLoading(false);
-            })
-            .catch(() => {
-                setLoading(false);
-                setError('Coś poszło nie tak... Prosimy spróbować później');
-            });
+                });
+        }
+        else {
+            submitFunction()
+                .then((res) => {
+                    if(res?.status === 200) {
+                        setSuccess(true);
+                    }
+                    else {
+                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                    }
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    setLoading(false);
+                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                });
+        }
     }
 
     const closeModalWrapper = () => {
@@ -41,7 +60,7 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
             {!success && !error ? <>
                 <img className="img img--modalWarning" src={noIcon} alt="ostrzezenie" />
 
-                <p className="modal__header modal__header--text">
+                <p className="modal__header modal__header--text text-center">
                     {text}
                 </p>
 

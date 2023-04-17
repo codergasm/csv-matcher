@@ -55,9 +55,7 @@ export class FilesService {
 
         if(fileRow) {
             // Delete file
-            fs.unlink(fileRow.filepath, (err) => {
-                throw new HttpException('Coś poszło nie tak... Prosimy spróbować później', 500);
-            });
+            fs.unlinkSync(fileRow.filepath);
 
             // Delete row from database
             return this.filesRepository.delete({id});
@@ -106,5 +104,42 @@ export class FilesService {
                 id
             })
             .execute();
+    }
+
+    async updateFile(id, files, name, email) {
+        const sheetFile = files.sheet[0];
+
+        const numberOfRows = this.getNumberOfRows(sheetFile);
+        const filesize = (await fs.promises.stat(sheetFile.path)).size
+
+        const user = await this.usersRepository.findOneBy({
+            email
+        });
+
+        if(user) {
+            // Get old file path
+            const oldFileRow = await this.filesRepository.findOneBy({id});
+
+            // Save new file in database
+            await this.filesRepository
+                .createQueryBuilder()
+                .update({
+                    filename: name,
+                    filepath: sheetFile.path,
+                    filesize: filesize,
+                    row_count: numberOfRows
+                })
+                .where({
+                    id
+                })
+                .execute();
+
+            // Delete old file from filesystem
+            fs.unlinkSync(oldFileRow.filepath);
+            return 1;
+        }
+        else {
+            throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
+        }
     }
 }

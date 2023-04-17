@@ -15,25 +15,19 @@ export class FilesController {
     async moveFilesToProperDirectory(files, teamId) {
         let imageIndex = 0;
 
-        console.log(files);
-
         if(files?.sheet?.length) {
             for(const item of files.sheet) {
                 try {
-                    console.log('witam');
                     await fs.promises.mkdir(`${item.destination}/${teamId}`, {
                         recursive: true
                     });
                     await fs.promises.rename(item.path, `${item.destination}/${teamId}/${item.filename}`);
                 }
                 catch(e) {
-                    console.log(e);
                     // If directory already exists
                     try {
                         await fs.promises.rename(item.path, `${item.destination}/${teamId}/${item.filename}`);
-                    } catch(e) {
-                        console.log(e);
-                    }
+                    } catch(e) {}
                 }
 
                 files.sheet[imageIndex] = {
@@ -58,7 +52,7 @@ export class FilesController {
         })
     }))
     async saveSheet(@UploadedFiles() files: {
-        videoSrc?: Express.Multer.File[],
+        sheet?: Express.Multer.File[],
     }, @Body() body) {
         const { email, teamId, teamOwner } = body;
 
@@ -80,6 +74,25 @@ export class FilesController {
     @Patch('/assignFileOwnershipToTeam')
     async assignFileOwnershipToTeam(@Body() body) {
         return this.filesService.assignFileOwnershipToTeam(body.fileId, body.teamId);
+    }
+
+    @Patch('/updateFile')
+    @UseInterceptors(FileFieldsInterceptor([
+        {name: 'sheet', maxCount: 1},
+    ], {
+        storage: diskStorage({
+            filename: FileUploadHelper.customFileName,
+            destination: './uploads'
+        })
+    }))
+    async updateFile(@UploadedFiles() files: {
+        sheet?: Express.Multer.File[],
+    }, @Body() body) {
+        const { id, name, email, teamId } = body;
+
+        files = await this.moveFilesToProperDirectory(files, teamId);
+
+        return this.filesService.updateFile(id, files, name, email);
     }
 
     @Patch('/updateFileName')
