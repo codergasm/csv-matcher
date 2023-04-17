@@ -1935,3 +1935,60 @@ input[type=number] {
     font-size: 15px;
     font-weight: 400;
 }
+
+.btn--ownership {
+    background: transparent;
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+    transition: .2s all;
+}
+
+.btn--ownership:hover {
+    background: #efefef;
+}
+
+.btn--addNewFile {
+    position: relative;
+    margin: 30px auto;
+    width: 500px;
+    height: 50px;
+    border-radius: 5px;
+    background: var(--primary);
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.input--addNewFile {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.modal--fileSaved .modal__inner {
+    min-height: 300px;
+    height: auto;
+}
+
+.modal--fileSaved .modal__header {
+    text-align: center;
+    margin: 30px auto;
+}
+
+.modal--fileSaved .btn--backToHomepage {
+    width: 300px;
+    margin: 20px auto;
+}
+
+.homepage__subheader--marginTop {
+    margin-top: 30px;
+}

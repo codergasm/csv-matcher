@@ -7,6 +7,7 @@ import LoggedUserHeader from "./LoggedUserHeader";
 import ChangePassword from "../pages/ChangePassword";
 import TeamPage from "../pages/TeamPage";
 import LoadingPage from "../pages/LoadingPage";
+import FilesPage from "../pages/FilesPage";
 
 const LoggedUserWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -36,6 +37,9 @@ const LoggedUserWrapper = ({page}) => {
                                     switch(page) {
                                         case 1:
                                             setRender(<Homepage />);
+                                            break;
+                                        case 2:
+                                            setRender(<FilesPage user={userTmp} />);
                                             break;
                                         case 4:
                                             setRender(<CorrelationPage />);

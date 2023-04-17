@@ -17,6 +17,7 @@ import { TeamsModule } from './teams/teams.module';
 import { UsersModule } from './users/users.module';
 import {MailerModule} from "@nestjs-modules/mailer";
 import {UsersVerificationEntity} from "./entities/users_verification.entity";
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import {UsersVerificationEntity} from "./entities/users_verification.entity";
           }
       }),
     TeamsModule,
-    UsersModule
+    UsersModule,
+    FilesModule
   ],
   controllers: [AppController],
   providers: [AppService],

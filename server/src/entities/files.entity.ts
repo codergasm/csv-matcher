@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('files')
 export class FilesEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -26,4 +26,7 @@ export class FilesEntity {
         nullable: true
     })
     owner_team_id: number;
+
+    @Column()
+    created_datetime: Date;
 }
