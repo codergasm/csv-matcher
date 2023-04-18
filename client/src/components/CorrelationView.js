@@ -4,13 +4,13 @@ import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../pages/CorrelationPage";
 import {getProgressByJobId, getSelectList, matching} from "../helpers/matching";
-import {makeId} from "../helpers/others";
+import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
 import {getSchemasByUser} from "../helpers/schemas";
 
 const ViewContext = React.createContext(null);
 
-const CorrelationView = () => {
+const CorrelationView = ({user}) => {
     const { dataSheet, relationSheet, dataFile, relationFile,
         dataDelimiter, relationDelimiter } = useContext(AppContext);
 
@@ -28,6 +28,7 @@ const CorrelationView = () => {
 
     const [matchType, setMatchType] = useState(0);
     const [priorities, setPriorities] = useState([]);
+    const [matchSchemaArray, setMatchSchemaArray] = useState([]);
 
     // Indexes of rows from data sheet correlated to 0, 1 ... n row in relation sheet
     const [indexesOfCorrelatedRows, setIndexesOfCorrelatedRows] = useState([]);
@@ -254,6 +255,22 @@ const CorrelationView = () => {
         setSelectListLoading(false);
     }, [selectList]);
 
+    useEffect(() => {
+        if(indexesOfCorrelatedRows) {
+            setMatchSchemaArray(indexesOfCorrelatedRows.map((item, index) => {
+                if(item !== -1) {
+                    return [
+                        createRowShortcut(dataSheet[item]),
+                        createRowShortcut(relationSheet[index])
+                    ]
+                }
+                else {
+                    return null;
+                }
+            }).filter((item) => (item !== null)));
+        }
+    }, [indexesOfCorrelatedRows]);
+
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
         setManuallyCorrelatedRows(prevState => ([...prevState, relationRowIndex]));
 
@@ -268,6 +285,10 @@ const CorrelationView = () => {
             });
         });
     }
+
+    useEffect(() => {
+        console.log(matchSchemaArray);
+    }, [matchSchemaArray]);
 
     const correlate = () => {
         setIndexesInSelectListToOverride([]);
@@ -290,7 +311,7 @@ const CorrelationView = () => {
                    const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
 
                    if(!overrideAllRows) {
-                       // dopasuj tylko te, ktore jeszcze nie maja dopasowania
+                       // dopasuj tylko te, które jeszcze nie mają dopasowania
                        setCorrelationMatrix(prevState => {
                            return prevState.map((item, index) => {
                               if(prevIndexesOfCorrelatedRows[index] === -1) {
@@ -315,7 +336,7 @@ const CorrelationView = () => {
                        });
                    }
                    else if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
-                       // nadpisz wszystkie rekordy jesli znajdziesz nowe dopasowanie
+                       // nadpisz wszystkie rekordy jeśli znajdziesz nowe dopasowanie
                        setCorrelationMatrix(prevState => {
                            return prevState.map((item, index) => {
                                if(newIndexesOfCorrelatedRows[index] !== -1) {
@@ -371,30 +392,12 @@ const CorrelationView = () => {
             });
     }
 
-    return <div className="container container--correlation">
-        <div className="homepage homepage--correlation">
-            <ChooseAndSaveSchema />
-
-            <div className="correlation__viewPicker flex">
-                <button className={currentSheet === 0 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                        onClick={() => { setCurrentSheet(0); }}>
-                    Arkusz 1
-                </button>
-                <button className={currentSheet === 1 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                        onClick={() => { setCurrentSheet(1); }}>
-                    Arkusz 2
-                </button>
-                <button className={currentSheet === 2 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                        onClick={() => { setCurrentSheet(2); }}>
-                    Arkusz wyjściowy
-                </button>
-            </div>
-
-            <ViewContext.Provider value={{
+    return <ViewContext.Provider value={{
                 showInSelectMenuColumns, setShowInSelectMenuColumns,
                 outputSheetExportColumns, setOutputSheetExportColumns,
                 matchType, setMatchType,
                 priorities, setPriorities,
+                matchSchemaArray, setMatchSchemaArray,
                 outputSheet, setOutputSheet,
                 correlationStatus,
                 correlationMatrix,
@@ -407,10 +410,29 @@ const CorrelationView = () => {
                 selectListLoading,
                 correlate, progressCount
             }}>
+        <div className="container container--correlation">
+            <div className="homepage homepage--correlation">
+                <ChooseAndSaveSchema user={user} />
+
+                <div className="correlation__viewPicker flex">
+                    <button className={currentSheet === 0 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                            onClick={() => { setCurrentSheet(0); }}>
+                        Arkusz 1
+                    </button>
+                    <button className={currentSheet === 1 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                            onClick={() => { setCurrentSheet(1); }}>
+                        Arkusz 2
+                    </button>
+                    <button className={currentSheet === 2 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                            onClick={() => { setCurrentSheet(2); }}>
+                        Arkusz wyjściowy
+                    </button>
+                </div>
+
                 {sheetComponent}
-            </ViewContext.Provider>
+            </div>
         </div>
-    </div>
+    </ViewContext.Provider>
 };
 
 export default CorrelationView;

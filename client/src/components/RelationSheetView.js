@@ -17,7 +17,7 @@ const ROWS_PER_PAGE = 20;
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList, priorities,
-        showInSelectMenuColumns, outputSheet, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
+        showInSelectMenuColumns, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [relationSheetSorted, setRelationSheetSorted] = useState([]);

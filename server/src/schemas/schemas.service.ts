@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable} from '@nestjs/common';
+import {BadRequestException, HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 import {Repository} from "typeorm";
@@ -37,14 +37,19 @@ export class SchemasService {
         const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
-            return this.schemasRepository.save({
-                name,
-                matched_strings_array: matchedStringsArray,
-                automatic_matcher_settings_object: automaticMatcherSettingsObject,
-                owner_user_id: teamOwner ? null : user.id,
-                owner_team_id: teamOwner ? user.team_id : null,
-                created_datetime: new Date()
-            });
+            try {
+                return this.schemasRepository.save({
+                    name,
+                    matched_strings_array: JSON.stringify(matchedStringsArray),
+                    automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
+                    owner_user_id: teamOwner ? null : user.id,
+                    owner_team_id: teamOwner ? user.team_id : null,
+                    created_datetime: new Date()
+                })
+            }
+            catch(err) {
+                throw new HttpException('Coś poszło nie tak... Prosimy spróbować później', 500);
+            }
         }
         else {
             throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
@@ -56,8 +61,8 @@ export class SchemasService {
             .createQueryBuilder()
             .update({
                 name,
-                matched_strings_array: matchedStringsArray,
-                automatic_matcher_settings_object: automaticMatcherSettingsObject
+                matched_strings_array: JSON.stringify(matchedStringsArray),
+                automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
             })
             .where({
                 id

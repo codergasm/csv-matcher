@@ -32,6 +32,9 @@ oznacza wartość podobieństwa miedzy i-tym wierszem w relationSheet i j-tym wi
 10. Do kontroli nad położeniem wierszy w drugim arkuszu użyty jest state indexesInRender, gdzie i-ty element tej tablicy
 oznacza indeks wiersza, który jest renderowany jako i-ty w relationSheet/selectList. relationSheet i selectList mają jedną kolejność (stałą),
 natomiast relationSheetSorted i rowsToRender drugą (zmienną w zależności od sortowania).
+11. matchSchemaArray przechowuje tablicę dwuelementowych tablic, gdzie pierwszy element tej tablicy to skrót wiersza
+z dataSheet, a drugi - skrót dopasowanego do niego wiersza z relationSheet. Skrót wiersza to pierwsze 50 znaków z każdej
+kolumny wiersza.
 
 TODO:
 - priorytety

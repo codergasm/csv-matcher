@@ -23,6 +23,12 @@ export class FilesService {
         return sheetObject.length;
     }
 
+    async getFileById(id) {
+        return this.filesRepository.findOneBy({
+            id
+        });
+    }
+
     async saveSheet(files, email, teamOwner) {
         const sheetFile = files.sheet[0];
 

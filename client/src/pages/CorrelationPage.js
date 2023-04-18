@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorelationView from "../components/CorrelationView";
 import {getSchemasByUser} from "../helpers/schemas";
+import {getFileById} from "../helpers/files";
 
 const AppContext = React.createContext(null);
 
@@ -15,7 +16,26 @@ const CorrelationPage = ({user}) => {
     const [dataDelimiter, setDataDelimiter] = useState('');
     const [relationDelimiter, setRelationDelimiter] = useState('');
     const [schemas, setSchemas] = useState([]);
-    const [currentSchema, setCurrentSchema] = useState(0);
+    const [currentSchema, setCurrentSchema] = useState(-1);
+    const [updateSchemas, setUpdateSchemas] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const sheet1 = params.get('sheet1');
+        const sheet2 = params.get('sheet2');
+
+        if(sheet1 && sheet2) {
+            getFileById(sheet1)
+                .then((res) => {
+                    console.log(res?.data);
+                });
+
+            getFileById(sheet2)
+                .then((res) => {
+                    console.log(res?.data);
+                });
+        }
+    }, []);
 
     useEffect(() => {
         getSchemasByUser()
@@ -29,7 +49,7 @@ const CorrelationPage = ({user}) => {
                     }));
                 }
             });
-    }, []);
+    }, [updateSchemas]);
 
     useEffect(() => {
         if(user) {
@@ -51,7 +71,7 @@ const CorrelationPage = ({user}) => {
         dataFile, setDataFile, relationFile, setRelationFile,
         dataSheet, setDataSheet, relationSheet, setRelationSheet,
         dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
-        schemas, setSchemas, currentSchema, setCurrentSchema
+        schemas, setSchemas, currentSchema, setCurrentSchema, updateSchemas, setUpdateSchemas
     }}>
         {mainComponent}
     </AppContext.Provider>

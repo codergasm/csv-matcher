@@ -2,6 +2,14 @@ import axios from 'axios';
 import {getLoggedUserEmail} from "./users";
 import {getAuthHeader} from "./others";
 
+const getFileById = (id) => {
+    return axios.get(`/files/getFileById/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
 const saveSheet = (file, teamId, teamOwner) => {
     const formData = new FormData();
     const config = {
@@ -69,4 +77,5 @@ const updateSheet = (file, teamId, id, name) => {
     }
 }
 
-export { saveSheet, deleteSheet, getFilesByUser, assignFileOwnershipToTeam, updateSheet }
+export { saveSheet, deleteSheet, getFilesByUser, getFileById,
+    assignFileOwnershipToTeam, updateSheet }

@@ -180,5 +180,9 @@ const getStringWithFileSize = (bytes) => {
     return `${(size).toFixed(2)} ${units[unitIndex]}`;
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader, addTrailingZero,
+const createRowShortcut = (row) => {
+    return Object.entries(row).map((item) => (item[1].substring(0, 50))).join(';');
+}
+
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader, addTrailingZero, createRowShortcut,
     checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty, getDateFromString, getStringWithFileSize }

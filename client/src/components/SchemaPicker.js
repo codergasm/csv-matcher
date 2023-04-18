@@ -15,9 +15,8 @@ const SchemaPicker = () => {
             placeholder="Wybierz schemat"
             value={schemas[currentSchema]}
             onChange={setCurrentSchema}
-            isSearchable={true}
-        />
+            isSearchable={true} />
     </div>
-};
+}
 
 export default SchemaPicker;

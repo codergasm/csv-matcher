@@ -14,10 +14,14 @@ export class MatchSchemasEntity {
     @Column()
     automatic_matcher_settings_object: string;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     owner_user_id: number;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     owner_team_id: number;
 
     @Column()

@@ -92,7 +92,7 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                     </div>
                 })}
         </div>
-    </div>;
+    </div>
 };
 
 export default MyFilesTable;

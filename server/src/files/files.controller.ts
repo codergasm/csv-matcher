@@ -42,6 +42,11 @@ export class FilesController {
         return files;
     }
 
+    @Get('/getFileById/:id')
+    getFileById(@Param('id') id) {
+        return this.filesService.getFileById(id);
+    }
+
     @Post('/saveSheet')
     @UseInterceptors(FileFieldsInterceptor([
         {name: 'sheet', maxCount: 1},
