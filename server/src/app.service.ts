@@ -38,7 +38,6 @@ export class AppService {
               });
           }
           catch(e) {
-              console.log(e);
               throw new HttpException(e, 500, {cause: new Error('error')});
           }
       }

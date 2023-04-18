@@ -4,6 +4,9 @@ import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 import {Repository} from "typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import {MatchSchemasSheetsEntity} from "../entities/match_schemas_sheets.entity";
+import {FilesEntity} from "../entities/files.entity";
+import * as fs from "fs";
+import * as papa from 'papaparse';
 
 @Injectable()
 export class SchemasService {
@@ -13,7 +16,9 @@ export class SchemasService {
         @InjectRepository(MatchSchemasSheetsEntity)
         private readonly schemasSheetsRepository: Repository<MatchSchemasSheetsEntity>,
         @InjectRepository(UsersEntity)
-        private readonly usersRepository: Repository<UsersEntity>
+        private readonly usersRepository: Repository<UsersEntity>,
+        @InjectRepository(FilesEntity)
+        private readonly filesRepository: Repository<FilesEntity>
     ) {
     }
 
@@ -21,12 +26,12 @@ export class SchemasService {
         const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
-            return this.schemasRepository.find({
-                where: [
-                    {owner_user_id: user.id},
-                    {owner_team_id: user.team_id}
-                ]
-            });
+            return this.schemasRepository
+                .createQueryBuilder('schemas')
+                .leftJoinAndSelect('match_schemas_sheets', 'sheets', 'schemas.id = sheets.match_schema')
+                .where('schemas.owner_user_id = :userId OR schemas.owner_team_id = :teamId',
+                    {userId: user.id, teamId: user.team_id})
+                .getRawMany();
         }
         else {
             throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
@@ -95,11 +100,23 @@ export class SchemasService {
     }
 
     async assignSheetsToSchema(dataSheet, relationSheet, matchSchema) {
-        return this.schemasSheetsRepository.save({
+        const insertedRow = await this.schemasSheetsRepository.save({
             data_sheet: dataSheet,
             relation_sheet: relationSheet,
             match_schema: matchSchema
         });
+
+        const numberOfMatchedRows = await this.getNumberOfMatchedRows(insertedRow.id);
+
+        return this.schemasSheetsRepository
+            .createQueryBuilder()
+            .update({
+                number_of_matched_rows: numberOfMatchedRows
+            })
+            .where({
+                id: insertedRow.id
+            })
+            .execute();
     }
 
     async detachSheetsFromSchema(dataSheet, relationSheet, matchSchema) {
@@ -108,5 +125,52 @@ export class SchemasService {
             relation_sheet: relationSheet,
             match_schema: matchSchema
         });
+    }
+
+    async getNumberOfMatchedRows(schemasSheetsRowId) {
+        const schemasSheetsRow = await this.schemasSheetsRepository.findOneBy({
+            id: schemasSheetsRowId
+        });
+
+        if(schemasSheetsRow) {
+            const dataSheetId = schemasSheetsRow.data_sheet;
+            const relationSheetId = schemasSheetsRow.relation_sheet;
+
+            const matchSchemaRow = await this.schemasRepository.findOneBy({id: schemasSheetsRow.match_schema});
+            const dataSheetRow = await this.filesRepository.findOneBy({id: dataSheetId});
+            const relationSheetRow = await this.filesRepository.findOneBy({id: relationSheetId});
+
+            if(dataSheetRow && relationSheetRow && matchSchemaRow) {
+                const matchedStringsArray = JSON.parse(matchSchemaRow.matched_strings_array);
+
+                // Convert files to array of objects
+                const dataFileContent = fs.readFileSync(dataSheetRow.filepath, 'utf-8');
+                const relationFileContent = fs.readFileSync(relationSheetRow.filepath, 'utf-8');
+                const dataSheet = papa.parse(dataFileContent, { header: true }).data;
+                const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+
+                // Convert array of objects to row shortcuts
+                const dataSheetShortcuts = dataSheet.map((item) => {
+                    return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
+                        item[1].substring(0, 50) : '')).join(';')
+                });
+                const relationSheetShortcuts = relationSheet.map((item) => {
+                    return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
+                        item[1].substring(0, 50) : '')).join(';')
+                });
+
+                const matchedRows = matchedStringsArray.filter((item) => {
+                    return dataSheetShortcuts.includes(item[0]) && relationSheetShortcuts.includes(item[1]);
+                });
+
+                return matchedRows.length;
+            }
+            else {
+                throw new BadRequestException('Nie znaleziono podanych plików');
+            }
+        }
+        else {
+            throw new BadRequestException('Nie znaleziono podanego rekordu');
+        }
     }
 }

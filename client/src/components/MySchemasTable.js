@@ -5,13 +5,13 @@ import deleteIcon from "../static/img/no.svg";
 import arrowIcon from '../static/img/arrow-expand.svg';
 import {assignSchemaToTeam, deleteSchema} from "../helpers/schemas";
 
-const MySchemasTable = ({schemas, teamId, setUpdateSchemas}) => {
+const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
     const columnsNames = [
         'nazwa schematu', 'data utworzenia', 'edycja', 'zwiń/rozwiń'
     ];
     const sheetsColumnsNames = [
         'arkusz 1', 'arkusz 2', 'ilość rekordów w arkuszu 1 z dopasowaniem do arkusza 2',
-        'ilość rekordów w arkuszu 2 z dopasowaniem do arkusza 1', 'uruchom'
+        'ilość rekordów w arkuszu 2 z dopasowaniem do arkusza 1', 'opcje'
     ];
 
     const [schemeToAssignToTeamId, setSchemeToAssignToTeamId] = useState(null);
@@ -19,10 +19,11 @@ const MySchemasTable = ({schemas, teamId, setUpdateSchemas}) => {
     const [deleteSchemeId, setDeleteSchemeId] = useState(null);
     const [deleteSchemeModalVisible, setDeleteSchemeModalVisible] = useState(false);
     const [sheetsVisible, setSheetsVisible] = useState([]);
+    const [chooseSheetsModalVisible, setChooseSheetsModalVisible] = useState(false);
 
     useEffect(() => {
         if(schemas) {
-            setSheetsVisible(schemas.map(() => true));
+            setSheetsVisible(Object.entries(schemas).map(() => false));
         }
     }, [schemas]);
 
@@ -33,7 +34,21 @@ const MySchemasTable = ({schemas, teamId, setUpdateSchemas}) => {
         })));
     }
 
-    return <div className="teamTable teamTable--schemas w scroll">
+    const getFileName = (id) => {
+        const file = files.find((item) => (item.id === id));
+
+        if(file) return file.filename;
+        else return '';
+    }
+
+    const getFileRowCount = (id) => {
+        const file = files.find((item) => (item.id === id));
+
+        if(file) return file.row_count;
+        else return '';
+    }
+
+    return <div className="teamTable teamTable--schemas w">
         {assignSchemeToTeamModalVisible ? <DecisionModal closeModal={() => { setAssignSchemeToTeamModalVisible(false); }}
                                                        closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                        submitFunction={assignSchemaToTeam}
@@ -65,28 +80,31 @@ const MySchemasTable = ({schemas, teamId, setUpdateSchemas}) => {
                 })}
             </div>
 
-            {schemas.map((item, index) => {
+            {Object.entries(schemas).map((item, index) => {
+                const schema = item[1][0];
+                const sheets = item[1];
+
                 return <div className="schemaLine" key={index}>
                     {/* Main row */}
-                    <div className="line line--member">
+                    <div className="line line--member line--borderBottom">
                         <div className="sheet__header__cell">
-                            {item.name}
+                            {schema.schemas_name}
                         </div>
                         <div className="sheet__header__cell" dangerouslySetInnerHTML={{
-                            __html: getDateFromString(item.created_datetime)
+                            __html: getDateFromString(schema.schemas_created_datetime)
                         }}>
 
                         </div>
                         <div className="sheet__header__cell sheet__header__cell--column">
                             <div className="flex flex--action">
                                 <button className="btn--action"
-                                        onClick={() => { setDeleteSchemeId(item.id); setDeleteSchemeModalVisible(true); }}>
+                                        onClick={() => { setDeleteSchemeId(schema.schemas_id); setDeleteSchemeModalVisible(true); }}>
                                     <img className="img" src={deleteIcon} alt="usuń" />
                                 </button>
                             </div>
                             <button className="btn--ownership"
-                                    onClick={() => { setSchemeToAssignToTeamId(item.id); setAssignSchemeToTeamModalVisible(true); }}>
-                                Uczyń zespół właścicielem pliku
+                                    onClick={() => { setSchemeToAssignToTeamId(schema.schemas_id); setAssignSchemeToTeamModalVisible(true); }}>
+                                Uczyń zespół właścicielem schematu
                             </button>
                         </div>
                         <div className="sheet__header__cell sheet__header__cell--expand">
@@ -104,14 +122,46 @@ const MySchemasTable = ({schemas, teamId, setUpdateSchemas}) => {
 
                     {/* Assigned sheets */}
                     {sheetsVisible[index] ? <div className="subTable">
-                        <div className="line">
-                            {sheetsColumnsNames.map((item, index) => {
-                                return <div className="subTable__cell"
-                                            key={index}>
-                                    {item}
+                        {sheets[0]?.sheets_data_sheet ? <>
+                            <div className="line">
+                                {sheetsColumnsNames.map((item, index) => {
+                                    return <div className="subTable__cell subTable__cell--header"
+                                                key={index}>
+                                        {item}
+                                    </div>
+                                })}
+                            </div>
+
+                            {sheets.map((item, index) => {
+                                return <div className="line" key={index}>
+                                    <div className="subTable__cell">
+                                        {getFileName(item.sheets_data_sheet)}
+                                    </div>
+                                    <div className="subTable__cell">
+                                        {getFileName(item.sheets_relation_sheet)}
+                                    </div>
+                                    <div className="subTable__cell">
+                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_data_sheet)}
+                                    </div>
+                                    <div className="subTable__cell">
+                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_relation_sheet)}
+                                    </div>
+                                    <div className="subTable__cell">
+                                        <a className="btn btn--goToEditor"
+                                           href={`/edytor-dopasowania?sheet1=${item.sheets_data_sheet}&sheet2=${item.sheets_relation_sheet}`}>
+                                            Uruchom edytor
+                                        </a>
+                                    </div>
                                 </div>
                             })}
-                        </div>
+                        </> : <h5 className="noSheetsInfo">
+                            Nie masz jeszcze żadnych arkuszy przypisanych do tego schematu
+                        </h5>}
+
+                        <button className="btn btn--assignSheetsToSchema"
+                                onClick={() => { setChooseSheetsModalVisible(true); }}>
+                            Dodaj nowe arkusze do schematu
+                        </button>
                     </div> : ''}
                 </div>
             })}

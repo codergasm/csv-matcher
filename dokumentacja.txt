@@ -36,5 +36,11 @@ natomiast relationSheetSorted i rowsToRender drugą (zmienną w zależności od 
 z dataSheet, a drugi - skrót dopasowanego do niego wiersza z relationSheet. Skrót wiersza to pierwsze 50 znaków z każdej
 kolumny wiersza.
 
+PRZYPISYWANIE PLIKÓW DO SCHEMATÓW DOPASOWANIA
+- w metodzie assignSheetsToSchema wstawiamy wiersz do tabeli match_schemas_sheets
+- wywołujemy metodę getNumberOfMatchedRows, która sprawdza ilość dopasowanych rekordów dla tych dwóch
+    plików w tym schemacie dopasowania
+- wynik zapisujemy updatując rekord w tabeli match_schemas_sheets
+
 TODO:
 - priorytety

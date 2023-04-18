@@ -286,10 +286,6 @@ const CorrelationView = ({user}) => {
         });
     }
 
-    useEffect(() => {
-        console.log(matchSchemaArray);
-    }, [matchSchemaArray]);
-
     const correlate = () => {
         setIndexesInSelectListToOverride([]);
         setCorrelationStatus(1);

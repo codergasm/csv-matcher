@@ -2192,7 +2192,7 @@ input[type=number] {
 }
 
 .subTable {
-    width: auto;
+    width: 90%;
     margin: 30px auto;
 }
 
@@ -2205,10 +2205,21 @@ input[type=number] {
 }
 
 .subTable__cell {
-    margin-right: 20px;
+    margin: 0 20px 10px 0;
     padding: 15px;
     border: 1px solid var(--primary);
     border-radius: 5px;
+    width: 19%;
+    white-space: normal;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.subTable__cell--header {
+    font-weight: 700;
+    border-width: 2px;
 }
 
 .btn--toggleVisibility {
@@ -2220,6 +2231,8 @@ input[type=number] {
     cursor: pointer;
     border: none;
     outline: none !important;
+    font-weight: 400;
+    text-decoration: underline;
     font-size: 13px;
     transition: .2s all;
 }
@@ -2240,4 +2253,49 @@ input[type=number] {
 
 .sheet__header__cell--expand {
     max-width: 200px;
+}
+
+.btn--goToEditor {
+    padding: 5px 10px;
+    background: var(--primary);
+    border-radius: 3px;
+    color: #fff;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 10px !important;
+}
+
+.noSheetsInfo {
+    font-weight: 400;
+    margin: auto;
+    text-align: center;
+}
+
+.btn--assignSheetsToSchema {
+    border: 1px solid var(--primary);
+    background: #fff;
+    border-radius: 5px;
+    height: 45px;
+    padding: 5px 15px;
+    font-size: 15px;
+    color: #313131;
+    margin: 15px auto 20px;
+    cursor: pointer;
+    transition: .2s all;
+}
+
+.btn--assignSheetsToSchema:hover {
+    background: #efefef;
+}
+
+.line--borderBottom {
+    border-top: 1px solid var(--primary);
+    border-bottom: 1px solid var(--primary);
+}
+
+.teamTable--schemas .sheet__table {
+    border-right: 1px solid var(--primary);
+    border-bottom: 1px solid var(--primary);
 }

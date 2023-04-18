@@ -66,5 +66,13 @@ const detachSheetsFromSchema = (dataSheet, relationSheet, matchSchema) => {
     });
 }
 
+const getNumberOfMatchedRows = (id) => {
+    return axios.get(`/schemas/getNumberOfMatchedRows/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
 export { getSchemasByUser, saveSchema, updateSchema, assignSchemaToTeam, deleteSchema,
-    assignSheetsToSchema, detachSheetsFromSchema }
+    assignSheetsToSchema, detachSheetsFromSchema, getNumberOfMatchedRows }

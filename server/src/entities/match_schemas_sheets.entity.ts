@@ -13,4 +13,9 @@ export class MatchSchemasSheetsEntity {
 
     @Column()
     match_schema: number;
+
+    @Column({
+        nullable: true
+    })
+    number_of_matched_rows: number;
 }

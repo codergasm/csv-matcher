@@ -184,5 +184,16 @@ const createRowShortcut = (row) => {
     return Object.entries(row).map((item) => (item[1].substring(0, 50))).join(';');
 }
 
-export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, getAuthHeader, addTrailingZero, createRowShortcut,
+const groupBy = (items, key) => items.reduce(
+    (result, item) => ({
+        ...result,
+        [item[key]]: [
+            ...(result[item[key]] || []),
+            item,
+        ],
+    }),
+    {},
+)
+
+export { sortByColumn, sortRelationColumn, addMissingKeys, findSubstrings, groupBy, getAuthHeader, addTrailingZero, createRowShortcut,
     checkCommonElement, makeId, isEmail, isPasswordStrength, isObjectEmpty, getDateFromString, getStringWithFileSize }
