@@ -5,6 +5,8 @@ import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../pages/CorrelationPage";
 import {getProgressByJobId, getSelectList, matching} from "../helpers/matching";
 import {makeId} from "../helpers/others";
+import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
+import {getSchemasByUser} from "../helpers/schemas";
 
 const ViewContext = React.createContext(null);
 
@@ -370,40 +372,44 @@ const CorrelationView = () => {
     }
 
     return <div className="container container--correlation">
-        <div className="correlation__viewPicker flex">
-            <button className={currentSheet === 0 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                    onClick={() => { setCurrentSheet(0); }}>
-                Arkusz 1
-            </button>
-            <button className={currentSheet === 1 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                    onClick={() => { setCurrentSheet(1); }}>
-                Arkusz 2
-            </button>
-            <button className={currentSheet === 2 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                    onClick={() => { setCurrentSheet(2); }}>
-                Arkusz wyjściowy
-            </button>
-        </div>
+        <div className="homepage homepage--correlation">
+            <ChooseAndSaveSchema />
 
-        <ViewContext.Provider value={{
-            showInSelectMenuColumns, setShowInSelectMenuColumns,
-            outputSheetExportColumns, setOutputSheetExportColumns,
-            matchType, setMatchType,
-            priorities, setPriorities,
-            outputSheet, setOutputSheet,
-            correlationStatus,
-            correlationMatrix,
-            indexesOfCorrelatedRows,
-            addManualCorrelation, manuallyCorrelatedRows,
-            overrideAllRows, setOverrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows,
-            matchThreshold, setMatchThreshold,
-            selectList, setSelectList,
-            selectListLoading,
-            correlate, progressCount
-        }}>
-            {sheetComponent}
-        </ViewContext.Provider>
+            <div className="correlation__viewPicker flex">
+                <button className={currentSheet === 0 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                        onClick={() => { setCurrentSheet(0); }}>
+                    Arkusz 1
+                </button>
+                <button className={currentSheet === 1 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                        onClick={() => { setCurrentSheet(1); }}>
+                    Arkusz 2
+                </button>
+                <button className={currentSheet === 2 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
+                        onClick={() => { setCurrentSheet(2); }}>
+                    Arkusz wyjściowy
+                </button>
+            </div>
+
+            <ViewContext.Provider value={{
+                showInSelectMenuColumns, setShowInSelectMenuColumns,
+                outputSheetExportColumns, setOutputSheetExportColumns,
+                matchType, setMatchType,
+                priorities, setPriorities,
+                outputSheet, setOutputSheet,
+                correlationStatus,
+                correlationMatrix,
+                indexesOfCorrelatedRows,
+                addManualCorrelation, manuallyCorrelatedRows,
+                overrideAllRows, setOverrideAllRows,
+                avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows,
+                matchThreshold, setMatchThreshold,
+                selectList, setSelectList,
+                selectListLoading,
+                correlate, progressCount
+            }}>
+                {sheetComponent}
+            </ViewContext.Provider>
+        </div>
     </div>
 };
 

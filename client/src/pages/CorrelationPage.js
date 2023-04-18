@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorelationView from "../components/CorrelationView";
+import {getSchemasByUser} from "../helpers/schemas";
 
 const AppContext = React.createContext(null);
 
-const CorrelationPage = () => {
+const CorrelationPage = ({user}) => {
     const [currentView, setCurrentView] = useState(0);
     const [mainComponent, setMainComponent] = useState(<LoadFilesView />);
     const [dataSheet, setDataSheet] = useState({});
@@ -13,25 +14,44 @@ const CorrelationPage = () => {
     const [relationFile, setRelationFile] = useState(null);
     const [dataDelimiter, setDataDelimiter] = useState('');
     const [relationDelimiter, setRelationDelimiter] = useState('');
+    const [schemas, setSchemas] = useState([]);
+    const [currentSchema, setCurrentSchema] = useState(0);
 
     useEffect(() => {
-        switch(currentView) {
-            case 0:
-                setMainComponent(<LoadFilesView />);
-                break;
-            case 1:
-                setMainComponent(<CorelationView />);
-                break;
-            default:
-                break;
+        getSchemasByUser()
+            .then((res) => {
+                if(res?.data) {
+                    setSchemas(res.data.map((item) => {
+                        return {
+                            value: item.id,
+                            label: item.name
+                        }
+                    }));
+                }
+            });
+    }, []);
+
+    useEffect(() => {
+        if(user) {
+            switch(currentView) {
+                case 0:
+                    setMainComponent(<LoadFilesView user={user} />);
+                    break;
+                case 1:
+                    setMainComponent(<CorelationView user={user} />);
+                    break;
+                default:
+                    break;
+            }
         }
-    }, [currentView]);
+    }, [currentView, user]);
 
     return <AppContext.Provider value={{
         currentView, setCurrentView,
         dataFile, setDataFile, relationFile, setRelationFile,
         dataSheet, setDataSheet, relationSheet, setRelationSheet,
-        dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter
+        dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
+        schemas, setSchemas, currentSchema, setCurrentSchema
     }}>
         {mainComponent}
     </AppContext.Provider>

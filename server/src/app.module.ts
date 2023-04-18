@@ -18,6 +18,7 @@ import { UsersModule } from './users/users.module';
 import {MailerModule} from "@nestjs-modules/mailer";
 import {UsersVerificationEntity} from "./entities/users_verification.entity";
 import { FilesModule } from './files/files.module';
+import { SchemasModule } from './schemas/schemas.module';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { FilesModule } from './files/files.module';
       }),
     TeamsModule,
     UsersModule,
-    FilesModule
+    FilesModule,
+    SchemasModule
   ],
   controllers: [AppController],
   providers: [AppService],

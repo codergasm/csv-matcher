@@ -19,4 +19,7 @@ export class MatchSchemasEntity {
 
     @Column()
     owner_team_id: number;
+
+    @Column()
+    created_datetime: Date;
 }

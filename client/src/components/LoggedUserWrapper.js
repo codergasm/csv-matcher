@@ -2,12 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {authUser, getUserData} from "../helpers/users";
 import Homepage from "../pages/Homepage";
 import CorrelationPage from "../pages/CorrelationPage";
-import Loader from "./Loader";
 import LoggedUserHeader from "./LoggedUserHeader";
 import ChangePassword from "../pages/ChangePassword";
 import TeamPage from "../pages/TeamPage";
 import LoadingPage from "../pages/LoadingPage";
 import FilesPage from "../pages/FilesPage";
+import SchemasPage from "../pages/SchemasPage";
 
 const LoggedUserWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -45,8 +45,11 @@ const LoggedUserWrapper = ({page}) => {
                                         case 2:
                                             setRender(<FilesPage user={userTmp} />);
                                             break;
+                                        case 3:
+                                            setRender(<SchemasPage user={userTmp} />);
+                                            break;
                                         case 4:
-                                            setRender(<CorrelationPage />);
+                                            setRender(<CorrelationPage user={userTmp} />);
                                             break;
                                         case 5:
                                             setRender(<TeamPage user={userTmp} />);
