@@ -3,9 +3,13 @@ import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
 import arrowIcon from '../static/img/arrow-expand.svg';
-import {assignSchemaToTeam, deleteSchema} from "../helpers/schemas";
+import {assignSchemaToTeam, deleteSchema, detachSheetsFromSchema, detachSheetsFromSchemaById} from "../helpers/schemas";
+import {assignFileOwnershipToTeam} from "../helpers/files";
+import AssignSheetsToSchemaModal from "./AssignSheetsToSchemaModal";
+import BottomNotification from "./BottomNotification";
+import MatchProgressBar from "./MatchProgressBar";
 
-const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
+const MySchemasTable = ({schemas, files, allFiles, teamId, setUpdateSchemas}) => {
     const columnsNames = [
         'nazwa schematu', 'data utworzenia', 'edycja', 'zwiń/rozwiń'
     ];
@@ -18,14 +22,25 @@ const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
     const [assignSchemeToTeamModalVisible, setAssignSchemeToTeamModalVisible] = useState(false);
     const [deleteSchemeId, setDeleteSchemeId] = useState(null);
     const [deleteSchemeModalVisible, setDeleteSchemeModalVisible] = useState(false);
+    const [detachSheetFromSchemaId, setDetachSheetFromSchemaId] = useState(null);
+    const [detachSheetFromSchemaModalVisible, setDetachSheetFromSchemaModalVisible] = useState(false);
     const [sheetsVisible, setSheetsVisible] = useState([]);
     const [chooseSheetsModalVisible, setChooseSheetsModalVisible] = useState(false);
+    const [chooseSheetsSchemaId, setChooseSheetsSchemaId] = useState(null);
 
     useEffect(() => {
         if(schemas) {
             setSheetsVisible(Object.entries(schemas).map(() => false));
         }
     }, [schemas]);
+
+    useEffect(() => {
+        if(chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1) {
+            setTimeout(() => {
+                setChooseSheetsSchemaId(null);
+            }, 3000);
+        }
+    }, [chooseSheetsSchemaId]);
 
     const handleSheetsVisibilityChange = (i, value) => {
         setSheetsVisible(prevState => (prevState.map((item, index) => {
@@ -35,14 +50,14 @@ const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
     }
 
     const getFileName = (id) => {
-        const file = files.find((item) => (item.id === id));
+        const file = allFiles.find((item) => (item.id === id));
 
         if(file) return file.filename;
         else return '';
     }
 
     const getFileRowCount = (id) => {
-        const file = files.find((item) => (item.id === id));
+        const file = allFiles.find((item) => (item.id === id));
 
         if(file) return file.row_count;
         else return '';
@@ -69,6 +84,25 @@ const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
                                                  confirmBtnText="Usuń"
                                                  backBtnText="Powrót"
                                                  backBtnLink="/schematy-dopasowania" /> : ''}
+
+        {detachSheetFromSchemaModalVisible ? <DecisionModal closeModal={() => { setDetachSheetFromSchemaModalVisible(false); }}
+                                                       closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
+                                                       submitFunction={detachSheetsFromSchemaById}
+                                                       submitFunctionParameters={[detachSheetFromSchemaId]}
+                                                       text="Czy na pewno chcesz odłączyć te pliki od tego schematu?"
+                                                       successText="Pliki zostały odłączone od schematu"
+                                                       confirmBtnText="Odłącz"
+                                                       backBtnText="Powrót"
+                                                       backBtnLink="/schematy-dopasowania"
+        /> : ''}
+
+        {chooseSheetsModalVisible ? <AssignSheetsToSchemaModal setUpdateSchemas={setUpdateSchemas}
+                                                               matchSchema={chooseSheetsSchemaId}
+                                                               showBottomNotification={setChooseSheetsSchemaId}
+                                                               closeModal={() => { setChooseSheetsModalVisible(false); }} /> : ''}
+
+        {chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1 ? <BottomNotification text={chooseSheetsSchemaId === 0 ? 'Pliki zostały przypisane do schematu' : 'Coś poszło nie tak... Prosimy spróbować później'}
+                                                                                         background={chooseSheetsSchemaId === 0 ? null : '#ff0000'} /> : ''}
 
         <div className="sheet__table">
             <div className="line line--membersHeader">
@@ -140,17 +174,25 @@ const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
                                     <div className="subTable__cell">
                                         {getFileName(item.sheets_relation_sheet)}
                                     </div>
-                                    <div className="subTable__cell">
+                                    <div className="subTable__cell subTable__cell--progress">
+                                        <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_data_sheet)} />
                                         {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_data_sheet)}
                                     </div>
-                                    <div className="subTable__cell">
+                                    <div className="subTable__cell subTable__cell--progress">
+                                        <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_relation_sheet)} />
                                         {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_relation_sheet)}
                                     </div>
                                     <div className="subTable__cell">
-                                        <a className="btn btn--goToEditor"
-                                           href={`/edytor-dopasowania?sheet1=${item.sheets_data_sheet}&sheet2=${item.sheets_relation_sheet}`}>
-                                            Uruchom edytor
-                                        </a>
+                                        <div className="flex">
+                                            <a className="btn btn--goToEditor"
+                                               href={`/edytor-dopasowania?sheet1=${item.sheets_data_sheet}&sheet2=${item.sheets_relation_sheet}&schema=${item.schemas_id}`}>
+                                                Uruchom edytor
+                                            </a>
+                                            <button className="btn--action btn--action--detachSheets"
+                                                    onClick={() => { setDetachSheetFromSchemaId(item.sheets_id); setDetachSheetFromSchemaModalVisible(true); }}>
+                                                <img className="img" src={deleteIcon} alt="usuń" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             })}
@@ -159,7 +201,7 @@ const MySchemasTable = ({schemas, files, teamId, setUpdateSchemas}) => {
                         </h5>}
 
                         <button className="btn btn--assignSheetsToSchema"
-                                onClick={() => { setChooseSheetsModalVisible(true); }}>
+                                onClick={() => { setChooseSheetsSchemaId(schema.schemas_id); setChooseSheetsModalVisible(true); }}>
                             Dodaj nowe arkusze do schematu
                         </button>
                     </div> : ''}

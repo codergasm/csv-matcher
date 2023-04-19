@@ -44,6 +44,7 @@ const SchemasPage = ({user}) => {
 
             <MySchemasTable schemas={userSchemas}
                             files={userFiles}
+                            allFiles={userFiles.concat(teamFiles)}
                             teamId={user.teamId}
                             setUpdateSchemas={setUpdateSchemas} />
 

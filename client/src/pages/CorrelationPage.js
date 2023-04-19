@@ -23,6 +23,7 @@ const CorrelationPage = ({user}) => {
         const params = new URLSearchParams(window.location.search);
         const sheet1 = params.get('sheet1');
         const sheet2 = params.get('sheet2');
+        const schema = params.get('schema');
 
         if(sheet1 && sheet2) {
             getFileById(sheet1)

@@ -1,21 +1,45 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../pages/CorrelationPage";
 import {addMissingKeys} from "../helpers/others";
 import Loader from "./Loader";
 import Papa from 'papaparse';
-import {saveSheet} from "../helpers/files";
+import {getFilesByUser, saveSheet} from "../helpers/files";
 import SchemaPicker from "./SchemaPicker";
+import Select from "react-select";
+import {settings} from "../helpers/settings";
 
 const LoadFilesView = ({user}) => {
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
         relationSheet, setRelationSheet } = useContext(AppContext);
 
+    const [files, setFiles] = useState([]);
+    const [filesToChoose, setFilesToChoose] = useState([]);
+    const [dataSheetId, setDataSheetId] = useState(0);
+    const [relationSheetId, setRelationSheetId] = useState(0);
     const [dataSheetLoading, setDataSheetLoading] = useState(false);
     const [relationSheetLoading, setRelationSheetLoading] = useState(false);
     const [assignDataSheetOwnershipToTeam, setAssignDataSheetOwnershipToTeam] = useState(false);
     const [assignRelationSheetOwnershipToTeam, setAssignRelationSheetOwnershipToTeam] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    let selectRelationSheetRef = useRef(null);
+    let selectDataSheetRef = useRef(null);
+
+    useEffect(() => {
+        getFilesByUser()
+            .then((res) => {
+               if(res?.data) {
+                   setFiles(res.data);
+                   setFilesToChoose(res.data.map((item) => {
+                       return {
+                           value: item.id,
+                           label: item.filename
+                       }
+                   }));
+               }
+            });
+    }, []);
 
     useEffect(() => {
         if(relationSheet?.length) {
@@ -32,66 +56,98 @@ const LoadFilesView = ({user}) => {
     const handleRelationSheetChange = (e) => {
         const files = e.target.files;
         if(files) {
+            setRelationSheetId(0);
             setRelationSheetLoading(true);
-
-            Papa.parse(files[0], {
-                header: true,
-                complete: function(results) {
-                    setRelationDelimiter(results.meta.delimiter);
-
-                    const obj = results.data.map((item, index) => {
-                        return {
-                            '0': index+1,
-                            ...item
-                        }
-                    });
-
-                    // Add missing keys and convert values to string
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
-                        return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
-                    });
-
-                    setRelationSheet(objComplete);
-                    setRelationFile(files[0]);
-                }
-            });
+            updateRelationSheet(files[0]);
         }
     }
 
     const handleDataSheetChange = (e) => {
         const files = e.target.files;
         if(files) {
+            setDataSheetId(0);
             setDataSheetLoading(true);
-
-            Papa.parse(files[0], {
-                header: true,
-                complete: function(results) {
-                    setDataDelimiter(results.meta.delimiter);
-
-                    const obj = results.data.map((item, index) => {
-                        return {
-                            '0': index+1,
-                            ...item
-                        }
-                    });
-
-                    // Add missing keys and convert values to string
-                    const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
-                        return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
-                    });
-
-                    setDataSheet(objComplete);
-                    setDataFile(files[0]);
-                }
-            });
+            updateDataSheet(files[0]);
         }
+    }
+
+    const handleDataSheetChoose = (val) => {
+        if(val) {
+            setDataSheetId(val);
+            const file = files.find((item) => (item.id === val.value));
+            updateDataSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+        }
+    }
+
+    const handleRelationSheetChoose = (val) => {
+        if(val) {
+            setRelationSheetId(val);
+            const file = files.find((item) => (item.id === val.value));
+            updateRelationSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+        }
+    }
+
+    const updateRelationSheet = (file, download = false) => {
+        Papa.parse(file, {
+            download: download,
+            header: true,
+            complete: function(results) {
+                setRelationDelimiter(results.meta.delimiter);
+
+                const obj = results.data.map((item, index) => {
+                    return {
+                        '0': index+1,
+                        ...item
+                    }
+                });
+
+                // Add missing keys and convert values to string
+                const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
+                    return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
+                });
+
+                setRelationSheet(objComplete);
+                setRelationFile(file);
+            }
+        });
+    }
+
+    const updateDataSheet = (file, download = false) => {
+        Papa.parse(file, {
+            download: download,
+            header: true,
+            complete: function(results) {
+                setDataDelimiter(results.meta.delimiter);
+
+                const obj = results.data.map((item, index) => {
+                    return {
+                        '0': index+1,
+                        ...item
+                    }
+                });
+
+                // Add missing keys and convert values to string
+                const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
+                    return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
+                });
+
+                setDataSheet(objComplete);
+                setDataFile(file);
+            }
+        });
     }
 
     const saveFiles = async () => {
         try {
             setLoading(true);
-            await saveSheet(dataFile, user.teamId, assignDataSheetOwnershipToTeam);
-            await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
+
+            if(!dataSheetId) {
+                await saveSheet(dataFile, user.teamId, assignDataSheetOwnershipToTeam);
+            }
+            if(!relationSheetId) {
+                await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
+            }
+
             setLoading(false);
 
             setCurrentView(1);
@@ -112,10 +168,26 @@ const LoadFilesView = ({user}) => {
                 <span>
                     Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.
                 </span>
-                    {!dataSheet?.length && !dataSheetLoading ? <input className="loadFiles__input"
-                                                                      type="file"
-                                                                      accept=".csv,.xlsx,.xls"
-                                                                      onChange={(e) => { handleDataSheetChange(e); }} /> :
+                    <div className="loadFiles__choose">
+                        <Select
+                            ref={selectDataSheetRef}
+                            options={filesToChoose}
+                            placeholder="Wybierz arkusz"
+                            value={filesToChoose.find((item) => (item.value === dataSheetId))}
+                            onChange={handleDataSheetChoose}
+                            isSearchable={true}
+                        />
+                    </div>
+
+                    {!dataSheet?.length && !dataSheetLoading ? <div className="loadFiles__dropzone">
+                            <span>
+                                Dodaj plik
+                            </span>
+                            <input className="loadFiles__input"
+                                   type="file"
+                                   accept=".csv,.xlsx,.xls"
+                                   onChange={(e) => { handleDataSheetChange(e); }} />
+                        </div> :
                         <div className="sheetLoaded">
                             {dataSheetLoading ? <div className="center">
                                 <Loader />
@@ -124,7 +196,7 @@ const LoadFilesView = ({user}) => {
                                     Plik został dodany
                                 </p>
                                 <button className="btn btn--remove"
-                                        onClick={() => { setDataSheet([]); }}>
+                                        onClick={() => { selectDataSheetRef.current.clearValue(); setDataSheetId(0); setDataSheet([]); }}>
                                     Usuń
                                 </button>
                             </>}
@@ -144,10 +216,26 @@ const LoadFilesView = ({user}) => {
                     Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
                     do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)
                 </span>
-                    {!relationSheet?.length && !relationSheetLoading ? <input className="loadFiles__input"
-                                                                              type="file"
-                                                                              accept=".csv,.xlsx,.xls"
-                                                                              onChange={(e) => { handleRelationSheetChange(e); }} /> :
+                    <div className="loadFiles__choose">
+                        <Select
+                            ref={selectRelationSheetRef}
+                            options={filesToChoose}
+                            placeholder="Wybierz arkusz"
+                            value={filesToChoose.find((item) => (item.value === relationSheetId))}
+                            onChange={handleRelationSheetChoose}
+                            isSearchable={true}
+                        />
+                    </div>
+
+                    {!relationSheet?.length && !relationSheetLoading ? <div className="loadFiles__dropzone">
+                            <span>
+                                Dodaj plik
+                            </span>
+                            <input className="loadFiles__input"
+                                   type="file"
+                                   accept=".csv,.xlsx,.xls"
+                                   onChange={(e) => { handleRelationSheetChange(e); }} />
+                        </div> :
                         <div className="sheetLoaded">
                             {relationSheetLoading ? <div className="center">
                                 <Loader />
@@ -156,7 +244,7 @@ const LoadFilesView = ({user}) => {
                                     Plik został dodany
                                 </p>
                                 <button className="btn btn--remove"
-                                        onClick={() => { setRelationSheet([]); }}>
+                                        onClick={() => { selectRelationSheetRef.current.clearValue(); setRelationSheetId(0); setRelationSheet([]); }}>
                                     Usuń
                                 </button>
                             </>}

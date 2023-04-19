@@ -100,6 +100,10 @@ export class SchemasService {
     }
 
     async assignSheetsToSchema(dataSheet, relationSheet, matchSchema) {
+        console.log(dataSheet, relationSheet, matchSchema);
+
+        // TODO: czasami matchSchema to null, niezaleznie od arkuszy, nie wiadomo dlaczego
+
         const insertedRow = await this.schemasSheetsRepository.save({
             data_sheet: dataSheet,
             relation_sheet: relationSheet,
@@ -125,6 +129,10 @@ export class SchemasService {
             relation_sheet: relationSheet,
             match_schema: matchSchema
         });
+    }
+
+    async detachSheetsFromSchemaById(id) {
+        return this.schemasSheetsRepository.delete({id});
     }
 
     async getNumberOfMatchedRows(schemasSheetsRowId) {
@@ -160,7 +168,8 @@ export class SchemasService {
                 });
 
                 const matchedRows = matchedStringsArray.filter((item) => {
-                    return dataSheetShortcuts.includes(item[0]) && relationSheetShortcuts.includes(item[1]);
+                    return (dataSheetShortcuts.includes(item[0]) && relationSheetShortcuts.includes(item[1])) ||
+                        (dataSheetShortcuts.includes(item[1]) && relationSheetShortcuts.includes(item[0]));
                 });
 
                 return matchedRows.length;

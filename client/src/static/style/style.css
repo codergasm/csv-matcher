@@ -64,16 +64,39 @@
     padding-bottom: 45px;
 }
 
-.loadFiles__input {
+.loadFiles__dropzone {
     width: 200px;
     height: 200px;
     border-radius: 15px;
     border: 3px dashed var(--primary);
-    color: transparent;
     position: relative;
+    overflow: hidden;
 }
 
-.loadFiles__input::after {
+.loadFiles__dropzone > span {
+    text-align: center;
+    position: absolute;
+    display: block;
+    color: #313131;
+    font-size: 16px;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.loadFiles__input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    border-radius: 15px;
+    color: transparent;
+    opacity: 0;
+    z-index: 100;
+}
+
+.loadFiles__dropzone::after {
     content: "+";
     cursor: pointer;
     font-size: 100px;
@@ -81,9 +104,10 @@
     position: absolute;
     top: 0;
     left: 0;
+    padding-top: 10%;
     width: 100%;
     height: 100%;
-    background: #fff;
+    background: transparent;
     color: #000;
     z-index: 3;
     display: flex;
@@ -92,7 +116,7 @@
     transition: .2s all;
 }
 
-.loadFiles__input:hover::after {
+.loadFiles__dropzone:hover::after {
     font-size: 140px;
 }
 
@@ -1210,6 +1234,13 @@ input[type=number] {
     margin-bottom: 20px;
 }
 
+.progressBar--match {
+    width: 80%;
+    height: 10px;
+    border-width: 1px;
+    margin-bottom: 10px;
+}
+
 .progressBar > span {
     display: block;
     height: 100%;
@@ -2222,6 +2253,10 @@ input[type=number] {
     border-width: 2px;
 }
 
+.subTable__cell--progress {
+    flex-direction: column;
+}
+
 .btn--toggleVisibility {
     background: transparent;
     color: #313131;
@@ -2298,4 +2333,73 @@ input[type=number] {
 .teamTable--schemas .sheet__table {
     border-right: 1px solid var(--primary);
     border-bottom: 1px solid var(--primary);
+}
+
+.btn--action--detachSheets {
+    margin-left: 10px;
+}
+
+.modal__inner--chooseSheets {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 800px;
+}
+
+.modal__sheetsList {
+    width: 48%;
+}
+
+.modal__inner--chooseSheets .modal__header {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.modal__sheetsList__inner {
+    height: 300px;
+}
+
+.modal__sheetsList__item {
+    height: 45px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #313131;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 16px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: .2s all;
+}
+
+.modal__sheetsList__item--selected {
+    background: var(--primary);
+    color: #fff;
+}
+
+.modal__sheetsList__item:hover {
+    background: #efefef;
+}
+
+.modal__sheetsList__item--selected:hover {
+    background: var(--primary);
+}
+
+.btn--assignSheetsToSchemaSubmit {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    height: 50px;
+}
+
+.loadFiles__choose {
+    display: block;
+    margin: 0 auto 30px;
+    text-align: center;
+    position: relative;
+    z-index: 1001;
 }

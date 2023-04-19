@@ -1,4 +1,5 @@
 import axios from "axios";
+import {settings} from "./settings";
 
 const getProgressByJobId = (jobId) => {
     return axios.get(`/getProgress/${jobId}`);
@@ -15,14 +16,26 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
 
     formData.append('jobId', jobId);
     formData.append('priorities', JSON.stringify(priorities));
-    formData.append('files', dataFile);
-    formData.append('files', relationFile);
     formData.append('dataDelimiter', dataDelimiter);
     formData.append('relationDelimiter', relationDelimiter);
     formData.append('isCorrelationMatrixEmpty', isCorrelationMatrixEmpty);
     formData.append('showInSelectMenuColumns', JSON.stringify(showInSelectMenuColumns));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
+
+    if(typeof dataFile === 'string') {
+        formData.append('dataFilePath', dataFile.replace(settings.API_URL, ''));
+    }
+    else {
+        formData.append('files', dataFile);
+    }
+
+    if(typeof relationFile === 'string') {
+        formData.append('relationFilePath', relationFile.replace(settings.API_URL, ''));
+    }
+    else {
+        formData.append('files', relationFile);
+    }
 
     return axios.post('/getSelectList', formData, config);
 }
@@ -41,8 +54,6 @@ const matching = (jobId, priorities, correlationMatrix,
     }
 
     formData.append('jobId', jobId);
-    formData.append('files', dataFile);
-    formData.append('files', relationFile);
     formData.append('dataFileDelimiter', dataDelimiter);
     formData.append('relationFileDelimiter', relationDelimiter);
     formData.append('correlationMatrix', correlationMatrix);
@@ -52,6 +63,20 @@ const matching = (jobId, priorities, correlationMatrix,
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
     formData.append('matchThreshold', matchThreshold);
+
+    if(typeof dataFile === 'string') {
+        formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));
+    }
+    else {
+        formData.append('files', dataFile);
+    }
+
+    if(typeof relationFile === 'string') {
+        formData.append('relationFilePath', relationFile.replace(settings.API_URL, '.'));
+    }
+    else {
+        formData.append('files', relationFile);
+    }
 
     return axios.post('/correlate', formData, config);
 }

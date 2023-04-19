@@ -7,18 +7,13 @@ import {CorrelationJobsEntity} from "./entities/correlation_jobs.entity";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import {AddToTeamUsersRequestsEntity} from "./entities/add_to_team_users_requests.entity";
-import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match_operations_registry.entity";
-import {FilesEntity} from "./entities/files.entity";
-import {MatchSchemasEntity} from "./entities/match_schemas.entity";
-import {SubscriptionTypesEntity} from "./entities/subscription_types.entity";
-import {TeamsEntity} from "./entities/teams.entity";
-import {UsersEntity} from "./entities/users.entity";
 import { TeamsModule } from './teams/teams.module';
 import { UsersModule } from './users/users.module';
 import {MailerModule} from "@nestjs-modules/mailer";
-import {UsersVerificationEntity} from "./entities/users_verification.entity";
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { FilesModule } from './files/files.module';
 import { SchemasModule } from './schemas/schemas.module';
+import {join} from "path";
 
 @Module({
   imports: [
@@ -26,6 +21,9 @@ import { SchemasModule } from './schemas/schemas.module';
     MulterModule.register({
       dest: './uploads',
       limits: { fieldSize: 100 * 1024 * 1024 }
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..'),
     }),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot({

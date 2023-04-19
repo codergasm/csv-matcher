@@ -47,6 +47,11 @@ export class SchemasController {
         return this.schemasService.detachSheetsFromSchema(dataSheet, relationSheet, matchSchema);
     }
 
+    @Delete('/detachSheetsFromSchema/:id')
+    detachSheetsFromSchemaById(@Param('id') id) {
+        return this.schemasService.detachSheetsFromSchemaById(id);
+    }
+
     @Get('/getNumberOfMatchedRows/:id')
     getNumberOfMatchedRows(@Param('id') id) {
         return this.schemasService.getNumberOfMatchedRows(id);

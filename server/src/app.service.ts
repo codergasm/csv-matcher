@@ -5,6 +5,7 @@ import * as papa from 'papaparse';
 import {Repository} from "typeorm";
 import {CorrelationJobsEntity} from "./entities/correlation_jobs.entity";
 import {InjectRepository} from "@nestjs/typeorm";
+import * as path from 'path';
 
 @Injectable()
 export class AppService {
@@ -43,8 +44,8 @@ export class AppService {
       }
       else {
           // Convert files to array of objects
-          const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
-          const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
+          const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? path.resolve(__dirname, dataFile) : dataFile.path, 'utf-8');
+          const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? path.resolve(__dirname, relationFile) : relationFile.path, 'utf-8');
           const dataSheet = papa.parse(dataFileContent, { header: true }).data;
           const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
@@ -204,8 +205,8 @@ export class AppService {
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
       // Convert files to array of objects
-      const dataFileContent = fs.readFileSync(dataFile.path, 'utf-8');
-      const relationFileContent = fs.readFileSync(relationFile.path, 'utf-8');
+      const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? dataFile : dataFile.path, 'utf-8');
+      const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? relationFile : relationFile.path, 'utf-8');
       const dataSheet = papa.parse(dataFileContent, { header: true }).data;
       const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 

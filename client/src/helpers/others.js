@@ -181,7 +181,10 @@ const getStringWithFileSize = (bytes) => {
 }
 
 const createRowShortcut = (row) => {
-    return Object.entries(row).map((item) => (item[1].substring(0, 50))).join(';');
+    return Object.entries(row)
+        .map((item) => (item[1].substring(0, 50)))
+        .filter((item, index) => (index !== 0))
+        .join(';');
 }
 
 const groupBy = (items, key) => items.reduce(

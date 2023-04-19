@@ -5,6 +5,7 @@ import {Repository} from "typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import * as fs from 'fs';
 import * as papa from 'papaparse';
+import {MatchSchemasSheetsEntity} from "../entities/match_schemas_sheets.entity";
 
 @Injectable()
 export class FilesService {
@@ -12,7 +13,9 @@ export class FilesService {
         @InjectRepository(FilesEntity)
         private readonly filesRepository: Repository<FilesEntity>,
         @InjectRepository(UsersEntity)
-        private readonly usersRepository: Repository<UsersEntity>
+        private readonly usersRepository: Repository<UsersEntity>,
+        @InjectRepository(MatchSchemasSheetsEntity)
+        private readonly schemasSheetsRepository: Repository<MatchSchemasSheetsEntity>
     ) {
     }
 
@@ -62,6 +65,14 @@ export class FilesService {
         if(fileRow) {
             // Delete file
             fs.unlinkSync(fileRow.filepath);
+
+            // Delete assignments to schemas
+            await this.schemasSheetsRepository.delete({
+                data_sheet: id
+            });
+            await this.schemasSheetsRepository.delete({
+                relation_sheet: id
+            });
 
             // Delete row from database
             return this.filesRepository.delete({id});
