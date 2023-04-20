@@ -7,22 +7,22 @@ import {saveSchema, updateSchema} from "../helpers/schemas";
 import BottomNotification from "./BottomNotification";
 
 const ChooseAndSaveSchema = ({user}) => {
-    const { schemas, currentSchema, setCurrentSchema, setUpdateSchemas } = useContext(AppContext);
+    const { schemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
+        dataSheetId, relationSheetId } = useContext(AppContext);
     const { priorities, matchSchemaArray } = useContext(ViewContext);
 
     const [name, setName] = useState('');
     const [notificationText, setNotificationText] = useState('');
     const [notificationColor, setNotificationColor] = useState('');
-    const [newSchemaId, setNewSchemaId] = useState(-1);
 
     useEffect(() => {
-        if(currentSchema === -1) {
+        if(currentSchemaId === -1) {
             setName('nowy schemat');
         }
         else {
             setName('');
         }
-    }, [currentSchema]);
+    }, [currentSchemaId]);
 
     useEffect(() => {
         if(notificationText) {
@@ -32,17 +32,11 @@ const ChooseAndSaveSchema = ({user}) => {
         }
     }, [notificationText]);
 
-    useEffect(() => {
-        if(newSchemaId !== -1) {
-            setCurrentSchema(schemas.findIndex((item) => (item.value === newSchemaId)))
-        }
-    }, [newSchemaId, schemas]);
-
     const createSchemaWrapper = () => {
-        saveSchema(name, matchSchemaArray, priorities, user.email, false)
+        saveSchema(name, matchSchemaArray, priorities, user.email, false, dataSheetId, relationSheetId)
             .then((res) => {
                 setUpdateSchemas(p => !p);
-                setNewSchemaId(res?.data?.id);
+                setCurrentSchemaId(res?.data?.id);
                 setNotificationColor('#508345');
                 setNotificationText('Schemat został dodany');
             })
@@ -53,7 +47,7 @@ const ChooseAndSaveSchema = ({user}) => {
     }
 
     const updateSchemaWrapper = () => {
-        updateSchema(schemas[currentSchema.value].id, name, matchSchemaArray, priorities)
+        updateSchema(currentSchemaId, name, matchSchemaArray, priorities)
             .then((res) => {
                 setNotificationColor('#508345');
                 setNotificationText('Schemat został zaktualizowany');
@@ -62,6 +56,10 @@ const ChooseAndSaveSchema = ({user}) => {
                 setNotificationText('Coś poszło nie tak... Prosimy spróbować później');
                 setNotificationColor('#ff0000');
             });
+    }
+
+    const handleChange = (el) => {
+        setCurrentSchemaId(el.value);
     }
 
     return <div className="schemaPicker">
@@ -81,11 +79,11 @@ const ChooseAndSaveSchema = ({user}) => {
             Aktualny schemat dopasowania:
 
             <div className="selectWrapper">
-                {currentSchema !== -1 ? <Select
+                {currentSchemaId !== -1 ? <Select
                     options={schemas}
                     placeholder="Wybierz schemat"
-                    value={schemas[currentSchema]}
-                    onChange={setCurrentSchema}
+                    value={schemas.find((item) => (item.value === currentSchemaId))}
+                    onChange={handleChange}
                     isSearchable={true}
                 /> : <input className="input input--schemaName"
                             placeholder="Nazwa schematu dopasowania"
@@ -93,7 +91,7 @@ const ChooseAndSaveSchema = ({user}) => {
                             onChange={(e) => { setName(e.target.value); }} />}
             </div>
 
-            {currentSchema === -1 ? <button className="btn btn--saveSchema"
+            {currentSchemaId === -1 ? <button className="btn btn--saveSchema"
                                            onClick={() => { createSchemaWrapper(); }}>
                 Utwórz i zapisz schemat
             </button> : <button className="btn btn--saveSchema"

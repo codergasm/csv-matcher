@@ -3,15 +3,16 @@ import DataSheetView from "./DataSheetView";
 import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../pages/CorrelationPage";
-import {getProgressByJobId, getSelectList, matching} from "../helpers/matching";
+import {correlateUsingSchema, getProgressByJobId, getSelectList, matching} from "../helpers/matching";
 import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
-import {getSchemasByUser} from "../helpers/schemas";
+import {getSchemaById, getSchemasByUser} from "../helpers/schemas";
 
 const ViewContext = React.createContext(null);
 
 const CorrelationView = ({user}) => {
-    const { dataSheet, relationSheet, dataFile, relationFile,
+    const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
+        dataSheetId, relationSheetId,
         dataDelimiter, relationDelimiter } = useContext(AppContext);
 
     // 0 - data, 1 - relation, 2 - output
@@ -34,6 +35,7 @@ const CorrelationView = ({user}) => {
     const [indexesOfCorrelatedRows, setIndexesOfCorrelatedRows] = useState([]);
 
     const [manuallyCorrelatedRows, setManuallyCorrelatedRows] = useState([]);
+    const [schemaCorrelatedRows, setSchemaCorrelatedRows] = useState([]);
     const [overrideAllRows, setOverrideAllRows] = useState(false);
     const [avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows] = useState(false);
     const [matchThreshold, setMatchThreshold] = useState(90);
@@ -42,6 +44,29 @@ const CorrelationView = ({user}) => {
     const [selectListLoading, setSelectListLoading] = useState(false);
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
+
+    useEffect(() => {
+        // Change matching every time currentSchemaId change
+        if(dataSheetId > 0 && relationSheetId > 0 && currentSchemaId > 0) {
+            getSchemaById(currentSchemaId)
+                .then((res) => {
+                    if(res?.data) {
+                        setPriorities(JSON.parse(res.data.automatic_matcher_settings_object));
+                    }
+                })
+
+            correlateUsingSchema(dataSheetId, relationSheetId, currentSchemaId)
+                .then((res) => {
+                    if(res?.data) {
+                        setIndexesOfCorrelatedRows(res.data);
+                        setSchemaCorrelatedRows(res.data.map((item, index) => {
+                            if(index !== -1) return index;
+                            else return null;
+                        }).filter((item) => (item !== null)));
+                    }
+                });
+        }
+    }, [currentSchemaId, dataSheetId, relationSheetId]);
 
     useEffect(() => {
         // Select column with most content for showInSelectMenuColumns
@@ -271,6 +296,14 @@ const CorrelationView = ({user}) => {
         }
     }, [indexesOfCorrelatedRows]);
 
+    useEffect(() => {
+        if(manuallyCorrelatedRows?.length) {
+            setSchemaCorrelatedRows(prevState => (prevState.filter((item) => {
+                return !manuallyCorrelatedRows.includes(item);
+            })));
+        }
+    }, [manuallyCorrelatedRows]);
+
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
         setManuallyCorrelatedRows(prevState => ([...prevState, relationRowIndex]));
 
@@ -399,6 +432,7 @@ const CorrelationView = ({user}) => {
                 correlationMatrix,
                 indexesOfCorrelatedRows,
                 addManualCorrelation, manuallyCorrelatedRows,
+                schemaCorrelatedRows,
                 overrideAllRows, setOverrideAllRows,
                 avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows,
                 matchThreshold, setMatchThreshold,

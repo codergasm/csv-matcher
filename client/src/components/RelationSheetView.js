@@ -16,7 +16,8 @@ const ROWS_PER_PAGE = 20;
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { outputSheetExportColumns, setOutputSheetExportColumns, manuallyCorrelatedRows, selectList, priorities,
+    const { outputSheetExportColumns, setOutputSheetExportColumns,
+        manuallyCorrelatedRows, selectList, priorities, schemaCorrelatedRows,
         showInSelectMenuColumns, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
@@ -159,6 +160,9 @@ const RelationSheetView = () => {
     const getSimilarityColor = (val, relationRow) => {
         if(manuallyCorrelatedRows.includes(relationRow)) {
             return 'purple';
+        }
+        else if(schemaCorrelatedRows.includes(relationRow)) {
+            return 'blue';
         }
         else  {
             if(val >= 90) {
@@ -562,7 +566,7 @@ const RelationSheetView = () => {
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
                                         background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
-                                        color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
+                                        color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) || schemaCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
                                         {!isCorrelatedRowWithHighestSimilarity ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
                                                                                           followCursor={true}
@@ -573,7 +577,7 @@ const RelationSheetView = () => {
                                             </span>
                                         </Tooltip> : ''}
 
-                                        {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : '-'}
+                                        {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (schemaCorrelatedRows.includes(correlatedRow.relationRowIndex) ? 'S' : '-')}
                                     </span>
                                 </> : <>
                                     <span className="select__menu__item__value">

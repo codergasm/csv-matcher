@@ -2,6 +2,14 @@ import axios from 'axios';
 import {getLoggedUserEmail} from "./users";
 import {getAuthHeader} from "./others";
 
+const getSchemaById = (id) => {
+    return axios.get(`/schemas/getSchemaById/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
 const getSchemasByUser = () => {
     return axios.get(`/schemas/getSchemasByUser/${getLoggedUserEmail()}`, {
         headers: {
@@ -10,9 +18,11 @@ const getSchemasByUser = () => {
     });
 }
 
-const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner) => {
+const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, email,
+                    teamOwner, dataSheetId, relationSheetId) => {
     return axios.post(`/schemas/saveSchema`, {
-        name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner
+        name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner,
+        dataSheetId, relationSheetId
     }, {
         headers: {
             Authorization: getAuthHeader()
@@ -82,5 +92,5 @@ const getNumberOfMatchedRows = (id) => {
     });
 }
 
-export { getSchemasByUser, saveSchema, updateSchema, assignSchemaToTeam, deleteSchema,
+export { getSchemasByUser, saveSchema, updateSchema, assignSchemaToTeam, deleteSchema, getSchemaById,
     assignSheetsToSchema, detachSheetsFromSchema, getNumberOfMatchedRows, detachSheetsFromSchemaById }

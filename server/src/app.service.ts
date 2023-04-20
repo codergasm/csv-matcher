@@ -44,8 +44,8 @@ export class AppService {
       }
       else {
           // Convert files to array of objects
-          const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? path.resolve(__dirname, dataFile) : dataFile.path, 'utf-8');
-          const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? path.resolve(__dirname, relationFile) : relationFile.path, 'utf-8');
+          const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? path.resolve(__dirname, `../${dataFile}`) : dataFile.path, 'utf-8');
+          const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? path.resolve(__dirname, `../${relationFile}`) : relationFile.path, 'utf-8');
           const dataSheet = papa.parse(dataFileContent, { header: true }).data;
           const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
@@ -205,10 +205,12 @@ export class AppService {
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
       // Convert files to array of objects
-      const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? dataFile : dataFile.path, 'utf-8');
-      const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? relationFile : relationFile.path, 'utf-8');
+      const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? path.resolve(__dirname, `../${dataFile}`) : dataFile.path, 'utf-8');
+      const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? path.resolve(__dirname, `../${relationFile}`) : relationFile.path, 'utf-8');
       const dataSheet = papa.parse(dataFileContent, { header: true }).data;
       const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+
+      console.log(jobId);
 
       // Insert new job to database (progress tracking)
       await this.correlationJobs.save({

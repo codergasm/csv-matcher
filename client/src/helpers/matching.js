@@ -81,4 +81,8 @@ const matching = (jobId, priorities, correlationMatrix,
     return axios.post('/correlate', formData, config);
 }
 
-export { getSelectList, matching, getProgressByJobId }
+const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {
+    return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`);
+}
+
+export { getSelectList, matching, getProgressByJobId, correlateUsingSchema }

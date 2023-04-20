@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
-import CorelationView from "../components/CorrelationView";
+import CorrelationView from "../components/CorrelationView";
 import {getSchemasByUser} from "../helpers/schemas";
-import {getFileById} from "../helpers/files";
 
 const AppContext = React.createContext(null);
 
@@ -16,8 +15,10 @@ const CorrelationPage = ({user}) => {
     const [dataDelimiter, setDataDelimiter] = useState('');
     const [relationDelimiter, setRelationDelimiter] = useState('');
     const [schemas, setSchemas] = useState([]);
-    const [currentSchema, setCurrentSchema] = useState(-1);
+    const [currentSchemaId, setCurrentSchemaId] = useState(-1);
     const [updateSchemas, setUpdateSchemas] = useState(false);
+    const [dataSheetId, setDataSheetId] = useState(0);
+    const [relationSheetId, setRelationSheetId] = useState(0);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -25,18 +26,19 @@ const CorrelationPage = ({user}) => {
         const sheet2 = params.get('sheet2');
         const schema = params.get('schema');
 
-        if(sheet1 && sheet2) {
-            getFileById(sheet1)
-                .then((res) => {
-                    console.log(res?.data);
-                });
+        if(parseInt(sheet1) && parseInt(sheet2)) {
+            setDataSheetId(parseInt(sheet1));
+            setRelationSheetId(parseInt(sheet2));
 
-            getFileById(sheet2)
-                .then((res) => {
-                    console.log(res?.data);
-                });
+            if(parseInt(schema)) {
+                setCurrentSchemaId(parseInt(schema));
+            }
         }
     }, []);
+
+    useEffect(() => {
+        console.log(currentSchemaId);
+    }, [currentSchemaId]);
 
     useEffect(() => {
         getSchemasByUser()
@@ -44,8 +46,8 @@ const CorrelationPage = ({user}) => {
                 if(res?.data) {
                     setSchemas(res.data.map((item) => {
                         return {
-                            value: item.id,
-                            label: item.name
+                            value: item.schemas_id,
+                            label: item.schemas_name
                         }
                     }));
                 }
@@ -59,7 +61,7 @@ const CorrelationPage = ({user}) => {
                     setMainComponent(<LoadFilesView user={user} />);
                     break;
                 case 1:
-                    setMainComponent(<CorelationView user={user} />);
+                    setMainComponent(<CorrelationView user={user} />);
                     break;
                 default:
                     break;
@@ -72,7 +74,8 @@ const CorrelationPage = ({user}) => {
         dataFile, setDataFile, relationFile, setRelationFile,
         dataSheet, setDataSheet, relationSheet, setRelationSheet,
         dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
-        schemas, setSchemas, currentSchema, setCurrentSchema, updateSchemas, setUpdateSchemas
+        schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
+        dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId
     }}>
         {mainComponent}
     </AppContext.Provider>

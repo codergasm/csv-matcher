@@ -22,6 +22,10 @@ export class SchemasService {
     ) {
     }
 
+    async getSchemaById(id) {
+        return this.schemasRepository.findOneBy({id});
+    }
+
     async getSchemasByUser(email) {
         const user = await this.usersRepository.findOneBy({email});
 
@@ -38,19 +42,28 @@ export class SchemasService {
         }
     }
 
-    async saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner) {
+    async saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject,
+                     email, teamOwner, dataSheetId, relationSheetId) {
         const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
             try {
-                return this.schemasRepository.save({
+                const schema = await this.schemasRepository.save({
                     name,
                     matched_strings_array: JSON.stringify(matchedStringsArray),
                     automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
                     owner_user_id: teamOwner ? null : user.id,
                     owner_team_id: teamOwner ? user.team_id : null,
                     created_datetime: new Date()
-                })
+                });
+
+                if(dataSheetId && relationSheetId) {
+                    await this.assignSheetsToSchema(dataSheetId, relationSheetId, schema.id);
+                    return schema;
+                }
+                else {
+                    return schema;
+                }
             }
             catch(err) {
                 throw new HttpException('Coś poszło nie tak... Prosimy spróbować później', 500);
@@ -180,6 +193,68 @@ export class SchemasService {
         }
         else {
             throw new BadRequestException('Nie znaleziono podanego rekordu');
+        }
+    }
+
+    async correlateUsingSchema(dataSheetId, relationSheetId, matchSchemaId) {
+        const matchSchemaRow = await this.schemasRepository.findOneBy({id: matchSchemaId});
+        const dataSheetRow = await this.filesRepository.findOneBy({id: dataSheetId});
+        const relationSheetRow = await this.filesRepository.findOneBy({id: relationSheetId});
+
+        if(dataSheetRow && relationSheetRow && matchSchemaRow) {
+            const matchedStringsArray = JSON.parse(matchSchemaRow.matched_strings_array);
+
+            // Convert files to array of objects
+            const dataFileContent = fs.readFileSync(dataSheetRow.filepath, 'utf-8');
+            const relationFileContent = fs.readFileSync(relationSheetRow.filepath, 'utf-8');
+            const dataSheet = papa.parse(dataFileContent, { header: true }).data;
+            const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+
+            // Convert array of objects to row shortcuts
+            const dataSheetShortcuts = dataSheet.map((item) => {
+                return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
+                    item[1].substring(0, 50) : '')).join(';')
+            });
+            const relationSheetShortcuts = relationSheet.map((item) => {
+                return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
+                    item[1].substring(0, 50) : '')).join(';')
+            });
+
+            const matchedRows = matchedStringsArray.map((item) => {
+                const matchDataString = item[0];
+                const matchRelationString = item[1];
+                const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item) => (item === matchDataString));
+                const relationSheetMatchIndex = relationSheetShortcuts.findIndex((item) => (item === matchRelationString));
+
+                if(dataSheetMatchIndex !== -1 && relationSheetMatchIndex !== -1) {
+                    return [dataSheetMatchIndex, relationSheetMatchIndex];
+                }
+                else {
+                    return null;
+                }
+            }).filter((item) => (item));
+
+            const matchedRowsInRelationSheet = matchedRows.map((item) => (item[1]));
+
+            return relationSheetShortcuts.map((item, index) => {
+                if(matchedRowsInRelationSheet.includes(index)) {
+                    const relationSheetIndex = index;
+                    const matchedRow = matchedRows.find((item, index) => (item[1] === relationSheetIndex))
+
+                    if(matchedRow) {
+                        return matchedRow[0];
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+                else {
+                    return -1;
+                }
+            });
+        }
+        else {
+            throw new BadRequestException('Nie znaleziono podanych plików');
         }
     }
 }

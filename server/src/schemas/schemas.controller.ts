@@ -8,6 +8,11 @@ export class SchemasController {
     ) {
     }
 
+    @Get(`/getSchemaById/:id`)
+    getSchemaById(@Param('id') id) {
+        return this.schemasService.getSchemaById(id);
+    }
+
     @Get('/getSchemasByUser/:email')
     getSchemasByUser(@Param('email') email) {
         return this.schemasService.getSchemasByUser(email);
@@ -15,8 +20,10 @@ export class SchemasController {
 
     @Post('/saveSchema')
     saveSchema(@Body() body) {
-        const { name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner } = body;
-        return this.schemasService.saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner);
+        const { name, matchedStringsArray, automaticMatcherSettingsObject,
+            email, teamOwner, dataSheetId, relationSheetId } = body;
+        return this.schemasService.saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject,
+            email, teamOwner, dataSheetId, relationSheetId);
     }
 
     @Patch('/updateSchema')
@@ -55,5 +62,12 @@ export class SchemasController {
     @Get('/getNumberOfMatchedRows/:id')
     getNumberOfMatchedRows(@Param('id') id) {
         return this.schemasService.getNumberOfMatchedRows(id);
+    }
+
+    @Get('/correlateUsingSchema/:dataSheetId/:relationSheetId/:matchSchemaId')
+    correlateUsingSchema(@Param('dataSheetId') dataSheetId,
+                         @Param('relationSheetId') relationSheetId,
+                         @Param('matchSchemaId') matchSchemaId) {
+        return this.schemasService.correlateUsingSchema(dataSheetId, relationSheetId, matchSchemaId);
     }
 }

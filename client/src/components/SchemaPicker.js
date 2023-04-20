@@ -3,7 +3,11 @@ import Select from 'react-select';
 import {AppContext} from "../pages/CorrelationPage";
 
 const SchemaPicker = () => {
-    const { schemas, currentSchema, setCurrentSchema } = useContext(AppContext);
+    const { schemas, currentSchemaId, setCurrentSchemaId } = useContext(AppContext);
+
+    const handleChange = (el) => {
+        setCurrentSchemaId(el.value);
+    }
 
     return <div className="schemaPicker schemaPicker--loadFiles">
         <h5 className="schemaPicker__header">
@@ -13,8 +17,8 @@ const SchemaPicker = () => {
         <Select
             options={schemas}
             placeholder="Wybierz schemat"
-            value={schemas[currentSchema]}
-            onChange={setCurrentSchema}
+            value={schemas.find((item) => (item.value === currentSchemaId))}
+            onChange={handleChange}
             isSearchable={true} />
     </div>
 }

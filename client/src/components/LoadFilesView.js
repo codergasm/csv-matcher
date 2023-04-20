@@ -11,12 +11,12 @@ import {settings} from "../helpers/settings";
 const LoadFilesView = ({user}) => {
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
-        relationSheet, setRelationSheet } = useContext(AppContext);
+        relationSheet, setRelationSheet, dataSheetId, setDataSheetId,
+        relationSheetId, setRelationSheetId } = useContext(AppContext);
 
     const [files, setFiles] = useState([]);
     const [filesToChoose, setFilesToChoose] = useState([]);
-    const [dataSheetId, setDataSheetId] = useState(0);
-    const [relationSheetId, setRelationSheetId] = useState(0);
+
     const [dataSheetLoading, setDataSheetLoading] = useState(false);
     const [relationSheetLoading, setRelationSheetLoading] = useState(false);
     const [assignDataSheetOwnershipToTeam, setAssignDataSheetOwnershipToTeam] = useState(false);
@@ -53,6 +53,24 @@ const LoadFilesView = ({user}) => {
         }
     }, [dataSheet]);
 
+    useEffect(() => {
+        if(dataSheetId > 0 && files?.length) {
+            const file = files.find((item) => (item.id === dataSheetId));
+            if(file) {
+                updateDataSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+            }
+        }
+    }, [files, dataSheetId]);
+
+    useEffect(() => {
+        if(relationSheetId > 0 && files?.length) {
+            const file = files.find((item) => (item.id === relationSheetId));
+            if(file) {
+                updateRelationSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+            }
+        }
+    }, [files, relationSheetId]);
+
     const handleRelationSheetChange = (e) => {
         const files = e.target.files;
         if(files) {
@@ -73,17 +91,13 @@ const LoadFilesView = ({user}) => {
 
     const handleDataSheetChoose = (val) => {
         if(val) {
-            setDataSheetId(val);
-            const file = files.find((item) => (item.id === val.value));
-            updateDataSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+            setDataSheetId(val.value);
         }
     }
 
     const handleRelationSheetChoose = (val) => {
         if(val) {
-            setRelationSheetId(val);
-            const file = files.find((item) => (item.id === val.value));
-            updateRelationSheet(`${settings.API_URL}/${file.filepath.replace('./', '')}`, true);
+            setRelationSheetId(val.value);
         }
     }
 
@@ -142,14 +156,21 @@ const LoadFilesView = ({user}) => {
             setLoading(true);
 
             if(!dataSheetId) {
-                await saveSheet(dataFile, user.teamId, assignDataSheetOwnershipToTeam);
+                const newDataSheet = await saveSheet(dataFile, user.teamId, assignDataSheetOwnershipToTeam);
+
+                if(newDataSheet) {
+                    setDataSheetId(newDataSheet.data.id);
+                }
             }
             if(!relationSheetId) {
-                await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
+                const newRelationSheet = await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
+
+                if(newRelationSheet) {
+                    setRelationSheetId(newRelationSheet.data.id);
+                }
             }
 
             setLoading(false);
-
             setCurrentView(1);
         }
         catch(e) {
