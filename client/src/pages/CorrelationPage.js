@@ -37,11 +37,6 @@ const CorrelationPage = ({user}) => {
         }
     }, []);
 
-
-    useEffect(() => {
-        console.log(availableForUserSchemas);
-    }, [availableForUserSchemas]);
-
     useEffect(() => {
         getSchemasByUser()
             .then((res) => {

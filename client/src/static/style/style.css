@@ -506,7 +506,7 @@ table, table * {
 
 .modal {
     position: fixed;
-    z-index: 10000;
+    z-index: 10005;
     top: 0;
     left: 0;
     width: 100%;

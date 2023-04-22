@@ -24,7 +24,7 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     formData.append('priorities', JSON.stringify(priorities));
     formData.append('dataDelimiter', dataDelimiter);
     formData.append('relationDelimiter', relationDelimiter);
-    formData.append('isCorrelationMatrixEmpty', isCorrelationMatrixEmpty);
+    formData.append('isCorrelationMatrixEmpty', isCorrelationMatrixEmpty ? 'true' : 'false');
     formData.append('showInSelectMenuColumns', JSON.stringify(showInSelectMenuColumns));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);

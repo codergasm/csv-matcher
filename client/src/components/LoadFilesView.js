@@ -72,20 +72,18 @@ const LoadFilesView = ({user}) => {
     }, [files, relationSheetId]);
 
     const handleRelationSheetChange = (e) => {
-        const files = e.target.files;
-        if(files) {
+        if(e.target.files) {
             setRelationSheetId(0);
             setRelationSheetLoading(true);
-            updateRelationSheet(files[0]);
+            updateRelationSheet(e.target.files[0]);
         }
     }
 
     const handleDataSheetChange = (e) => {
-        const files = e.target.files;
-        if(files) {
+        if(e.target.files) {
             setDataSheetId(0);
             setDataSheetLoading(true);
-            updateDataSheet(files[0]);
+            updateDataSheet(e.target.files[0]);
         }
     }
 

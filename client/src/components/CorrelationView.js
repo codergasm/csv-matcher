@@ -230,11 +230,23 @@ const CorrelationView = ({user}) => {
 
     const isCorrelationMatrixEmpty = () => {
         return correlationMatrix.findIndex((item) => {
-            return item.findIndex((item) => {
+            return item ? item.findIndex((item) => {
                return item !== -1;
-            }) === -1;
+            }) === -1 : true;
         }) === -1;
     }
+
+    useEffect(() => {
+        console.log(correlationMatrix);
+    }, [correlationMatrix]);
+
+    useEffect(() => {
+        console.log(indexesOfCorrelatedRows);
+    }, [indexesOfCorrelatedRows]);
+
+    useEffect(() => {
+        console.log(selectList);
+    }, [selectList]);
 
     useEffect(() => {
         // After correlation - get select list for each relation sheet row
@@ -244,18 +256,16 @@ const CorrelationView = ({user}) => {
             if(selectList?.length) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
-                    isCorrelationMatrixEmpty(), showInSelectMenuColumns,
+                    false, showInSelectMenuColumns,
                     dataSheet.length, relationSheet.length)
                     .then((res) => {
                         if(res?.data) {
                             if(selectList?.length) {
                                 const newSelectList = res.data;
-                                console.log(newSelectList);
 
                                 setSelectList(prevState => {
                                     return prevState.map((item, index) => {
                                         if(indexesInSelectListToOverride.includes(index) || 1) {
-                                            console.log('OK ' + index);
                                             return newSelectList[index];
                                         }
                                         else {
@@ -337,6 +347,10 @@ const CorrelationView = ({user}) => {
 
         const jobIdTmp = makeId(64);
         setJobId(jobIdTmp);
+
+        console.log('STOP');
+        console.log(dataFile);
+        console.log(relationFile);
 
         matching(jobIdTmp, priorities, correlationMatrix,
             dataFile, relationFile,
