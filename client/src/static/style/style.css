@@ -281,6 +281,7 @@ div.check__cell:first-of-type {
     border-bottom: none;
     align-items: stretch;
     width: 200px;
+    min-height: 45px;
     white-space: normal;
     overflow: scroll;
     display: inline-flex;
@@ -346,6 +347,7 @@ div.check__cell:first-of-type {
 .sheet__header__cell--first,
 .sheet__body__row__cell--first {
     max-width: 8% !important;
+    width: 8% !important;
     min-width: 0 !important;
 }
 
@@ -2186,6 +2188,7 @@ input[type=number] {
 }
 
 .selectWrapper {
+    width: 300px;
     margin: 0 15px;
 }
 
@@ -2194,7 +2197,7 @@ input[type=number] {
     border: none;
     border-bottom: 1px solid var(--primary);
     font-size: 17px;
-    width: 280px;
+    width: 100%;
     outline: none !important;
     transition: .2s all;
 }
@@ -2402,4 +2405,40 @@ input[type=number] {
     text-align: center;
     position: relative;
     z-index: 1001;
+}
+
+.btn--editSchema:hover {
+    background: transparent;
+}
+
+.input--schemaName--edit {
+    color: #313131;
+    border-radius: 0;
+    font-size: 14px;
+    padding-bottom: 3px;
+    height: 40px;
+    width: 150px;
+}
+
+.emptyTableInfo {
+    text-align: center;
+    margin: 20px auto;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.sheetWrapper {
+    width: 100%;
+}
+
+.header__menu {
+    width: calc(100% - 500px);
+    height: 100%;
+}
+
+.header__menu__item {
+    color: #313131;
+    font-size: 15px;
+    font-weight: 400;
+    text-decoration: none;
 }

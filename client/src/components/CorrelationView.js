@@ -6,7 +6,7 @@ import {AppContext} from "../pages/CorrelationPage";
 import {correlateUsingSchema, getProgressByJobId, getSelectList, matching} from "../helpers/matching";
 import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
-import {getSchemaById, getSchemasByUser} from "../helpers/schemas";
+import {getSchemaById} from "../helpers/schemas";
 
 const ViewContext = React.createContext(null);
 
@@ -170,8 +170,9 @@ const CorrelationView = ({user}) => {
             let correlationInRelationSheetNotFound = false;
 
             if(dataSheetMapping[i] >= 0) {
-
-                if(correlationMatrix[dataSheetMapping[i]][i] >= matchThreshold || manuallyCorrelatedRows.includes(dataSheetMapping[i])) {
+                if(correlationMatrix[dataSheetMapping[i]][i] >= matchThreshold ||
+                    schemaCorrelatedRows.includes(dataSheetMapping[i]) ||
+                    manuallyCorrelatedRows.includes(dataSheetMapping[i])) {
                     b = arrayB[dataSheetMapping[i]];
                 }
                 else {
@@ -227,6 +228,14 @@ const CorrelationView = ({user}) => {
         }
     }, [correlationStatus]);
 
+    const isCorrelationMatrixEmpty = () => {
+        return correlationMatrix.findIndex((item) => {
+            return item.findIndex((item) => {
+               return item !== -1;
+            }) === -1;
+        }) === -1;
+    }
+
     useEffect(() => {
         // After correlation - get select list for each relation sheet row
         if(correlationMatrix[0]?.length) {
@@ -235,16 +244,18 @@ const CorrelationView = ({user}) => {
             if(selectList?.length) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
-                    correlationMatrix[0][0] === -1, showInSelectMenuColumns,
+                    isCorrelationMatrixEmpty(), showInSelectMenuColumns,
                     dataSheet.length, relationSheet.length)
                     .then((res) => {
                         if(res?.data) {
                             if(selectList?.length) {
                                 const newSelectList = res.data;
+                                console.log(newSelectList);
 
                                 setSelectList(prevState => {
                                     return prevState.map((item, index) => {
-                                        if(indexesInSelectListToOverride.includes(index)) {
+                                        if(indexesInSelectListToOverride.includes(index) || 1) {
+                                            console.log('OK ' + index);
                                             return newSelectList[index];
                                         }
                                         else {
@@ -332,7 +343,7 @@ const CorrelationView = ({user}) => {
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, matchThreshold)
+            manuallyCorrelatedRows, matchThreshold, user.id)
             .then((res) => {
                if(res?.data) {
                    const newIndexesOfCorrelatedRows = res.data.indexesOfCorrelatedRowsTmp;

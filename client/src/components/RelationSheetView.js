@@ -301,6 +301,23 @@ const RelationSheetView = () => {
         });
     }
 
+    const getColumnMinWidth = () => {
+        const numberOfColumns = columnsNames?.length;
+
+        if(numberOfColumns === 2) {
+            return 'calc((100% - 400px) * 0.92)';
+        }
+        else if(numberOfColumns === 3) {
+            return `calc((100% - 400px) * 0.46)`;
+        }
+        else if(numberOfColumns === 4) {
+            return `calc((100% - 400px) * 0.32)`;
+        }
+        else {
+            return `min(300px, ${minColumnWidth}%)`;
+        }
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
                                                  columnsVisibility={columnsVisibility}
@@ -379,7 +396,7 @@ const RelationSheetView = () => {
                             if(index === dataSheetColumnsNames?.length) {
                                 return <div className="check__cell check__cell--first"
                                             style={{
-                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                                minWidth: getColumnMinWidth()
                                             }}
                                             key={index}>
                                     <button className="btn btn--check btn--notVisible"
@@ -391,7 +408,7 @@ const RelationSheetView = () => {
                             else {
                                 return <div className="check__cell"
                                             style={{
-                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                                minWidth: getColumnMinWidth()
                                             }}
                                             key={index}>
                                     <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
@@ -407,14 +424,12 @@ const RelationSheetView = () => {
                     </div>
                 </div>
 
-
-
                 <div className="line line--noFlex">
                     {columnsNames.map((item, index) => {
                         if(columnsVisibility[index]) {
                             return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                                         style={{
-                                            minWidth: `min(300px, ${minColumnWidth}%)`
+                                            minWidth: getColumnMinWidth()
                                         }}
                                         key={index}>
                                 {item ? <Tooltip title={item}
@@ -522,7 +537,7 @@ const RelationSheetView = () => {
                         if(columnsVisibility[index]) {
                             return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                         style={{
-                                            minWidth: `min(300px, ${minColumnWidth}%)`,
+                                            minWidth: getColumnMinWidth(),
                                             maxHeight: cellsHeight !== -1 ? `${cellsHeight}px` : 'unset'
                                         }}
                                         key={index}>

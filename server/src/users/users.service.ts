@@ -251,7 +251,6 @@ export class UsersService {
         }
     }
 
-
     async updateUserRights(email,
                            can_edit_team_match_schemas,
                            can_delete_team_match_schemas,

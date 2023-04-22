@@ -25,10 +25,6 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     const [currentRelationSheetPriorityIndex, setCurrentRelationSheetPriorityIndex] = useState(0);
     const [currentRelationSheetIndex, setCurrentRelationSheetIndex] = useState(0);
 
-    useEffect(() => {
-        console.log(priorities);
-    }, [priorities]);
-
     /*
         Priorities:
         [
@@ -80,7 +76,6 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }, [correlationStatus]);
 
     const addPriority = () => {
-        console.log('addPriority');
         setPriorities(prevState => {
             return [...prevState, {
                 conditions: [
@@ -95,7 +90,6 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     const addCondition = (priorityIndex, logicalOperator) => {
-        console.log('addCondition');
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(priorityIndex === index) {
@@ -115,7 +109,6 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     const updateCondition = (priority, condition, sheet, value) => {
-        console.log('updateCond');
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
@@ -142,7 +135,6 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     const updateLogicalOperator = (priority, condition, value) => {
-        console.log('updateLogical');
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
@@ -166,14 +158,12 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     const deletePriority = (priority) => {
-        console.log('deletePrior');
         setPriorities(prevState => {
             return prevState.filter((item, index) => (priority !== index));
         });
     }
 
     const deleteCondition = (priority, condition) => {
-        console.log('deleteCond');
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {

@@ -1,6 +1,7 @@
-import {Body, Controller, Get, Param, Post, UploadedFiles, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, UploadedFiles, UseGuards, UseInterceptors} from '@nestjs/common';
 import { AppService } from './app.service';
 import {FilesInterceptor} from "@nestjs/platform-express";
+import {JwtAuthGuard} from "./common/jwt-auth.guard";
 
 @Controller()
 export class AppController {
@@ -11,6 +12,7 @@ export class AppController {
     return this.appService.getProgressByJobId(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/getSelectList')
   @UseInterceptors(FilesInterceptor('files'))
   async getSelectList(@UploadedFiles() files: Array<Express.Multer.File>,
@@ -22,6 +24,7 @@ export class AppController {
         body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength, body.relationSheetLength);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/correlate')
   @UseInterceptors(FilesInterceptor('files'))
   async correlate(@UploadedFiles() files: Array<Express.Multer.File>,
@@ -29,7 +32,7 @@ export class AppController {
     const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-      manuallyCorrelatedRows, matchThreshold } = body;
+      manuallyCorrelatedRows, matchThreshold, userId } = body;
 
     return this.appService.correlate(jobId,
         dataFilePath ? dataFilePath : files[0],
@@ -37,6 +40,6 @@ export class AppController {
         dataFileDelimiter, relationFileDelimiter,
         priorities, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        manuallyCorrelatedRows, matchThreshold);
+        manuallyCorrelatedRows, matchThreshold, userId);
   }
 }

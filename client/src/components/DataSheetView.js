@@ -201,6 +201,23 @@ const DataSheetView = () => {
         setDataSheetSorted(dataSheet);
     }
 
+    const getColumnMinWidth = () => {
+        const numberOfColumns = columnsNames?.length;
+
+        if(numberOfColumns === 2) {
+            return '92%';
+        }
+        else if(numberOfColumns === 3) {
+            return `46%`;
+        }
+        else if(numberOfColumns === 4) {
+            return `31%`;
+        }
+        else {
+            return `min(300px, ${minColumnWidth}%)`;
+        }
+    }
+
     return <div className="sheet scroll"
                 onScroll={(e) => { checkScrollToBottom(e); }}>
 
@@ -256,7 +273,7 @@ const DataSheetView = () => {
                             if(columnsVisibility[index]) {
                                 return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
                                             style={{
-                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                                minWidth: getColumnMinWidth()
                                             }}
                                             key={index}>
                                     <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
@@ -295,7 +312,7 @@ const DataSheetView = () => {
                                 if(index === 0) {
                                     return <div className="check__cell check__cell--first"
                                                 style={{
-                                                    minWidth: `min(300px, ${minColumnWidth}%)`
+                                                    minWidth: getColumnMinWidth()
                                                 }}
                                                 key={index}>
                                         <button className="btn btn--check btn--notVisible"
@@ -307,7 +324,7 @@ const DataSheetView = () => {
                                 else {
                                     return <div className="check__cell"
                                                 style={{
-                                                    minWidth: `min(300px, ${minColumnWidth}%)`
+                                                    minWidth: getColumnMinWidth()
                                                 }}
                                                 key={index}>
                                         <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
@@ -325,7 +342,7 @@ const DataSheetView = () => {
                             if(columnsVisibility[index]) {
                                 return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                                             style={{
-                                                minWidth: `min(300px, ${minColumnWidth}%)`
+                                                minWidth: getColumnMinWidth()
                                             }}
                                             key={index}>
 
@@ -364,7 +381,7 @@ const DataSheetView = () => {
                     if(columnsVisibility[index]) {
                         return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                     style={{
-                                        minWidth: `min(300px, ${minColumnWidth}%)`,
+                                        minWidth: getColumnMinWidth(),
                                         maxHeight: cellsHeight !== -1 ? `${cellsHeight}px` : 'unset'
                                     }}
                                     key={index}>

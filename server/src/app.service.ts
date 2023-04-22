@@ -203,18 +203,17 @@ export class AppService {
     }
 
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold) {
+            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold, userId) {
       // Convert files to array of objects
       const dataFileContent = fs.readFileSync(typeof dataFile === 'string' ? path.resolve(__dirname, `../${dataFile}`) : dataFile.path, 'utf-8');
       const relationFileContent = fs.readFileSync(typeof relationFile === 'string' ? path.resolve(__dirname, `../${relationFile}`) : relationFile.path, 'utf-8');
       const dataSheet = papa.parse(dataFileContent, { header: true }).data;
       const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
-      console.log(jobId);
-
       // Insert new job to database (progress tracking)
       await this.correlationJobs.save({
           id: jobId,
+          user_id: userId,
           creation_datetime: new Date(),
           totalRows: relationSheet.length,
           rowCount: 0,

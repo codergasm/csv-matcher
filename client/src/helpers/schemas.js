@@ -40,9 +40,20 @@ const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObj
     });
 }
 
-const assignSchemaToTeam = (id, email) => {
+const updateSchemaName = (id, name) => {
+    return axios.patch(`/schemas/updateSchemaName`, {
+        id, name
+    }, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const assignSchemaToTeam = (id) => {
     return axios.patch(`/schemas/assignSchemaToTeam`, {
-        id, email
+        id,
+        email: getLoggedUserEmail()
     }, {
         headers: {
             Authorization: getAuthHeader()
@@ -92,5 +103,5 @@ const getNumberOfMatchedRows = (id) => {
     });
 }
 
-export { getSchemasByUser, saveSchema, updateSchema, assignSchemaToTeam, deleteSchema, getSchemaById,
+export { getSchemasByUser, saveSchema, updateSchema, updateSchemaName, assignSchemaToTeam, deleteSchema, getSchemaById,
     assignSheetsToSchema, detachSheetsFromSchema, getNumberOfMatchedRows, detachSheetsFromSchemaById }

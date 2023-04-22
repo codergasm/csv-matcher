@@ -25,23 +25,46 @@ const LoggedUserHeader = () => {
                 RowMatcher.com
             </a>
 
-            <button className="header__profileImage"
-                    onClick={(e) => { e.stopPropagation(); setDropdownMenuVisible(p => !p); }}>
-                <img className="img" src={placeholderProfileImage} alt="profilowe" />
-            </button>
-
-            {dropdownMenuVisible ? <div className="dropdownMenu shadow">
-                <a href="/zmien-haslo"
-                   className="dropdownMenu__item">
-                    <img className="img" src={passwordIcon} alt="haslo" />
-                    Zmień hasło
+            <div className="header__menu flex">
+                <a className="header__menu__item"
+                   href="/zespol">
+                    Home
                 </a>
-                <button className="dropdownMenu__item"
-                        onClick={() => { logout(); }}>
-                    <img className="img" src={logoutIcon} alt="wylogowanie" />
-                    Wyloguj się
+                <a className="header__menu__item"
+                   href="/pliki">
+                    Moje pliki
+                </a>
+                <a className="header__menu__item"
+                   href="/schematy-dopasowania">
+                    Moje schematy
+                </a>
+                <a className="header__menu__item"
+                   href="/edytor-dopasowania">
+                    Nowe dopasowanie
+                </a>
+                <a className="header__menu__item"
+                   href="/zespol">
+                    Zespół
+                </a>
+
+                <button className="header__profileImage"
+                        onClick={(e) => { e.stopPropagation(); setDropdownMenuVisible(p => !p); }}>
+                    <img className="img" src={placeholderProfileImage} alt="profilowe" />
                 </button>
-            </div> : ''}
+
+                {dropdownMenuVisible ? <div className="dropdownMenu shadow">
+                    <a href="/zmien-haslo"
+                       className="dropdownMenu__item">
+                        <img className="img" src={passwordIcon} alt="haslo" />
+                        Zmień hasło
+                    </a>
+                    <button className="dropdownMenu__item"
+                            onClick={() => { logout(); }}>
+                        <img className="img" src={logoutIcon} alt="wylogowanie" />
+                        Wyloguj się
+                    </button>
+                </div> : ''}
+            </div>
         </div>
     </header>
 };

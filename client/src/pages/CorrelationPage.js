@@ -37,10 +37,6 @@ const CorrelationPage = ({user}) => {
     }, []);
 
     useEffect(() => {
-        console.log(currentSchemaId);
-    }, [currentSchemaId]);
-
-    useEffect(() => {
         getSchemasByUser()
             .then((res) => {
                 if(res?.data) {

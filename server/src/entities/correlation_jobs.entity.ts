@@ -5,6 +5,9 @@ export class CorrelationJobsEntity {
     @PrimaryColumn()
     id: string;
 
+    @Column()
+    user_id: number;
+
     @Column({
         nullable: true,
         default: null

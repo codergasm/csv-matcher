@@ -38,6 +38,7 @@ export class UsersController {
         return this.usersService.loginUser(body.email, body.password);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Post('/addToTeamRequest')
     async addToTeamRequest(@Body() body) {
         return this.usersService.addToTeamRequest(body.userId, body.teamId);

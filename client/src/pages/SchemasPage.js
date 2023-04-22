@@ -3,6 +3,7 @@ import {getSchemasByUser} from "../helpers/schemas";
 import MySchemasTable from "../components/MySchemasTable";
 import {groupBy} from "../helpers/others";
 import {getFilesByUser} from "../helpers/files";
+import TeamSchemasTable from "../components/TeamSchemasTable";
 
 const SchemasPage = ({user}) => {
     const [userSchemas, setUserSchemas] = useState([])
@@ -52,7 +53,12 @@ const SchemasPage = ({user}) => {
                 Schematy dopasowania zespołu
             </h2>
 
-
+            <TeamSchemasTable schemas={teamSchemas}
+                              teamId={user.teamId}
+                              setUpdateSchemas={setUpdateSchemas}
+                              allFiles={userFiles.concat(teamFiles)}
+                              canEdit={user.canEditTeamMatchSchemas}
+                              canDelete={user.canDeleteTeamMatchSchemas} />
         </div>
     </div>
 };

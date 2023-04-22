@@ -14,6 +14,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { FilesModule } from './files/files.module';
 import { SchemasModule } from './schemas/schemas.module';
 import {join} from "path";
+import {UsersEntity} from "./entities/users.entity";
 
 @Module({
   imports: [

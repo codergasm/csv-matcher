@@ -20,6 +20,7 @@ const TeamViewTable = ({team, isOwner, updateTeamMembers}) => {
         if(team?.id) {
             getTeamMembers(team.id)
                 .then((res) => {
+                    console.log(res);
                     if(res?.data) {
                         setMembers(res.data);
                     }
@@ -73,13 +74,13 @@ const TeamViewTable = ({team, isOwner, updateTeamMembers}) => {
                         {item.email}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.numberOfFiles}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.numberOfSchemas}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.autoMatchRowsUsed}
                     </div>
                     <div className="sheet__header__cell">
                         <button className="btn--rights"
@@ -113,13 +114,13 @@ const TeamViewTable = ({team, isOwner, updateTeamMembers}) => {
                         {item.email}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.numberOfFiles}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.numberOfSchemas}
                     </div>
                     <div className="sheet__header__cell">
-
+                        {item.autoMatchRowsUsed}
                     </div>
                     <div className="sheet__header__cell">
                         <img className="img img--rights" src={item.can_edit_team_files ? yesIcon : noIcon} alt="prawa" />

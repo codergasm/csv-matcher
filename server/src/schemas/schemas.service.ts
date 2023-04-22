@@ -75,12 +75,36 @@ export class SchemasService {
     }
 
     async updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject) {
-        return this.schemasRepository
-            .createQueryBuilder()
-            .update({
+        let updateObject = {};
+
+        if(name) {
+            updateObject = {
                 name,
                 matched_strings_array: JSON.stringify(matchedStringsArray),
                 automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
+            }
+        }
+        else {
+            updateObject = {
+                matched_strings_array: JSON.stringify(matchedStringsArray),
+                automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
+            }
+        }
+
+        return this.schemasRepository
+            .createQueryBuilder()
+            .update(updateObject)
+            .where({
+                id
+            })
+            .execute();
+    }
+
+    async updateSchemaName(id, name) {
+        return this.schemasRepository
+            .createQueryBuilder()
+            .update({
+                name
             })
             .where({
                 id

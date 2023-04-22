@@ -4,6 +4,9 @@ import {TeamsEntity} from "../entities/teams.entity";
 import {Repository} from "typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import {AddToTeamUsersRequestsEntity} from "../entities/add_to_team_users_requests.entity";
+import {FilesEntity} from "../entities/files.entity";
+import {CorrelationJobsEntity} from "../entities/correlation_jobs.entity";
+import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 
 @Injectable()
 export class TeamsService {
@@ -13,7 +16,13 @@ export class TeamsService {
         @InjectRepository(UsersEntity)
         private readonly usersRepository: Repository<UsersEntity>,
         @InjectRepository(AddToTeamUsersRequestsEntity)
-        private readonly addToTeamUsersRequestsRepository: Repository<AddToTeamUsersRequestsEntity>
+        private readonly addToTeamUsersRequestsRepository: Repository<AddToTeamUsersRequestsEntity>,
+        @InjectRepository(FilesEntity)
+        private readonly filesRepository: Repository<FilesEntity>,
+        @InjectRepository(MatchSchemasEntity)
+        private readonly schemasRepository: Repository<MatchSchemasEntity>,
+        @InjectRepository(CorrelationJobsEntity)
+        private readonly correlationJobsRepository: Repository<CorrelationJobsEntity>
     ) {
     }
 
@@ -90,9 +99,57 @@ export class TeamsService {
             .getRawMany();
     }
 
+    addTrailingZero(n) {
+        if(n < 10) return `0${n}`;
+        else return n;
+    }
+
+    printFirstDayOfCurrentMonth(date) {
+        return `${date.getFullYear()}-${date.getMonth()+1}-01 00:00:00`
+    }
+
     async getTeamMembers(id) {
-        return this.usersRepository.findBy({
+        const members = await this.usersRepository.findBy({
             team_id: id
         });
+        const today = new Date();
+        const firstDayOfCurrentMonth = this.printFirstDayOfCurrentMonth(today);
+
+        let membersWithExtraInfo = [];
+
+        for(const member of members) {
+            const memberFiles = await this.filesRepository.findBy({
+                owner_user_id: member.id
+            });
+
+            const memberSchemas = await this.schemasRepository.findBy({
+                owner_user_id: member.id
+            });
+
+            const memberAutoMatchRowsInCurrentMonth = await this.correlationJobsRepository
+                .createQueryBuilder()
+                .andWhere({
+                    user_id: member.id
+                })
+                .andWhere(`creation_datetime >= :firstDayOfCurrentMonth`, {
+                    firstDayOfCurrentMonth
+                })
+                .execute();
+
+            const numberOfRowsUsed = memberAutoMatchRowsInCurrentMonth.map((item) => {
+                return item.CorrelationJobsEntity_rowCount;
+            }).reduce((prev, curr) => {
+                return prev + curr;
+            }, 0);
+
+            membersWithExtraInfo.push({
+                ...member,
+                numberOfFiles: memberFiles?.length,
+                numberOfSchemas: memberSchemas?.length,
+                autoMatchRowsUsed: numberOfRowsUsed
+            });
+        }
+
+        return membersWithExtraInfo;
     }
 }

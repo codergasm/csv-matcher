@@ -3,7 +3,11 @@ import {getLoggedUserEmail} from "./users";
 import {getAuthHeader} from "./others";
 
 const getTeamById = (id) => {
-    return axios.get(`/teams/getTeamById/${id}`);
+    return axios.get(`/teams/getTeamById/${id}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
 }
 
 const getAllTeams = () => {

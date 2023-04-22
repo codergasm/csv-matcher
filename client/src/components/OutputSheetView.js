@@ -5,12 +5,13 @@ import Papa from "papaparse";
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = () => {
-    const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
+    const { outputSheet, outputSheetExportColumns } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [finalExportColumns, setFinalExportColumns] = useState([]);
+    const [minColumnWidth, setMinColumnWidth] = useState(0);
 
     useEffect(() => {
         setFinalExportColumns(outputSheetExportColumns);
@@ -22,6 +23,10 @@ const OutputSheetView = () => {
             setColumnsNames(Object.entries(outputSheet[0]).map((item) => (item[0])))
         }
     }, [outputSheet]);
+
+    useEffect(() => {
+        setMinColumnWidth(100 / (outputSheetExportColumns.filter((item) => (item)).length));
+    }, [outputSheetExportColumns]);
 
     const handleOutputSheetExportChange = (i) => {
         if(i === -2) {
@@ -78,6 +83,17 @@ const OutputSheetView = () => {
         }
     }
 
+    const getColumnMinWidth = () => {
+        const numberOfColumns = outputSheetExportColumns?.filter((item) => (item))?.length;
+
+        if(numberOfColumns < 7) {
+            return `calc(100% / ${numberOfColumns})`;
+        }
+        else {
+            return `min(300px, ${minColumnWidth}%)`;
+        }
+    }
+
     return <div className="sheetWrapper">
         <button className="btn btn--export"
                 onClick={() => { exportOutputSheet(); }}>
@@ -101,10 +117,13 @@ const OutputSheetView = () => {
             </div>
 
             <div className="sheet__table">
-                <div className="line">
+                <div className="line line--noFlex">
                     {outputSheetExportColumns.map((item, index) => {
                         if(item) {
                             return <div className="check__cell"
+                                        style={{
+                                            minWidth: getColumnMinWidth()
+                                        }}
                                         key={index}>
                                 <button className={finalExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                         onClick={() => { handleOutputSheetExportChange(index); }}>
@@ -118,10 +137,13 @@ const OutputSheetView = () => {
                     })}
                 </div>
 
-                <div className="line">
+                <div className="line line--noFlex">
                     {columnsNames.filter((_, index) => (outputSheetExportColumns[index]))
                         .map((item, index) => {
                             return <div className="sheet__header__cell"
+                                        style={{
+                                            minWidth: getColumnMinWidth()
+                                        }}
                                         key={index}>
                                 {item}
                             </div>
@@ -137,6 +159,9 @@ const OutputSheetView = () => {
                         const cellValue = item[1];
 
                         return <div className="sheet__body__row__cell"
+                                    style={{
+                                        minWidth: getColumnMinWidth()
+                                    }}
                                    key={index}>
                             {cellValue}
                         </div>
