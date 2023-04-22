@@ -74,7 +74,7 @@ export class SchemasService {
         }
     }
 
-    async updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject) {
+    async updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId) {
         let updateObject = {};
 
         if(name) {
@@ -91,13 +91,41 @@ export class SchemasService {
             }
         }
 
-        return this.schemasRepository
+        const res = await this.schemasRepository
             .createQueryBuilder()
             .update(updateObject)
             .where({
                 id
             })
             .execute();
+
+        if(dataSheetId && relationSheetId) {
+            const sheetsInSchemaRow = await this.schemasSheetsRepository.findOneBy({
+                data_sheet: dataSheetId,
+                relation_sheet: relationSheetId,
+                match_schema: id
+            });
+
+            if(sheetsInSchemaRow) {
+                const numberOfMatchedRows = await this.getNumberOfMatchedRows(sheetsInSchemaRow.id);
+
+                return this.schemasSheetsRepository
+                    .createQueryBuilder()
+                    .update({
+                        number_of_matched_rows: numberOfMatchedRows
+                    })
+                    .where({
+                        id: sheetsInSchemaRow.id
+                    })
+                    .execute();
+            }
+            else {
+                return res;
+            }
+        }
+        else {
+            return res;
+        }
     }
 
     async updateSchemaName(id, name) {
@@ -137,8 +165,6 @@ export class SchemasService {
     }
 
     async assignSheetsToSchema(dataSheet, relationSheet, matchSchema) {
-        console.log(dataSheet, relationSheet, matchSchema);
-
         // TODO: czasami matchSchema to null, niezaleznie od arkuszy, nie wiadomo dlaczego
 
         const insertedRow = await this.schemasSheetsRepository.save({
@@ -194,14 +220,16 @@ export class SchemasService {
                 const dataSheet = papa.parse(dataFileContent, { header: true }).data;
                 const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
+                const regex = /[^A-Za-z0-9]/g;
+
                 // Convert array of objects to row shortcuts
                 const dataSheetShortcuts = dataSheet.map((item) => {
-                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
-                        item[1].substring(0, 10) : '')).join(';');
+                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
+                        item[1].toString().replace(regex, '').substring(0, 10))).join(';');
                 });
                 const relationSheetShortcuts = relationSheet.map((item) => {
-                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
-                        item[1].substring(0, 10) : '')).join(';');
+                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
+                        item[1].toString().replace(regex, '').substring(0, 10))).join(';');
                 });
 
                 const matchedRows = matchedStringsArray.filter((item) => {
@@ -234,20 +262,24 @@ export class SchemasService {
             const dataSheet = papa.parse(dataFileContent, { header: true }).data;
             const relationSheet = papa.parse(relationFileContent, { header: true }).data;
 
+            const regex = /[^A-Za-z0-9]/g;
+
             // Convert array of objects to row shortcuts
             const dataSheetShortcuts = dataSheet.map((item) => {
-                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
-                    item[1].substring(0, 10) : '')).join(';');
+                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
+                    item[1].toString().replace(regex, '').substring(0, 10))).join(';');
             });
             const relationSheetShortcuts = relationSheet.map((item) => {
-                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
-                    item[1].substring(0, 10) : '')).join(';');
+                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
+                    item[1].toString().replace(regex, '').substring(0, 10))).join(';');
             });
 
             const matchedRows = matchedStringsArray.map((item) => {
                 const matchDataString = item[0];
                 const matchRelationString = item[1];
-                const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item) => (item === matchDataString));
+                const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item, index) => {
+                    return item === matchDataString;
+                });
                 const relationSheetMatchIndex = relationSheetShortcuts.findIndex((item) => (item === matchRelationString));
 
                 if(dataSheetMatchIndex !== -1 && relationSheetMatchIndex !== -1) {

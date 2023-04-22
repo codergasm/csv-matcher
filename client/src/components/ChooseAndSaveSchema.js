@@ -53,7 +53,7 @@ const ChooseAndSaveSchema = ({user}) => {
     }
 
     const updateSchemaWrapper = () => {
-        updateSchema(currentSchemaId, name, matchSchemaArray, priorities)
+        updateSchema(currentSchemaId, name, matchSchemaArray, priorities, dataSheetId, relationSheetId)
             .then((res) => {
                 setNotificationColor('#508345');
                 setNotificationText('Schemat został zaktualizowany');

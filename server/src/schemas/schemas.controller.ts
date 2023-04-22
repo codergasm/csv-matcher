@@ -33,8 +33,9 @@ export class SchemasController {
     @UseGuards(JwtAuthGuard)
     @Patch('/updateSchema')
     updateSchema(@Body() body) {
-        const { id, name, matchedStringsArray, automaticMatcherSettingsObject } = body;
-        return this.schemasService.updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject);
+        const { id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId } = body;
+        return this.schemasService.updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject,
+            dataSheetId, relationSheetId);
     }
 
     @UseGuards(JwtAuthGuard)

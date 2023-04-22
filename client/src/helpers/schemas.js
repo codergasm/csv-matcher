@@ -30,9 +30,9 @@ const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, e
     });
 }
 
-const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject) => {
+const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId) => {
     return axios.patch(`/schemas/updateSchema`, {
-        id, name, matchedStringsArray, automaticMatcherSettingsObject
+        id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId
     }, {
         headers: {
             Authorization: getAuthHeader()

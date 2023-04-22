@@ -27,8 +27,6 @@ export class AppService {
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
 
-        console.log(isCorrelationMatrixEmpty);
-
       if(isCorrelationMatrixEmpty === 'true') {
           try {
               return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
@@ -56,11 +54,6 @@ export class AppService {
           const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
               dataSheet, relationSheet,
               [], true, true);
-
-          console.log('got correlation matrix');
-          console.log(correlationMatrix);
-          console.log(dataSheet);
-          console.log(relationSheet);
 
           // Finish correlation process in database
           await this.correlationJobs

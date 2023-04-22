@@ -181,9 +181,11 @@ const getStringWithFileSize = (bytes) => {
 }
 
 const createRowShortcut = (row) => {
+    const regex = /[^A-Za-z0-9]/g;
+
     return Object.entries(row)
         .filter((_, index) => (index < 11))
-        .map((item) => (item[1].substring(0, 10)))
+        .map((item) => (item[1].toString().replace(regex, '').substring(0, 10)))
         .filter((item, index) => (index !== 0))
         .join(';');
 }
