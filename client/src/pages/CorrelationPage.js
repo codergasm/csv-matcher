@@ -15,6 +15,7 @@ const CorrelationPage = ({user}) => {
     const [dataDelimiter, setDataDelimiter] = useState('');
     const [relationDelimiter, setRelationDelimiter] = useState('');
     const [schemas, setSchemas] = useState([]);
+    const [availableForUserSchemas, setAvailableForUserSchemas] = useState([]);
     const [currentSchemaId, setCurrentSchemaId] = useState(-1);
     const [updateSchemas, setUpdateSchemas] = useState(false);
     const [dataSheetId, setDataSheetId] = useState(0);
@@ -36,19 +37,37 @@ const CorrelationPage = ({user}) => {
         }
     }, []);
 
+
+    useEffect(() => {
+        console.log(availableForUserSchemas);
+    }, [availableForUserSchemas]);
+
     useEffect(() => {
         getSchemasByUser()
             .then((res) => {
                 if(res?.data) {
-                    setSchemas(res.data.map((item) => {
+                    const allSchemas = res.data.map((item) => {
                         return {
                             value: item.schemas_id,
                             label: item.schemas_name
                         }
-                    }));
+                    });
+
+                    setSchemas(allSchemas);
+
+                    if(user.canEditTeamMatchSchemas) {
+                        setAvailableForUserSchemas(allSchemas);
+                    }
+                    else {
+                        setAvailableForUserSchemas(res.data.filter((item) => {
+                            return item.schemas_owner_user_id;
+                        }).map((item) => {
+                            return item.schemas_id;
+                        }));
+                    }
                 }
             });
-    }, [updateSchemas]);
+    }, [updateSchemas, user]);
 
     useEffect(() => {
         if(user) {
@@ -71,6 +90,7 @@ const CorrelationPage = ({user}) => {
         dataSheet, setDataSheet, relationSheet, setRelationSheet,
         dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
         schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
+        availableForUserSchemas, setAvailableForUserSchemas,
         dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId
     }}>
         {mainComponent}

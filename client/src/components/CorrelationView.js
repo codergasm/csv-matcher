@@ -119,8 +119,8 @@ const CorrelationView = ({user}) => {
                 });
             }));
 
-            setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (0))
-                .concat(Object.entries(relationSheet[0]).map(() => (0))));
+            setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (1))
+                .concat(Object.entries(relationSheet[0]).map(() => (1))));
         }
     }, [dataSheet, relationSheet]);
 

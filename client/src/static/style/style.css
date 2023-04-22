@@ -415,7 +415,8 @@ table .cell--legend {
 }
 
 .scroll {
-    overflow-y: scroll !important;
+    border-right: 1px solid var(--primary);
+    overflow-y: auto !important;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) #C1DCFF;
 }
@@ -1765,8 +1766,10 @@ input[type=number] {
 }
 
 .teamTable {
+    max-height: 600px;
+    border-bottom: 1px solid var(--primary);
     margin-top: 30px;
-    overflow-x: auto;
+    overflow-y: auto;
 }
 
 .teamTable .sheet__header__cell {
@@ -2160,6 +2163,7 @@ input[type=number] {
     align-items: center;
     margin-right: 15px;
     border-radius: 50%;
+    position: relative;
 }
 
 .schemaPicker__inner {
@@ -2441,4 +2445,39 @@ input[type=number] {
     font-size: 15px;
     font-weight: 400;
     text-decoration: none;
+}
+
+.leave {
+    background: transparent !important;
+    opacity: 0 !important;
+}
+
+.tippy-popper,
+.tippy-popper * {
+    transition-duration: .3s !important;
+}
+
+.tippy-tooltip-content {
+    background: #313131 !important;
+}
+
+.tooltip {
+    background: #313131;
+    padding: 20px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 14px;
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    width: 500px;
+    font-weight: 400;
+    z-index: 10001;
+    text-align: center;
+}
+
+.schemaPicker {
+    position: relative;
+    z-index: 10001;
 }

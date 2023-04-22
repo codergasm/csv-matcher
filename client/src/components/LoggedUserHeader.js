@@ -27,7 +27,7 @@ const LoggedUserHeader = () => {
 
             <div className="header__menu flex">
                 <a className="header__menu__item"
-                   href="/zespol">
+                   href="/home">
                     Home
                 </a>
                 <a className="header__menu__item"

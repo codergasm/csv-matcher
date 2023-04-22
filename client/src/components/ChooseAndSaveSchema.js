@@ -7,13 +7,19 @@ import {saveSchema, updateSchema} from "../helpers/schemas";
 import BottomNotification from "./BottomNotification";
 
 const ChooseAndSaveSchema = ({user}) => {
-    const { schemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
+    const { schemas, availableForUserSchemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
         dataSheetId, relationSheetId } = useContext(AppContext);
     const { priorities, matchSchemaArray } = useContext(ViewContext);
 
     const [name, setName] = useState('');
     const [notificationText, setNotificationText] = useState('');
     const [notificationColor, setNotificationColor] = useState('');
+    const [isCurrentSchemaTeam, setIsCurrentSchemaTeam] = useState(true);
+    const [tooltip, setTooltip] = useState(false);
+
+    useEffect(() => {
+        setIsCurrentSchemaTeam(!availableForUserSchemas.includes(currentSchemaId));
+    }, [currentSchemaId, schemas, availableForUserSchemas]);
 
     useEffect(() => {
         if(currentSchemaId === -1) {
@@ -67,14 +73,15 @@ const ChooseAndSaveSchema = ({user}) => {
                                                 background={notificationColor} /> : ''}
 
         <div className="schemaPicker__inner">
-            <Tooltip title="Schemat dopasowania pozwala zapisać sposób dopasowania rekordów w arkuszu 1 do arkusza 2 - zarówno dopasowań automatycznych, ręcznych, jak i wyboru użytkownika spośród tych automatycznie wygenerowanych propozycji przez system. Jest to bardzo przydatna funkcja, jeżeli przynajmniej więcej niż raz będziesz dopasowywać podobne arkusze do siebie, a już na wagę złota gdy czynisz to regularnie (np. regularnie wprowadzasz dostawy od danego dostawcy/ porównujesz ceny od danego dostawcy/ czy generalnie korzystasz z tych samych lub zbliżonych plików wejściowych). Co istotne - jeśli pliki będą się różnić bo np. zostały zaktualizowane i doszły lub usunięto jakieś wiersze - nie ma problemu! aplikacja również sobie z tym poradzi!"
-                     followCursor={false}
-                     size="small"
-                     position="center">
-                <span className="schemaPicker__tooltip">
+                <span className="schemaPicker__tooltip"
+                      onMouseLeave={() => { setTooltip(false); }}
+                      onMouseOver={() => { setTooltip(true); }}>
                     ?
+
+                    {tooltip ? <span className="tooltip">
+                        Schemat dopasowania pozwala zapisać sposób dopasowania rekordów w arkuszu 1 do arkusza 2 - zarówno dopasowań automatycznych, ręcznych, jak i wyboru użytkownika spośród tych automatycznie wygenerowanych propozycji przez system. Jest to bardzo przydatna funkcja, jeżeli przynajmniej więcej niż raz będziesz dopasowywać podobne arkusze do siebie, a już na wagę złota gdy czynisz to regularnie (np. regularnie wprowadzasz dostawy od danego dostawcy/ porównujesz ceny od danego dostawcy/ czy generalnie korzystasz z tych samych lub zbliżonych plików wejściowych). Co istotne - jeśli pliki będą się różnić bo np. zostały zaktualizowane i doszły lub usunięto jakieś wiersze - nie ma problemu! aplikacja również sobie z tym poradzi!
+                    </span> : ''}
                 </span>
-            </Tooltip>
 
             Aktualny schemat dopasowania:
 
@@ -91,13 +98,13 @@ const ChooseAndSaveSchema = ({user}) => {
                             onChange={(e) => { setName(e.target.value); }} />}
             </div>
 
-            {currentSchemaId === -1 ? <button className="btn btn--saveSchema"
+            {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
                                            onClick={() => { createSchemaWrapper(); }}>
                 Utwórz i zapisz schemat
             </button> : <button className="btn btn--saveSchema"
                                 onClick={() => { updateSchemaWrapper(); }}>
                 Zapisz zmiany w schemacie
-            </button>}
+            </button>) : ''}
         </div>
     </div>
 };

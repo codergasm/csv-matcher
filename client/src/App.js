@@ -6,8 +6,8 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import LoggedUserWrapper from "./components/LoggedUserWrapper";
 import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 
-axios.defaults.baseURL = 'http://localhost:5000';
-// axios.defaults.baseURL = 'http://192.168.77.31:5000';
+// axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = 'http://192.168.77.31:5000';
 
 const App = () => {
   return <Router>

@@ -213,10 +213,10 @@ const TeamSchemasTable = ({schemas, canEdit, canDelete, allFiles, teamId, setUpd
                             Nie masz jeszcze żadnych arkuszy przypisanych do tego schematu
                         </h5>}
 
-                        <button className="btn btn--assignSheetsToSchema"
-                                onClick={() => { setChooseSheetsSchemaId(schema.schemas_id); setChooseSheetsModalVisible(true); }}>
+                        {canEdit ? <button className="btn btn--assignSheetsToSchema"
+                                           onClick={() => { setChooseSheetsSchemaId(schema.schemas_id); setChooseSheetsModalVisible(true); }}>
                             Dodaj nowe arkusze do schematu
-                        </button>
+                        </button> : ''}
                     </div> : ''}
                 </div>
             })}
