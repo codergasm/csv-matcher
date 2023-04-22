@@ -196,12 +196,12 @@ export class SchemasService {
 
                 // Convert array of objects to row shortcuts
                 const dataSheetShortcuts = dataSheet.map((item) => {
-                    return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
-                        item[1].substring(0, 50) : '')).join(';')
+                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
+                        item[1].substring(0, 10) : '')).join(';');
                 });
                 const relationSheetShortcuts = relationSheet.map((item) => {
-                    return Object.entries(item).map((item) => (typeof item[1] === 'string' ?
-                        item[1].substring(0, 50) : '')).join(';')
+                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (typeof item[1] === 'string' ?
+                        item[1].substring(0, 10) : '')).join(';');
                 });
 
                 const matchedRows = matchedStringsArray.filter((item) => {

@@ -194,13 +194,13 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     useEffect(() => {
-        if(dataSheetColumnsFiltered?.length && !priorities?.length) {
+        if(dataSheetColumnsFiltered?.length) {
             updateCondition(currentDataSheetPriorityIndex, currentDataSheetIndex, 'dataSheet', dataSheetColumnsFiltered[0]);
         }
     }, [dataSheetColumnsFiltered]);
 
     useEffect(() => {
-        if(relationSheetColumnsFiltered?.length && !priorities?.length) {
+        if(relationSheetColumnsFiltered?.length) {
             updateCondition(currentRelationSheetPriorityIndex, currentRelationSheetIndex, 'relationSheet', relationSheetColumnsFiltered[0]);
         }
     }, [relationSheetColumnsFiltered]);

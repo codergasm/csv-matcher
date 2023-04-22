@@ -348,10 +348,6 @@ const CorrelationView = ({user}) => {
         const jobIdTmp = makeId(64);
         setJobId(jobIdTmp);
 
-        console.log('STOP');
-        console.log(dataFile);
-        console.log(relationFile);
-
         matching(jobIdTmp, priorities, correlationMatrix,
             dataFile, relationFile,
             dataDelimiter, relationDelimiter,

@@ -98,7 +98,7 @@ const ChooseAndSaveSchema = ({user}) => {
                             onChange={(e) => { setName(e.target.value); }} />}
             </div>
 
-            {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
+            {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas || currentSchemaId === -1) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
                                            onClick={() => { createSchemaWrapper(); }}>
                 Utwórz i zapisz schemat
             </button> : <button className="btn btn--saveSchema"
