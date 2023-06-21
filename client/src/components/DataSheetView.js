@@ -6,8 +6,9 @@ import sortIcon from '../static/img/sort-down.svg';
 import {sortByColumn} from "../helpers/others";
 import {Tooltip} from "react-tippy";
 import CellsFormatModal from "./CellsFormatModal";
-
-const ROWS_PER_PAGE = 20;
+import { ROWS_PER_PAGE } from "../static/constans";
+import TableViewHeaderRow from "./TableViewHeaderRow";
+import getScrollParams from "../helpers/getScrollParams";
 
 const DataSheetView = () => {
     const { dataSheet } = useContext(AppContext);
@@ -105,10 +106,7 @@ const DataSheetView = () => {
     }
 
     const checkScrollToBottom = (e) => {
-        const visibleHeight = e.target.clientHeight;
-        const scrollHeight = e.target.scrollHeight;
-
-        const scrolled = e.target.scrollTop;
+        const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight >= scrollHeight) {
             if((page) * ROWS_PER_PAGE < dataSheetSorted.length) {
@@ -161,6 +159,8 @@ const DataSheetView = () => {
     }
 
     const sortSheet = (col, i) => {
+        setSortingClicked(true);
+
         let sortType = 0;
 
         if(col === 'l.p.') {
@@ -199,6 +199,10 @@ const DataSheetView = () => {
         })));
 
         setDataSheetSorted(dataSheet);
+    }
+
+    const getColumnMaxHeight = () => {
+        return cellsHeight !== -1 ? `${cellsHeight}px` : 'unset';
     }
 
     const getColumnMinWidth = () => {
@@ -337,39 +341,12 @@ const DataSheetView = () => {
                         })}
                     </div>
 
-                    <div className="line line--noFlex">
-                        {columnsNames.map((item, index) => {
-                            if(columnsVisibility[index]) {
-                                return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
-                                            style={{
-                                                minWidth: getColumnMinWidth()
-                                            }}
-                                            key={index}>
-
-                                    {item ?  <Tooltip title={item}
-                                                      followCursor={true}
-                                                      size="small"
-                                                      position="top">
-                                        {item}
-                                    </Tooltip> : ''}
-
-                                    <div className="sheet__header__cell__sort">
-                                        <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
-                                                onClick={() => { setSortingClicked(true); sortSheet(item, index); }}>
-                                            <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
-                                        </button>
-                                        {columnsSorting[index] ? <button className="btn--removeSorting"
-                                                                         onClick={() => { removeSorting(index); }}>
-                                            &times;
-                                        </button> : ''}
-                                    </div>
-                                </div>
-                            }
-                            else {
-                                return '';
-                            }
-                        })}
-                    </div>
+                    <TableViewHeaderRow columnsNames={columnsNames}
+                                        columnsVisibility={columnsVisibility}
+                                        columnsSorting={columnsSorting}
+                                        removeSorting={removeSorting}
+                                        getColumnMinWidth={getColumnMinWidth}
+                                        sortSheet={sortSheet} />
                 </div>
 
         {rowsToRender.map((item, index) => {
@@ -382,7 +359,7 @@ const DataSheetView = () => {
                         return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                     style={{
                                         minWidth: getColumnMinWidth(),
-                                        maxHeight: cellsHeight !== -1 ? `${cellsHeight}px` : 'unset'
+                                        maxHeight: getColumnMaxHeight()
                                     }}
                                     key={index}>
                             {cellValue ? <Tooltip title={cellValue}

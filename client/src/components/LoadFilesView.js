@@ -5,8 +5,9 @@ import Loader from "./Loader";
 import Papa from 'papaparse';
 import {getFilesByUser, saveSheet} from "../api/files";
 import SchemaPicker from "./SchemaPicker";
-import Select from "react-select";
 import {settings} from "../helpers/settings";
+import FilePicker from "./FilePicker";
+import Row from "./Row";
 
 const LoadFilesView = ({user}) => {
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
@@ -16,7 +17,6 @@ const LoadFilesView = ({user}) => {
 
     const [files, setFiles] = useState([]);
     const [filesToChoose, setFilesToChoose] = useState([]);
-
     const [dataSheetLoading, setDataSheetLoading] = useState(false);
     const [relationSheetLoading, setRelationSheetLoading] = useState(false);
     const [assignDataSheetOwnershipToTeam, setAssignDataSheetOwnershipToTeam] = useState(false);
@@ -105,20 +105,7 @@ const LoadFilesView = ({user}) => {
             header: true,
             complete: function(results) {
                 setRelationDelimiter(results.meta.delimiter);
-
-                const obj = results.data.map((item, index) => {
-                    return {
-                        '0': index+1,
-                        ...item
-                    }
-                });
-
-                // Add missing keys and convert values to string
-                const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
-                    return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
-                });
-
-                setRelationSheet(objComplete);
+                setRelationSheet(convertResponseToObject(results.data));
                 setRelationFile(file);
             }
         });
@@ -130,22 +117,23 @@ const LoadFilesView = ({user}) => {
             header: true,
             complete: function(results) {
                 setDataDelimiter(results.meta.delimiter);
-
-                const obj = results.data.map((item, index) => {
-                    return {
-                        '0': index+1,
-                        ...item
-                    }
-                });
-
-                // Add missing keys and convert values to string
-                const objComplete = addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
-                    return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
-                });
-
-                setDataSheet(objComplete);
+                setDataSheet(convertResponseToObject(results.data));
                 setDataFile(file);
             }
+        });
+    }
+
+    const convertResponseToObject = (data) => {
+        const obj = data.map((item, index) => {
+            return {
+                '0': index+1,
+                ...item
+            }
+        });
+
+        // Add missing keys and convert values to string
+        return addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
+            return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
         });
     }
 
@@ -182,98 +170,34 @@ const LoadFilesView = ({user}) => {
                 Wczytaj arkusze
             </h1>
 
-            <div className="flex">
-                <div className="loadFiles__inputWrapper">
-                <span>
-                    Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.
-                </span>
-                    <div className="loadFiles__choose">
-                        <Select ref={selectDataSheetRef}
-                                options={filesToChoose}
-                                placeholder="Wybierz arkusz"
-                                value={filesToChoose.find((item) => (item.value === dataSheetId))}
-                                onChange={handleDataSheetChoose}
-                                isSearchable={true} />
-                    </div>
+            <Row>
+                <FilePicker label={'Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.'}
+                            selectRef={selectDataSheetRef}
+                            options={filesToChoose}
+                            handleChoose={handleDataSheetChoose}
+                            handleChange={handleDataSheetChange}
+                            sheet={dataSheet}
+                            sheetId={dataSheetId}
+                            setSheet={setDataSheet}
+                            setSheetId={setDataSheetId}
+                            sheetLoading={dataSheetLoading}
+                            assignToTeam={assignDataSheetOwnershipToTeam}
+                            setAssignToTeam={setAssignDataSheetOwnershipToTeam} />
 
-                    {!dataSheet?.length && !dataSheetLoading ? <div className="loadFiles__dropzone">
-                            <span>
-                                Dodaj plik
-                            </span>
-                            <input className="loadFiles__input"
-                                   type="file"
-                                   accept=".csv,.xlsx,.xls"
-                                   onChange={(e) => { handleDataSheetChange(e); }} />
-                        </div> :
-                        <div className="sheetLoaded">
-                            {dataSheetLoading ? <div className="center">
-                                <Loader />
-                            </div> : <>
-                                <p className="sheetLoaded__text">
-                                    Plik został dodany
-                                </p>
-                                <button className="btn btn--remove"
-                                        onClick={() => { selectDataSheetRef.current.clearValue(); setDataSheetId(0); setDataSheet([]); }}>
-                                    Usuń
-                                </button>
-                            </>}
-                        </div>}
-
-                    <label className="label label--ownership">
-                        <button className={assignDataSheetOwnershipToTeam ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { setAssignDataSheetOwnershipToTeam(p => !p); }}>
-
-                        </button>
-                        uczyń zespół właścicielem pliku
-                    </label>
-                </div>
-
-                <div className="loadFiles__inputWrapper">
-                <span>
-                    Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
-                    do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)
-                </span>
-                    <div className="loadFiles__choose">
-                        <Select ref={selectRelationSheetRef}
-                                options={filesToChoose}
-                                placeholder="Wybierz arkusz"
-                                value={filesToChoose.find((item) => (item.value === relationSheetId))}
-                                onChange={handleRelationSheetChoose}
-                                isSearchable={true} />
-                    </div>
-
-                    {!relationSheet?.length && !relationSheetLoading ? <div className="loadFiles__dropzone">
-                            <span>
-                                Dodaj plik
-                            </span>
-                            <input className="loadFiles__input"
-                                   type="file"
-                                   accept=".csv,.xlsx,.xls"
-                                   onChange={handleRelationSheetChange} />
-                        </div> :
-                        <div className="sheetLoaded">
-                            {relationSheetLoading ? <div className="center">
-                                <Loader />
-                            </div> : <>
-                                <p className="sheetLoaded__text">
-                                    Plik został dodany
-                                </p>
-                                <button className="btn btn--remove"
-                                        onClick={() => { selectRelationSheetRef.current.clearValue(); setRelationSheetId(0); setRelationSheet([]); }}>
-                                    Usuń
-                                </button>
-                            </>}
-                        </div>}
-
-                    <label className="label label--ownership">
-                        <button className={assignRelationSheetOwnershipToTeam ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { setAssignRelationSheetOwnershipToTeam(p => !p); }}>
-
-                        </button>
-                        uczyń zespół właścicielem pliku
-                    </label>
-                </div>
-            </div>
+                <FilePicker label={`Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
+                        do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)`}
+                            selectRef={selectRelationSheetRef}
+                            options={filesToChoose}
+                            handleChoose={handleRelationSheetChoose}
+                            handleChange={handleRelationSheetChange}
+                            sheet={relationSheet}
+                            sheetId={relationSheetId}
+                            setSheet={setRelationSheet}
+                            setSheetId={setRelationSheetId}
+                            sheetLoading={relationSheetLoading}
+                            assignToTeam={assignRelationSheetOwnershipToTeam}
+                            setAssignToTeam={setAssignRelationSheetOwnershipToTeam} />
+            </Row>
 
             <SchemaPicker />
 

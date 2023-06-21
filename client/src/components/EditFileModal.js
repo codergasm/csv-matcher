@@ -3,6 +3,8 @@ import Loader from "./Loader";
 import fileIcon from '../static/img/file.svg';
 import addIcon from '../static/img/add.svg';
 import {updateSheet} from "../api/files";
+import CloseModalButton from "./CloseModalButton";
+import {errorText} from "../static/content";
 
 const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const [newName, setNewName] = useState('');
@@ -25,13 +27,13 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
                     setSuccess(true);
                 }
                 else {
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 }
                 setLoading(false);
             })
             .catch(() => {
                 setLoading(false);
-                setError('Coś poszło nie tak... Prosimy spróbować później');
+                setError(errorText);
             });
     }
 
@@ -48,10 +50,7 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     }
 
     return <div className="modal modal--leaveTeam modal--editFile">
-        <button className="btn btn--closeModal"
-                onClick={() => { closeModalWrapper(); }}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner">
             {!success && !error ? <>
@@ -82,7 +81,7 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
 
                 {!loading ? <div className="flex flex--twoButtons">
                     <button className="btn btn--submitFormNewTeam btn--submitEditFile"
-                            onClick={() => { handleSubmit(); }}>
+                            onClick={handleSubmit}>
                         Edytuj
                     </button>
                 </div>: <Loader width={50} />}

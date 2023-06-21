@@ -7,6 +7,7 @@ import {correlateUsingSchema, getProgressByJobId, getSelectList, matching} from 
 import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
 import {getSchemaById} from "../api/schemas";
+import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
 
 const ViewContext = React.createContext(null);
 
@@ -44,6 +45,20 @@ const CorrelationView = ({user}) => {
     const [selectListLoading, setSelectListLoading] = useState(false);
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
+
+    useEffect(() => {
+        switch(currentSheet) {
+            case 0:
+                setSheetComponent(<DataSheetView />);
+                break;
+            case 1:
+                setSheetComponent(<RelationSheetView />);
+                break;
+            default:
+                setSheetComponent(<OutputSheetView />);
+                break;
+        }
+    }, [currentSheet]);
 
     useEffect(() => {
         // Change matching every time currentSchemaId change
@@ -208,45 +223,11 @@ const CorrelationView = ({user}) => {
     }, [indexesOfCorrelatedRows, dataSheet, relationSheet]);
 
     useEffect(() => {
-        switch(currentSheet) {
-            case 0:
-                setSheetComponent(<DataSheetView />);
-                break;
-            case 1:
-                setSheetComponent(<RelationSheetView />);
-                break;
-            default:
-                setSheetComponent(<OutputSheetView />);
-                break;
-        }
-    }, [currentSheet]);
-
-    useEffect(() => {
         if(correlationStatus === 2) {
             setCorrelationStatus(0);
             setProgressCount(0);
         }
     }, [correlationStatus]);
-
-    const isCorrelationMatrixEmpty = () => {
-        return correlationMatrix.findIndex((item) => {
-            return item ? item.findIndex((item) => {
-               return item !== -1;
-            }) === -1 : true;
-        }) === -1;
-    }
-
-    useEffect(() => {
-        console.log(correlationMatrix);
-    }, [correlationMatrix]);
-
-    useEffect(() => {
-        console.log(indexesOfCorrelatedRows);
-    }, [indexesOfCorrelatedRows]);
-
-    useEffect(() => {
-        console.log(selectList);
-    }, [selectList]);
 
     useEffect(() => {
         // After correlation - get select list for each relation sheet row
@@ -459,6 +440,7 @@ const CorrelationView = ({user}) => {
                 matchThreshold, setMatchThreshold,
                 selectList, setSelectList,
                 selectListLoading,
+                currentSheet, setCurrentSheet,
                 correlate, progressCount
             }}>
         <div className="container container--correlation">
@@ -466,18 +448,15 @@ const CorrelationView = ({user}) => {
                 <ChooseAndSaveSchema user={user} />
 
                 <div className="correlation__viewPicker flex">
-                    <button className={currentSheet === 0 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                            onClick={() => { setCurrentSheet(0); }}>
+                    <ButtonCorrelationViewPicker index={0}>
                         Arkusz 1
-                    </button>
-                    <button className={currentSheet === 1 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                            onClick={() => { setCurrentSheet(1); }}>
+                    </ButtonCorrelationViewPicker>
+                    <ButtonCorrelationViewPicker index={1}>
                         Arkusz 2
-                    </button>
-                    <button className={currentSheet === 2 ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
-                            onClick={() => { setCurrentSheet(2); }}>
+                    </ButtonCorrelationViewPicker>
+                    <ButtonCorrelationViewPicker index={2}>
                         Arkusz wyjściowy
-                    </button>
+                    </ButtonCorrelationViewPicker>
                 </div>
 
                 {sheetComponent}

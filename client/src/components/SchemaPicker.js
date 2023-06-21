@@ -14,12 +14,11 @@ const SchemaPicker = () => {
             Skorzystaj z uprzednio utworzonego schematu dopasowania
         </h5>
 
-        <Select
-            options={schemas}
-            placeholder="Wybierz schemat"
-            value={schemas.find((item) => (item.value === currentSchemaId))}
-            onChange={handleChange}
-            isSearchable={true} />
+        <Select options={schemas}
+                placeholder="Wybierz schemat"
+                value={schemas.find((item) => (item.value === currentSchemaId))}
+                onChange={handleChange}
+                isSearchable={true} />
     </div>
 }
 

@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
+import getScrollParams from "../helpers/getScrollParams";
 
 const ROWS_PER_PAGE = 20;
 
@@ -71,10 +72,7 @@ const OutputSheetView = () => {
     }
 
     const checkScrollToBottom = (e) => {
-        const visibleHeight = e.target.clientHeight;
-        const scrollHeight = e.target.scrollHeight;
-
-        const scrolled = e.target.scrollTop;
+        const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight >= scrollHeight) {
             if((page + 1) * ROWS_PER_PAGE < outputSheet.length) {
@@ -91,6 +89,12 @@ const OutputSheetView = () => {
         }
         else {
             return `min(300px, ${minColumnWidth}%)`;
+        }
+    }
+
+    const getStyleWithMinWidth = () => {
+        return {
+            minWidth: getColumnMinWidth()
         }
     }
 
@@ -121,9 +125,7 @@ const OutputSheetView = () => {
                     {outputSheetExportColumns.map((item, index) => {
                         if(item) {
                             return <div className="check__cell"
-                                        style={{
-                                            minWidth: getColumnMinWidth()
-                                        }}
+                                        style={getStyleWithMinWidth()}
                                         key={index}>
                                 <button className={finalExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                         onClick={() => { handleOutputSheetExportChange(index); }}>
@@ -141,9 +143,7 @@ const OutputSheetView = () => {
                     {columnsNames.filter((_, index) => (outputSheetExportColumns[index]))
                         .map((item, index) => {
                             return <div className="sheet__header__cell"
-                                        style={{
-                                            minWidth: getColumnMinWidth()
-                                        }}
+                                        style={getStyleWithMinWidth()}
                                         key={index}>
                                 {item}
                             </div>
@@ -159,9 +159,7 @@ const OutputSheetView = () => {
                         const cellValue = item[1];
 
                         return <div className="sheet__body__row__cell"
-                                    style={{
-                                        minWidth: getColumnMinWidth()
-                                    }}
+                                    style={getStyleWithMinWidth()}
                                    key={index}>
                             {cellValue}
                         </div>

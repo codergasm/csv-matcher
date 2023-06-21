@@ -2,10 +2,10 @@ import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import {AppContext} from "../pages/CorrelationPage";
 import { stringSimilarity } from "string-similarity-js";
-import {Tooltip} from "react-tippy";
-import sortIcon from "../static/img/sort-down.svg";
+import getSimilarityColor from "../helpers/getSimilarityColor";
 import {findSubstrings} from "../helpers/others";
 import ColorMarkedText from "./ColorMarkedText";
+import CloseModalButton from "./CloseModalButton";
 
 const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -138,31 +138,13 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
         setSelectList(selectListTmp);
     }
 
-    const getSimilarityColor = (val) => {
-        if(val >= 90) {
-            return 'red';
-        }
-        else if(val >= 60) {
-            return 'orange';
-        }
-        else if(val === -1) {
-            return 'white';
-        }
-        else {
-            return 'yellow';
-        }
-    }
-
     return <div className="modal modal--testConfiguration">
-        <button className="btn btn--closeModal"
-                onClick={() => { closeModal(); }}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner scroll">
             <div className="modal__top">
                 <button className="btn btn--openTestConfigurationModal"
-                        onClick={() => { closeModal(); }}>
+                        onClick={closeModal}>
                     Powrót
                 </button>
 

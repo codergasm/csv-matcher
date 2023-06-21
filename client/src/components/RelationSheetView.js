@@ -11,8 +11,13 @@ import Loader from "./Loader";
 import CellsFormatModal from "./CellsFormatModal";
 import FullValueModal from "./FullValueModal";
 import ColorMarkedText from "./ColorMarkedText";
-
-const ROWS_PER_PAGE = 20;
+import { ROWS_PER_PAGE } from "../static/constans";
+import getSimilarityColor from "../helpers/getSimilarityColor";
+import RelationSelectionEmptyRow from "./RelationSelectionEmptyRow";
+import ButtonAutoMatch from "./ButtonAutoMatch";
+import TableViewHeaderRow from "./TableViewHeaderRow";
+import TableViewHeaderRowRelationColumn from "./TableViewHeaderRowRelationColumn";
+import getScrollParams from "../helpers/getScrollParams";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -157,7 +162,7 @@ const RelationSheetView = () => {
         }
     }
 
-    const getSimilarityColor = (val, relationRow) => {
+    const getSimilarityColorForRelationSheet = (val, relationRow) => {
         if(manuallyCorrelatedRows.includes(relationRow)) {
             return 'purple';
         }
@@ -165,18 +170,7 @@ const RelationSheetView = () => {
             return 'blue';
         }
         else  {
-            if(val >= 90) {
-                return 'red';
-            }
-            else if(val >= 60) {
-                return 'orange';
-            }
-            else if(val === -1) {
-                return 'white';
-            }
-            else {
-                return 'yellow';
-            }
+            return getSimilarityColor(val);
         }
     }
 
@@ -203,10 +197,7 @@ const RelationSheetView = () => {
     }
 
     const checkScrollToBottom = (e) => {
-        const visibleHeight = e.target.clientHeight;
-        const scrollHeight = e.target.scrollHeight;
-
-        const scrolled = e.target.scrollTop;
+        const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight + 3 >= scrollHeight) {
             if((page) * ROWS_PER_PAGE < relationSheetSorted.length) {
@@ -281,6 +272,7 @@ const RelationSheetView = () => {
     }
 
     const sortRelationColumnByMatch = (type) => {
+        setSortingClicked(true);
         setColumnsSorting(prevState => (prevState.map(() => (0))));
         setRelationSheetSorted(relationSheet);
         setRelationColumnSort(prevState => (prevState === type ? 0 : type));
@@ -301,6 +293,10 @@ const RelationSheetView = () => {
         });
     }
 
+    const getColumnMaxHeight = () => {
+        return cellsHeight !== -1 ? `${cellsHeight}px` : 'unset';
+    }
+
     const getColumnMinWidth = () => {
         const numberOfColumns = columnsNames?.length;
 
@@ -315,6 +311,29 @@ const RelationSheetView = () => {
         }
         else {
             return `min(300px, ${minColumnWidth}%)`;
+        }
+    }
+
+    const showRelationSelectionDropdown = (e, index) => {
+        e.stopPropagation();
+        e.preventDefault();
+        changeZIndex(index);
+        setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index]));
+    }
+
+    const showFullRow = (e, value, joinString) => {
+        e.stopPropagation();
+        setFullCellValueSubstringsIndexes(findSubstrings(joinString, value))
+        setShowFullCellValue(value);
+    }
+
+    const printSimilarityPercentage = (similarity) => {
+        return similarity >= 0 ? `${similarity} %` : '-';
+    }
+
+    const columnWithMinWidth = () => {
+        return {
+            width: getColumnMinWidth()
         }
     }
 
@@ -340,20 +359,19 @@ const RelationSheetView = () => {
                                              indexes={fullCellValueSubstringsIndexes}
                                              closeModal={() => { setShowFullCellValue(''); }}  /> : ''}
 
-        <button className="btn btn--autoMatch"
-                onClick={() => { setAutoMatchModalVisible(true); }}>
+        <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
             Automatycznie dopasuj
-        </button>
+        </ButtonAutoMatch>
 
         {showInSelectMenuColumns.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
-                            <span>
-                                Uwaga! żadne kolumny nie są wskazane w arkuszu 1 jako mające się wyświetlać w podpowiadajce,
-                                dlatego wiersze poniżej są puste.
-                            </span>
-                        </span> : ''}
+            <span>
+                Uwaga! żadne kolumny nie są wskazane w arkuszu 1 jako mające się wyświetlać w podpowiadajce,
+                dlatego wiersze poniżej są puste.
+            </span>
+        </span> : ''}
 
         {selectList?.length && !selectListLoading ? <div className="sheet scroll"
-                                   onScroll={(e) => { checkScrollToBottom(e); }}>
+                                   onScroll={checkScrollToBottom}>
 
             <div className="sheet__table__info">
                 <div className="cell--legend">
@@ -395,9 +413,7 @@ const RelationSheetView = () => {
                         if((index >= dataSheetColumnsNames?.length) && columnsVisibility[index-dataSheetColumnsNames?.length]) {
                             if(index === dataSheetColumnsNames?.length) {
                                 return <div className="check__cell check__cell--first"
-                                            style={{
-                                                minWidth: getColumnMinWidth()
-                                            }}
+                                            style={columnWithMinWidth()}
                                             key={index}>
                                     <button className="btn btn--check btn--notVisible"
                                             disabled={true}>
@@ -407,9 +423,7 @@ const RelationSheetView = () => {
                             }
                             else {
                                 return <div className="check__cell"
-                                            style={{
-                                                minWidth: getColumnMinWidth()
-                                            }}
+                                            style={columnWithMinWidth()}
                                             key={index}>
                                     <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                             onClick={() => { handleExportColumnsChange(index); }}>
@@ -425,54 +439,15 @@ const RelationSheetView = () => {
                 </div>
 
                 <div className="line line--noFlex">
-                    {columnsNames.map((item, index) => {
-                        if(columnsVisibility[index]) {
-                            return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
-                                        style={{
-                                            minWidth: getColumnMinWidth()
-                                        }}
-                                        key={index}>
-                                {item ? <Tooltip title={item}
-                                                 followCursor={true}
-                                                 size="small"
-                                                 position="top">
-                                    {item}
-                                </Tooltip> : ''}
+                    <TableViewHeaderRow columnsNames={columnsNames}
+                                        columnsVisibility={columnsVisibility}
+                                        columnsSorting={columnsSorting}
+                                        getColumnMinWidth={getColumnMinWidth}
+                                        sortSheet={sortSheet}
+                                        removeSorting={removeSorting} />
 
-                                <div className="sheet__header__cell__sort">
-                                    <button className={columnsSorting[index] ? "btn--sortColumn btn--sortColumn--active" : "btn--sortColumn"}
-                                            onClick={() => { setSortingClicked(true); sortSheet(item, index); }}>
-                                        <img className={columnsSorting[index] === 1 ? "img img--rotate" : "img"} src={sortIcon} alt="sortuj" />
-                                    </button>
-                                    {columnsSorting[index] ? <button className="btn--removeSorting"
-                                                                     onClick={() => { removeSorting(index); }}>
-                                        &times;
-                                    </button> : ''}
-                                </div>
-                            </div>
-                        }
-                    })}
-                    <div className="sheet__header__cell sheet__header__cell--relation">
-                        Rekord z ark. 1, z którym powiązano rekord
-
-                        <button className={relationColumnSort === 1 ? "btn--sortRelation btn--sortRelation--left btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--left"}
-                                onClick={() => { setSortingClicked(true); sortRelationColumnByMatch(1); }}>
-                            Sortuj wg nieprzydzielonych
-                        </button>
-                        <button className={relationColumnSort === 2 ? "btn--sortRelation btn--sortRelation--right btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--right"}
-                                onClick={() => { setSortingClicked(true); sortRelationColumnByMatch(2); }}>
-                            Sortuj wg przydzielonych
-                        </button>
-
-                        <Tooltip title="Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1."
-                                 followCursor={true}
-                                 size="small"
-                                 position="top">
-                            <span className="sheet__tooltip">
-                                ?
-                            </span>
-                        </Tooltip>
-                    </div>
+                    <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
+                                                      sortRelationColumnByMatch={sortRelationColumnByMatch} />
                 </div>
             </div>
 
@@ -538,7 +513,7 @@ const RelationSheetView = () => {
                             return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                         style={{
                                             minWidth: getColumnMinWidth(),
-                                            maxHeight: cellsHeight !== -1 ? `${cellsHeight}px` : 'unset'
+                                            maxHeight: getColumnMaxHeight()
                                         }}
                                         key={index}>
                                 {cellValue ? <Tooltip title={cellValue}
@@ -555,12 +530,8 @@ const RelationSheetView = () => {
                     <div className="sheet__body__row__cell sheet__body__row__cell--relation">
                         {currentSelectList?.length ? <>
                             <button className="select__btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        changeZIndex(index);
-                                        setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index])); // Kontrola, ktorą rozwijajke wyswietlic
-                                    }}>
+                                    onClick={(e) => { showRelationSelectionDropdown(e, index); }}>
+
                                 {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
                                                                                    key={index}>
                                 {correlatedRow ? <>
@@ -572,15 +543,13 @@ const RelationSheetView = () => {
                                                              indexes={substringIndexes} />
 
                                             <button className="btn btn--showFullValue"
-                                                                                  onClick={(e) => { e.stopPropagation();
-                                                                                      setFullCellValueSubstringsIndexes(findSubstrings(joinStringOfColumnsFromRelationSheet, correlatedRowValue))
-                                                                                      setShowFullCellValue(correlatedRowValue); }}>
+                                                    onClick={(e) => { showFullRow(e, correlatedRowValue, joinStringOfColumnsFromRelationSheet); }}>
                                                 (zobacz wszystko)
                                             </button>
                                         </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
-                                        background: getSimilarityColor(correlatedRow.similarity, correlatedRow.relationRowIndex),
+                                        background: getSimilarityColorForRelationSheet(correlatedRow.similarity, correlatedRow.relationRowIndex),
                                         color: manuallyCorrelatedRows.includes(correlatedRow.relationRowIndex) || schemaCorrelatedRows.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
                                         {!isCorrelatedRowWithHighestSimilarity ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
@@ -594,14 +563,7 @@ const RelationSheetView = () => {
 
                                         {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (schemaCorrelatedRows.includes(correlatedRow.relationRowIndex) ? 'S' : '-')}
                                     </span>
-                                </> : <>
-                                    <span className="select__menu__item__value">
-                                        -
-                                    </span>
-                                    <span className="select__menu__item__similarity">
-                                        -
-                                    </span>
-                                </>}
+                                </> : <RelationSelectionEmptyRow />}
                             </span> : <input className="select__input"
                                              value={searchInputValue}
                                              onChange={(e) => { setSearchInputValue(e.target.value); }} />}
@@ -647,17 +609,15 @@ const RelationSheetView = () => {
                                             <ColorMarkedText string={valueToDisplay}
                                                              indexes={substringIndexes} />
                                             <button className="btn btn--showFullValue"
-                                                    onClick={(e) => { e.stopPropagation();
-                                                        setFullCellValueSubstringsIndexes(findSubstrings(joinStringOfColumnsFromRelationSheet, value))
-                                                        setShowFullCellValue(value); }}>
+                                                    onClick={(e) => { showFullRow(e, value, joinStringOfColumnsFromRelationSheet); }}>
                                                 (zobacz wszystko)
                                             </button>
                                         </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
-                                        background: getSimilarityColor(item.similarity, -1)
+                                        background: getSimilarityColorForRelationSheet(item.similarity, -1)
                                     }}>
-                                        {item.similarity >= 0 ? `${item.similarity} %` : '-'}
+                                        {printSimilarityPercentage(item.similarity)}
                                     </span>
                                 </button>
                             })}
