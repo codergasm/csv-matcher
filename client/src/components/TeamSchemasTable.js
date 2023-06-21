@@ -5,7 +5,7 @@ import deleteIcon from "../static/img/no.svg";
 import arrowIcon from '../static/img/arrow-expand.svg';
 import editIcon from '../static/img/edit.svg';
 import saveIcon from '../static/img/check.svg';
-import {deleteSchema, detachSheetsFromSchemaById, updateSchemaName} from "../helpers/schemas";
+import {deleteSchema, detachSheetsFromSchemaById, updateSchemaName} from "../api/schemas";
 import AssignSheetsToSchemaModal from "./AssignSheetsToSchemaModal";
 import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";

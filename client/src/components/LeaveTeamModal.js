@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
-import {leaveTeam} from "../helpers/users";
+import {leaveTeam} from "../api/users";
 
 const LeaveTeamModal = ({closeModal, setTeam}) => {
     const [success, setSuccess] = useState(false);

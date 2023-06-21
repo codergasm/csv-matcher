@@ -3,7 +3,7 @@ import {AppContext} from "../pages/CorrelationPage";
 import {addMissingKeys} from "../helpers/others";
 import Loader from "./Loader";
 import Papa from 'papaparse';
-import {getFilesByUser, saveSheet} from "../helpers/files";
+import {getFilesByUser, saveSheet} from "../api/files";
 import SchemaPicker from "./SchemaPicker";
 import Select from "react-select";
 import {settings} from "../helpers/settings";
@@ -188,14 +188,12 @@ const LoadFilesView = ({user}) => {
                     Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.
                 </span>
                     <div className="loadFiles__choose">
-                        <Select
-                            ref={selectDataSheetRef}
-                            options={filesToChoose}
-                            placeholder="Wybierz arkusz"
-                            value={filesToChoose.find((item) => (item.value === dataSheetId))}
-                            onChange={handleDataSheetChoose}
-                            isSearchable={true}
-                        />
+                        <Select ref={selectDataSheetRef}
+                                options={filesToChoose}
+                                placeholder="Wybierz arkusz"
+                                value={filesToChoose.find((item) => (item.value === dataSheetId))}
+                                onChange={handleDataSheetChoose}
+                                isSearchable={true} />
                     </div>
 
                     {!dataSheet?.length && !dataSheetLoading ? <div className="loadFiles__dropzone">
@@ -236,14 +234,12 @@ const LoadFilesView = ({user}) => {
                     do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)
                 </span>
                     <div className="loadFiles__choose">
-                        <Select
-                            ref={selectRelationSheetRef}
-                            options={filesToChoose}
-                            placeholder="Wybierz arkusz"
-                            value={filesToChoose.find((item) => (item.value === relationSheetId))}
-                            onChange={handleRelationSheetChoose}
-                            isSearchable={true}
-                        />
+                        <Select ref={selectRelationSheetRef}
+                                options={filesToChoose}
+                                placeholder="Wybierz arkusz"
+                                value={filesToChoose.find((item) => (item.value === relationSheetId))}
+                                onChange={handleRelationSheetChoose}
+                                isSearchable={true} />
                     </div>
 
                     {!relationSheet?.length && !relationSheetLoading ? <div className="loadFiles__dropzone">
@@ -253,7 +249,7 @@ const LoadFilesView = ({user}) => {
                             <input className="loadFiles__input"
                                    type="file"
                                    accept=".csv,.xlsx,.xls"
-                                   onChange={(e) => { handleRelationSheetChange(e); }} />
+                                   onChange={handleRelationSheetChange} />
                         </div> :
                         <div className="sheetLoaded">
                             {relationSheetLoading ? <div className="center">
@@ -283,7 +279,7 @@ const LoadFilesView = ({user}) => {
 
             {!loading ? <button className="btn btn--loadFiles"
                                 disabled={!dataSheet?.length || !relationSheet?.length}
-                                onClick={() => { saveFiles(); }}>
+                                onClick={saveFiles}>
                 Przejdź do korelacji rekordów
             </button> : <Loader width={50} />}
         </div>

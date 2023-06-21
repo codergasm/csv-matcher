@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {sendRequestToJoinTeam} from "../helpers/users";
+import {sendRequestToJoinTeam} from "../api/users";
 import Loader from "./Loader";
 
 const JoinTeamModal = ({closeModal}) => {

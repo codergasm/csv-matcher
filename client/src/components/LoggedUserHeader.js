@@ -1,23 +1,23 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import placeholderProfileImage from '../static/img/user-placeholder.svg';
-import passwordIcon from '../static/img/password-icon.svg';
-import logoutIcon from '../static/img/logout.svg';
-import {logout} from "../helpers/users";
+import PageHeaderDropdownMenu from "./PageHeaderDropdownMenu";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import useActionOnMouseClick from "../hooks/useActionOnMouseClick";
 
 const LoggedUserHeader = () => {
     const [dropdownMenuVisible, setDropdownMenuVisible] = useState(false);
 
-    useEffect(() => {
-        document.addEventListener('click', () => {
-            setDropdownMenuVisible(false);
-        });
+    const closeDropdownMenu = () => {
+        setDropdownMenuVisible(false);
+    }
 
-        document.addEventListener('keydown', (e) => {
-            if(e.key === 'Escape') {
-                setDropdownMenuVisible(false);
-            }
-        });
-    }, []);
+    const toggleDropdownMenu = (e) => {
+        e.stopPropagation();
+        setDropdownMenuVisible(p => !p);
+    }
+
+    useActionOnEscapePress(closeDropdownMenu);
+    useActionOnMouseClick(closeDropdownMenu);
 
     return <header className="header">
         <div className="w flex">
@@ -48,22 +48,11 @@ const LoggedUserHeader = () => {
                 </a>
 
                 <button className="header__profileImage"
-                        onClick={(e) => { e.stopPropagation(); setDropdownMenuVisible(p => !p); }}>
+                        onClick={toggleDropdownMenu}>
                     <img className="img" src={placeholderProfileImage} alt="profilowe" />
                 </button>
 
-                {dropdownMenuVisible ? <div className="dropdownMenu shadow">
-                    <a href="/zmien-haslo"
-                       className="dropdownMenu__item">
-                        <img className="img" src={passwordIcon} alt="haslo" />
-                        Zmień hasło
-                    </a>
-                    <button className="dropdownMenu__item"
-                            onClick={() => { logout(); }}>
-                        <img className="img" src={logoutIcon} alt="wylogowanie" />
-                        Wyloguj się
-                    </button>
-                </div> : ''}
+                <PageHeaderDropdownMenu visible={dropdownMenuVisible} />
             </div>
         </div>
     </header>

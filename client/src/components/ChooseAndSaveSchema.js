@@ -3,7 +3,7 @@ import {Tooltip} from "react-tippy";
 import Select from 'react-select';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
-import {saveSchema, updateSchema} from "../helpers/schemas";
+import {saveSchema, updateSchema} from "../api/schemas";
 import BottomNotification from "./BottomNotification";
 
 const ChooseAndSaveSchema = ({user}) => {

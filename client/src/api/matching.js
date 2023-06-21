@@ -1,13 +1,10 @@
 import axios from "axios";
-import {settings} from "./settings";
-import {getAuthHeader} from "./others";
+import {settings} from "../helpers/settings";
+import {getAuthHeader} from "../helpers/others";
+import getConfigWithAuthHeader from "../helpers/getConfigWithAuthHeader";
 
 const getProgressByJobId = (jobId) => {
-    return axios.get(`/getProgress/${jobId}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/getProgress/${jobId}`, getConfigWithAuthHeader());
 }
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
@@ -90,11 +87,7 @@ const matching = (jobId, priorities, correlationMatrix,
 }
 
 const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {
-    return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`, getConfigWithAuthHeader());
 }
 
 export { getSelectList, matching, getProgressByJobId, correlateUsingSchema }

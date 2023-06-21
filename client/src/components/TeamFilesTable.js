@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {getDateFromString, getStringWithFileSize} from "../helpers/others";
-import {assignFileOwnershipToTeam, deleteSheet} from "../helpers/files";
+import {assignFileOwnershipToTeam, deleteSheet} from "../api/files";
 import DecisionModal from "./DecisionModal";
 import editIcon from "../static/img/edit.svg";
 import deleteIcon from "../static/img/no.svg";

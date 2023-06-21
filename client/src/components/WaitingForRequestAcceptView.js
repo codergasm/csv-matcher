@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {getTeamById} from "../helpers/teams";
-import {deleteJoinTeamRequest} from "../helpers/users";
+import {getTeamById} from "../api/teams";
+import {deleteJoinTeamRequest} from "../api/users";
+import {errorText} from "../static/content";
 
 const WaitingForRequestAcceptView = ({requestedTeamId}) => {
     const [requestedTeamName, setRequestedTeamName] = useState('');
@@ -24,7 +25,7 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
                     window.location = '/zespol';
                 })
                 .catch(() => {
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 });
         }
     }
@@ -47,7 +48,7 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
                     Wróć na stronę główną
                 </a>
 
-                <button className="btn btn--deleteRequest" onClick={() => { removeJoinRequest(); }}>
+                <button className="btn btn--deleteRequest" onClick={removeJoinRequest}>
                     Cofnij zgłoszenie
                 </button>
             </div>

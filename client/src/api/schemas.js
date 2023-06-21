@@ -1,21 +1,13 @@
 import axios from 'axios';
 import {getLoggedUserEmail} from "./users";
-import {getAuthHeader} from "./others";
+import getConfigWithAuthHeader from "../helpers/getConfigWithAuthHeader";
 
 const getSchemaById = (id) => {
-    return axios.get(`/schemas/getSchemaById/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/schemas/getSchemaById/${id}`, getConfigWithAuthHeader());
 }
 
 const getSchemasByUser = () => {
-    return axios.get(`/schemas/getSchemasByUser/${getLoggedUserEmail()}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/schemas/getSchemasByUser/${getLoggedUserEmail()}`, getConfigWithAuthHeader());
 }
 
 const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, email,
@@ -23,84 +15,48 @@ const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, e
     return axios.post(`/schemas/saveSchema`, {
         name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner,
         dataSheetId, relationSheetId
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId) => {
     return axios.patch(`/schemas/updateSchema`, {
         id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const updateSchemaName = (id, name) => {
     return axios.patch(`/schemas/updateSchemaName`, {
         id, name
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const assignSchemaToTeam = (id) => {
     return axios.patch(`/schemas/assignSchemaToTeam`, {
         id,
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const deleteSchema = (id) => {
-    return axios.delete(`/schemas/deleteSchema/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.delete(`/schemas/deleteSchema/${id}`, getConfigWithAuthHeader());
 }
 
 const assignSheetsToSchema = (dataSheet, relationSheet, matchSchema) => {
     return axios.post(`/schemas/assignSheetsToSchema`, {
         dataSheet, relationSheet, matchSchema
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const detachSheetsFromSchema = (dataSheet, relationSheet, matchSchema) => {
-    return axios.delete(`/schemas/detachSheetsFromSchema/${dataSheet}/${relationSheet}/${matchSchema}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.delete(`/schemas/detachSheetsFromSchema/${dataSheet}/${relationSheet}/${matchSchema}`, getConfigWithAuthHeader());
 }
 
 const detachSheetsFromSchemaById = (id) => {
-    return axios.delete(`/schemas/detachSheetsFromSchema/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.delete(`/schemas/detachSheetsFromSchema/${id}`, getConfigWithAuthHeader());
 }
 
 const getNumberOfMatchedRows = (id) => {
-    return axios.get(`/schemas/getNumberOfMatchedRows/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/schemas/getNumberOfMatchedRows/${id}`, getConfigWithAuthHeader());
 }
 
 export { getSchemasByUser, saveSchema, updateSchema, updateSchemaName, assignSchemaToTeam, deleteSchema, getSchemaById,

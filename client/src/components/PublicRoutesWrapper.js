@@ -1,14 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import Loader from "./Loader";
 import StartPage from "../pages/StartPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import VerificationPage from "../pages/VerificationPage";
-import {authUser, getUserData} from "../helpers/users";
-import Homepage from "../pages/Homepage";
-import CorrelationPage from "../pages/CorrelationPage";
-import ChangePassword from "../pages/ChangePassword";
+import {authUser} from "../api/users";
 import LoadingPage from "../pages/LoadingPage";
+import redirectToHomepage from "../helpers/redirectToHomepage";
 
 const PublicRoutesWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -28,7 +25,7 @@ const PublicRoutesWrapper = ({page}) => {
                 setRender(<VerificationPage />);
                 break;
             default:
-                window.location = '/';
+                redirectToHomepage();
         }
     }
 

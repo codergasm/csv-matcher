@@ -1,6 +1,7 @@
 import axios from "axios";
 import Cookies from "universal-cookie";
-import {getAuthHeader} from "./others";
+import redirectToHomepage from "../helpers/redirectToHomepage";
+import getConfigWithAuthHeader from "../helpers/getConfigWithAuthHeader";
 
 const getLoggedUserEmail = () => {
     const cookies = new Cookies();
@@ -8,15 +9,9 @@ const getLoggedUserEmail = () => {
 }
 
 const authUser = () => {
-    const cookies = new Cookies();
-
     return axios.post('/users/auth', {
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const registerUser = (email, password) => {
@@ -38,11 +33,8 @@ const verifyUser = (token) => {
 }
 
 const getUserData = (email = false) => {
-    return axios.get(`/users/getUserData/${email ? email : getLoggedUserEmail()}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/users/getUserData/${email ? email : getLoggedUserEmail()}`,
+        getConfigWithAuthHeader());
 }
 
 const logout = () => {
@@ -51,18 +43,15 @@ const logout = () => {
     cookies.remove('jwt', { path: '/' });
     cookies.remove('email_rowmatcher_domain', { path: '/' });
     cookies.remove('email_rowmatcher', { path: '/' });
-    window.location = '/';
+
+    redirectToHomepage();
 }
 
 const changeUserPassword = (oldPassword, newPassword) => {
     return axios.patch('/users/changePassword', {
         oldPassword, newPassword,
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const getUserTeam = () => {
@@ -73,37 +62,23 @@ const sendRequestToJoinTeam = (teamId) => {
     return axios.post(`/users/joinTeam`, {
         teamId,
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const getUserWaitingJoinTeamRequest = () => {
-    return axios.get(`/users/getWaitingJoinTeamRequest/${getLoggedUserEmail()}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/users/getWaitingJoinTeamRequest/${getLoggedUserEmail()}`,
+        getConfigWithAuthHeader());
 }
 
 const deleteJoinTeamRequest = () => {
-    return axios.delete(`/users/deleteJoinTeamRequest/${getLoggedUserEmail()}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.delete(`/users/deleteJoinTeamRequest/${getLoggedUserEmail()}`,
+        getConfigWithAuthHeader());
 }
 
 const leaveTeam = () => {
     return axios.patch(`/users/leaveTeam`, {
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const updateUserRights = (email,
@@ -117,31 +92,19 @@ const updateUserRights = (email,
         can_delete_team_match_schemas,
         can_edit_team_files,
         can_delete_team_files
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const acceptJoinRequest = (userId, teamId) => {
     return axios.post(`/users/acceptJoinRequest`, {
         userId, teamId
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const rejectJoinRequest = (userId, teamId) => {
     return axios.post(`/users/rejectJoinRequest`, {
         userId, teamId
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 export { registerUser, loginUser, verifyUser, authUser, getLoggedUserEmail, getUserWaitingJoinTeamRequest,

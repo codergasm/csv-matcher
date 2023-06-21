@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {generateTeamUrl, getAllTeams, updateTeamName} from "../helpers/teams";
+import {generateTeamUrl, getAllTeams, updateTeamName} from "../api/teams";
 import LeaveTeamModal from "./LeaveTeamModal";
 import copyIcon from '../static/img/copy.svg';
 import editIcon from '../static/img/edit.svg';
 import checkIcon from '../static/img/check.svg';
 import Loader from "./Loader";
+import {errorText} from "../static/content";
 
 const TeamViewHeader = ({team, setTeam, isOwner}) => {
     const [name, setName] = useState('');
@@ -80,7 +81,7 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
                         setName(newName);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setUpdateMode(false);
                     setLoading(false);
@@ -88,7 +89,7 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
                 .catch((err) => {
                     setUpdateMode(false);
                     setLoading(false);
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 });
         }
     }
@@ -109,7 +110,7 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
 
             {isOwner ? (updateMode ? (!loading ? <button className="btn btn--save"
                                                          disabled={!!error || !newName}
-                                                         onClick={() => { changeTeamNameWrapper(); }}>
+                                                         onClick={changeTeamNameWrapper}>
                 Zmień nazwę
             </button> : <Loader width={40} />) : <button className="btn--edit" onClick={() => { setUpdateMode(true); }}>
                 <img className="img" src={editIcon} alt="edytuj" />

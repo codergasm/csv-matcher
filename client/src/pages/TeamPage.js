@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {getTeamById} from "../helpers/teams";
+import {getTeamById} from "../api/teams";
 import LoadingPage from "./LoadingPage";
 import UserNotInTeamView from "../components/UserNotInTeamView";
 import {isObjectEmpty} from "../helpers/others";
 import TeamView from "../components/TeamView";
-import {getUserWaitingJoinTeamRequest} from "../helpers/users";
+import {getUserWaitingJoinTeamRequest} from "../api/users";
 import WaitingForRequestAcceptView from "../components/WaitingForRequestAcceptView";
 
 const TeamPage = ({user}) => {
@@ -57,7 +57,9 @@ const TeamPage = ({user}) => {
             }
             else {
                 // Already in team
-                setRender(<TeamView team={team} setTeam={setTeam} user={user} />);
+                setRender(<TeamView team={team}
+                                    setTeam={setTeam}
+                                    user={user} />);
             }
         }
         else {

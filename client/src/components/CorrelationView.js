@@ -3,10 +3,10 @@ import DataSheetView from "./DataSheetView";
 import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../pages/CorrelationPage";
-import {correlateUsingSchema, getProgressByJobId, getSelectList, matching} from "../helpers/matching";
+import {correlateUsingSchema, getProgressByJobId, getSelectList, matching} from "../api/matching";
 import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
-import {getSchemaById} from "../helpers/schemas";
+import {getSchemaById} from "../api/schemas";
 
 const ViewContext = React.createContext(null);
 

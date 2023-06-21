@@ -1,7 +1,13 @@
 import React, {useState} from 'react';
 import Loader from "../components/Loader";
 import {isPasswordStrength} from "../helpers/others";
-import {changeUserPassword} from "../helpers/users";
+import {changeUserPassword} from "../api/users";
+import { errorText } from "../static/content";
+import InputPrimary from "../components/InputPrimary";
+import ErrorInfo from "../components/ErrorInfo";
+import ButtonSubmit from "../components/ButtonSubmit";
+import AfterFormSubmitView from "../components/AfterFormSubmitView";
+import PageHeader from "../components/PageHeader";
 
 const ChangePassword = () => {
     const [oldPassword, setOldPassword] = useState('');
@@ -11,8 +17,12 @@ const ChangePassword = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const arePasswordsEqual = () => {
+        return password === repeatPassword;
+    }
+
     const validateData = () => {
-        if(password !== repeatPassword) {
+        if(!arePasswordsEqual()) {
             setError('Podane hasła nie są identyczne');
             return false;
         }
@@ -36,7 +46,7 @@ const ChangePassword = () => {
                         setSuccess(true);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setLoading(false);
                 })
@@ -49,56 +59,36 @@ const ChangePassword = () => {
 
     return <div className="container">
         <div className="homepage">
-            <h1 className="homepage__header">
-                RowMatcher.com
-            </h1>
-            <h2 className="homepage__subheader">
+            <PageHeader>
                 Zmień hasło
-            </h2>
+            </PageHeader>
 
             {!success ? <form className="form form--register shadow">
-                <label className="label">
-                    Aktualne hasło
-                    <input className="input"
-                           type="password"
-                           value={oldPassword}
-                           onChange={(e) => { setOldPassword(e.target.value); }}
-                           placeholder="Twoje aktualne hasło" />
-                </label>
-                <label className="label">
-                    Nowe hasło
-                    <input className="input"
-                           type="password"
-                           value={password}
-                           onChange={(e) => { setPassword(e.target.value); }}
-                           placeholder="Nowe hasło" />
-                </label>
-                <label className="label">
-                    Powtórz nowe hasło
-                    <input className="input"
-                           type="password"
-                           value={repeatPassword}
-                           onChange={(e) => { setRepeatPassword(e.target.value); }}
-                           placeholder="Powtórz nowe hasło" />
-                </label>
+                <InputPrimary label={'Aktualne hasło'}
+                              placeholder={'Twoje aktualne hasło'}
+                              type={'password'}
+                              value={oldPassword}
+                              setValue={setOldPassword} />
+                <InputPrimary label={'Nowe hasło'}
+                              placeholder={'Nowe hasło'}
+                              type={'password'}
+                              value={password}
+                              setValue={setPassword} />
+                <InputPrimary label={'Powtórz nowe hasło'}
+                              placeholder={'Powtórz nowe hasło'}
+                              type={'password'}
+                              value={repeatPassword}
+                              setValue={setRepeatPassword} />
 
-                {error ? <span className="error">
-                    {error}
-                </span> : ''}
+                <ErrorInfo content={error} />
 
-                {!loading ? <button className="btn btn--submitForm"
-                                    onClick={(e) => { handleSubmit(e); }}>
+                {!loading ? <ButtonSubmit onClick={handleSubmit}>
                     Zmień hasło
-                </button> : <Loader width={50} />}
-            </form> : <div className="afterRegister shadow">
-                <h4 className="afterRegister__header">
-                    Twoje hasło zostało zmienione
-                </h4>
+                </ButtonSubmit>: <Loader width={50} />}
 
-                <a className="btn btn--afterRegister" href="/home">
-                    Strona główna
-                </a>
-            </div>}
+            </form> : <AfterFormSubmitView>
+                Twoje hasło zostało zmienione
+            </AfterFormSubmitView>}
         </div>
     </div>
 };

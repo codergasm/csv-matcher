@@ -1,12 +1,10 @@
 import React from 'react';
 import checkIcon from '../static/img/yes.svg';
+import CloseModalButton from "./CloseModalButton";
 
 const FileSavedModal = ({closeModal}) => {
     return <div className="modal modal--fileSaved">
-        <button className="btn btn--closeModal"
-                onClick={(e) => { e.stopPropagation(); closeModal(); }}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
             <img className="img img--modalWarning" src={checkIcon} alt="potwierdzenie" />
@@ -16,7 +14,7 @@ const FileSavedModal = ({closeModal}) => {
            </h2>
 
             <button className="btn btn--backToHomepage"
-                    onClick={() => { closeModal(); }}>
+                    onClick={closeModal}>
                 Powrót
             </button>
         </div>

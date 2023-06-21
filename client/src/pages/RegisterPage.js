@@ -1,7 +1,13 @@
 import React, {useState} from 'react';
 import {isEmail, isPasswordStrength} from "../helpers/others";
-import {registerUser} from "../helpers/users";
+import {registerUser} from "../api/users";
 import Loader from "../components/Loader";
+import {errorText} from "../static/content";
+import PageHeader from "../components/PageHeader";
+import AfterFormSubmitView from "../components/AfterFormSubmitView";
+import ErrorInfo from "../components/ErrorInfo";
+import ButtonSubmit from "../components/ButtonSubmit";
+import InputPrimary from "../components/InputPrimary";
 
 const RegisterPage = () => {
     const [email, setEmail] = useState('');
@@ -12,12 +18,16 @@ const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(0);
 
+    const arePasswordsEqual = () => {
+        return password === repeatPassword;
+    }
+
     const validateData = () => {
         if(!isEmail(email)) {
             setError('Podaj poprawny adres e-mail');
             return false;
         }
-        if(password !== repeatPassword) {
+        if(!arePasswordsEqual()) {
             setError('Podane hasła nie są identyczne');
             return false;
         }
@@ -45,82 +55,67 @@ const RegisterPage = () => {
                         setStatus(1);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setLoading(false);
                 })
                 .catch((err) => {
                     setLoading(false);
+
                     if(err?.response?.data?.statusCode === 400) {
                         setError('Użytkownik o podanym adresie e-mail już istnieje');
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                 });
         }
     }
 
+    const toggleCheckbox = (e) => {
+        e.preventDefault();
+        setCheckbox(p => !p);
+    }
+
     return <div className="container">
         <div className="homepage w">
-            <h1 className="homepage__header">
-                RowMatcher.com
-            </h1>
-            <h2 className="homepage__subheader">
+            <PageHeader>
                 Załóż konto
-            </h2>
+            </PageHeader>
 
             {status === 0 ? <form className="form form--register shadow">
-                <label className="label">
-                    Adres e-mail
-                    <input className="input"
-                           value={email}
-                           onChange={(e) => { setEmail(e.target.value); }}
-                           placeholder="E-mail" />
-                </label>
-                <label className="label">
-                    Hasło
-                    <input className="input"
-                           type="password"
-                           value={password}
-                           onChange={(e) => { setPassword(e.target.value); }}
-                           placeholder="Hasło" />
-                </label>
-                <label className="label">
-                    Powtórz hasło
-                    <input className="input"
-                           type="password"
-                           value={repeatPassword}
-                           onChange={(e) => { setRepeatPassword(e.target.value); }}
-                           placeholder="Powtórz hasło" />
-                </label>
+                <InputPrimary label={'Adres e-mail'}
+                              placeholder={'E-mail'}
+                              value={email}
+                              setValue={setEmail} />
+                <InputPrimary label={'Hasło'}
+                              placeholder={'Hasło'}
+                              type={'password'}
+                              value={password}
+                              setValue={setPassword} />
+                <InputPrimary label={'Powtórz hasło'}
+                              placeholder={'Powtórz hasło'}
+                              type={'password'}
+                              value={repeatPassword}
+                              setValue={setRepeatPassword} />
 
                 <label className="label label--checkbox">
                     <button className={checkbox ? "btn--check btn--check--selected" : "btn--check"}
-                            onClick={(e) => { e.preventDefault(); setCheckbox(p => !p); }}>
+                            onClick={toggleCheckbox}>
 
                     </button>
                     Wyrażam zgodę na przetwarzanie danych osobowych przez RowMatcher.com
                 </label>
 
-                {error ? <span className="error">
-                    {error}
-                </span> : ''}
+                <ErrorInfo content={error} />
 
-                {!loading ? <button className="btn btn--submitForm"
-                                   onClick={(e) => { handleSubmit(e); }}>
+                {!loading ? <ButtonSubmit onClick={handleSubmit}>
                     Zarejestruj się
-                </button> : <Loader width={50} />}
-            </form> : <div className="afterRegister shadow">
-                <h4 className="afterRegister__header">
-                    Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny.
-                    Kliknij w niego i korzystaj z RowMatcher.com!
-                </h4>
-
-                <a className="btn btn--afterRegister" href="/">
-                    Strona główna
-                </a>
-            </div>}
+                </ButtonSubmit> : <Loader width={50} />}
+            </form> : <AfterFormSubmitView>
+                Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny.
+                Kliknij w niego i korzystaj z RowMatcher.com!
+            </AfterFormSubmitView>}
         </div>
     </div>
 

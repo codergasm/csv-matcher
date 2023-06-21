@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {getWaitingJoinTeamRequests} from "../helpers/teams";
+import {getWaitingJoinTeamRequests} from "../api/teams";
 import {getDateFromString} from "../helpers/others";
-import {acceptJoinRequest, rejectJoinRequest} from "../helpers/users";
+import {acceptJoinRequest, rejectJoinRequest} from "../api/users";
 import Loader from "./Loader";
 
 const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import CloseModalButton from "./CloseModalButton";
 
 const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
     const [height, setHeight] = useState(-1);
@@ -10,10 +11,7 @@ const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
     }, [height]);
 
     return <div className="modal modal--cellsFormat">
-        <button className="btn btn--closeModal"
-                onClick={() => { closeModal(); }}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
            <div className="modal__additionalOptions">
@@ -38,7 +36,8 @@ const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
                </label>
            </div>
 
-            <button className="btn btn--startAutoMatch" onClick={() => { closeModal(); }}>
+            <button className="btn btn--startAutoMatch"
+                    onClick={closeModal}>
                 Zatwierdź
             </button>
         </div>

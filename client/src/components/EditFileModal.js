@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import Loader from "./Loader";
 import fileIcon from '../static/img/file.svg';
 import addIcon from '../static/img/add.svg';
-import {updateSheet} from "../helpers/files";
+import {updateSheet} from "../api/files";
 
 const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const [newName, setNewName] = useState('');

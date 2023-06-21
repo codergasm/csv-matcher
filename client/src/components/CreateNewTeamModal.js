@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {createTeam, generateTeamUrl, getAllTeams} from "../helpers/teams";
+import {createTeam, generateTeamUrl, getAllTeams} from "../api/teams";
 import Loader from "./Loader";
 
 const CreateNewTeamModal = ({closeModal}) => {

@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {getFilesByUser, saveSheet} from "../helpers/files";
+import {getFilesByUser, saveSheet} from "../api/files";
 import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
 import addIcon from '../static/img/add.svg';
+import {errorText} from "../static/content";
+import PageHeader from "../components/PageHeader";
+import ErrorInfo from "../components/ErrorInfo";
 
 const FilesPage = ({user}) => {
     const [userFiles, setUserFiles] = useState([]);
@@ -31,29 +34,31 @@ const FilesPage = ({user}) => {
                     setFileSavedModalVisible(true);
                 }
                 else {
-                    setSaveError('Coś poszło nie tak... Prosimy spróbować później');
+                    setSaveError(errorText);
                 }
             })
             .catch(() => {
-                setSaveError('Coś poszło nie tak... Prosimy spróbować później');
+                setSaveError(errorText);
             });
     }
 
+    const closeFileSavedModal = () => {
+        setUpdateFiles(p => !p);
+        setFileSavedModalVisible(false);
+    }
+
     return <div className="container">
-        {fileSavedModalVisible ? <FileSavedModal closeModal={() => { setUpdateFiles(p => !p); setFileSavedModalVisible(false); }} /> : ''}
+        {fileSavedModalVisible ? <FileSavedModal closeModal={closeFileSavedModal} /> : ''}
 
         <div className="homepage homepage--files">
-            <h1 className="homepage__header">
-                RowMatcher.com
-            </h1>
-            <h2 className="homepage__subheader">
+            <PageHeader>
                 Twoje pliki
-            </h2>
+            </PageHeader>
 
             <div className="btn btn--addNewFile">
                 <input className="input--addNewFile"
                        type="file"
-                       onChange={(e) => { addNewFileWrapper(e); }} />
+                       onChange={addNewFileWrapper} />
                 Dodaj nowy plik
                 <img className="img--add" src={addIcon} alt="dodaj" />
             </div>
@@ -71,6 +76,8 @@ const FilesPage = ({user}) => {
                             canUpdate={user.canEditTeamFiles}
                             canDelete={user.canDeleteTeamFiles}
                             setUpdateFiles={setUpdateFiles} />
+
+            <ErrorInfo content={saveError} />
         </div>
     </div>
 };

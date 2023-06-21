@@ -1,21 +1,13 @@
 import axios from "axios";
 import {getLoggedUserEmail} from "./users";
-import {getAuthHeader} from "./others";
+import getConfigWithAuthHeader from "../helpers/getConfigWithAuthHeader";
 
 const getTeamById = (id) => {
-    return axios.get(`/teams/getTeamById/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/teams/getTeamById/${id}`, getConfigWithAuthHeader());
 }
 
 const getAllTeams = () => {
-    return axios.get(`/teams/getAllTeams`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/teams/getAllTeams`, getConfigWithAuthHeader());
 }
 
 const generateTeamUrl = (name) => {
@@ -30,37 +22,21 @@ const createTeam = (name) => {
         name,
         teamUrl: generateTeamUrl(name),
         email: getLoggedUserEmail()
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const updateTeamName = (id, name, team_url) => {
     return axios.patch(`/teams/updateTeamName`, {
         id, name, team_url
-    }, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    }, getConfigWithAuthHeader());
 }
 
 const getWaitingJoinTeamRequests = (id) => {
-    return axios.get(`/teams/getWaitingJoinTeamRequests/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/teams/getWaitingJoinTeamRequests/${id}`, getConfigWithAuthHeader());
 }
 
 const getTeamMembers = (id) => {
-    return axios.get(`/teams/getTeamMembers/${id}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
+    return axios.get(`/teams/getTeamMembers/${id}`, getConfigWithAuthHeader());
 }
 
 export { getTeamById, getAllTeams, generateTeamUrl, createTeam, updateTeamName,

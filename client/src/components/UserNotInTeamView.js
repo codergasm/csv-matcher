@@ -3,6 +3,7 @@ import createTeamIcon from '../static/img/people.svg';
 import joinTeamIcon from '../static/img/request.svg';
 import CreateNewTeamModal from "./CreateNewTeamModal";
 import JoinTeamModal from "./JoinTeamModal";
+import ButtonTile from "./ButtonTile";
 
 const UserNotInTeamView = () => {
     const [createNewTeamModalVisible, setCreateNewTeamModalVisible] = useState(false);
@@ -17,6 +18,14 @@ const UserNotInTeamView = () => {
         });
     }, []);
 
+    const showCreateNewTeamModal = () => {
+        setCreateNewTeamModalVisible(true);
+    }
+
+    const showJoinTeamModal = () => {
+        setJoinTeamModalVisible(true);
+    }
+
     return <div className="container">
         {createNewTeamModalVisible ? <CreateNewTeamModal closeModal={() => { setCreateNewTeamModalVisible(false); }} /> : ''}
         {joinTeamModalVisible ? <JoinTeamModal closeModal={() => { setJoinTeamModalVisible(false); }} /> : ''}
@@ -30,20 +39,14 @@ const UserNotInTeamView = () => {
             </h2>
 
             <div className="userNotInTeamChoice flex">
-                <button className="homepage__menu__item shadow" onClick={() => { setCreateNewTeamModalVisible(true); }}>
-                    <img className="img" src={createTeamIcon} alt="moje-pliki" />
-
-                    <span>
-                        Stwórz nowy zespół
-                    </span>
-                </button>
-                <button className="homepage__menu__item shadow" onClick={() => { setJoinTeamModalVisible(true); }}>
-                    <img className="img" src={joinTeamIcon} alt="moje-pliki" />
-
-                    <span>
-                        Dołącz do zespołu
-                    </span>
-                </button>
+                <ButtonTile onClick={showCreateNewTeamModal}
+                            icon={createTeamIcon}>
+                    Stwórz nowy zespół
+                </ButtonTile>
+                <ButtonTile onClick={showJoinTeamModal}
+                            icon={joinTeamIcon}>
+                    Dołącz do zespołu
+                </ButtonTile>
             </div>
         </div>
     </div>

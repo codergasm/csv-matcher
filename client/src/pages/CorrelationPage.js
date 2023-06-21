@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorrelationView from "../components/CorrelationView";
-import {getSchemasByUser} from "../helpers/schemas";
+import {getSchemasByUser} from "../api/schemas";
 
 const AppContext = React.createContext(null);
 

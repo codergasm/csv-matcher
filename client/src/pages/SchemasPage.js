@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {getSchemasByUser} from "../helpers/schemas";
+import {getSchemasByUser} from "../api/schemas";
 import MySchemasTable from "../components/MySchemasTable";
 import {groupBy} from "../helpers/others";
-import {getFilesByUser} from "../helpers/files";
+import {getFilesByUser} from "../api/files";
 import TeamSchemasTable from "../components/TeamSchemasTable";
+import PageHeader from "../components/PageHeader";
 
 const SchemasPage = ({user}) => {
     const [userSchemas, setUserSchemas] = useState([])
@@ -36,12 +37,9 @@ const SchemasPage = ({user}) => {
 
     return <div className="container">
         <div className="homepage homepage--files">
-            <h1 className="homepage__header">
-                RowMatcher.com
-            </h1>
-            <h2 className="homepage__subheader">
+            <PageHeader>
                 Twoje schematy dopasowania
-            </h2>
+            </PageHeader>
 
             <MySchemasTable schemas={userSchemas}
                             files={userFiles}

@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import Loader from "./Loader";
 import fileIcon from '../static/img/file.svg';
 import addIcon from '../static/img/add.svg';
-import {getFilesByUser, updateSheet} from "../helpers/files";
-import {assignSheetsToSchema} from "../helpers/schemas";
+import {getFilesByUser, updateSheet} from "../api/files";
+import {assignSheetsToSchema} from "../api/schemas";
 
 const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNotification, matchSchema}) => {
     const [loading, setLoading] = useState(false);
