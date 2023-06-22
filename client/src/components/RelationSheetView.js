@@ -18,6 +18,10 @@ import ButtonAutoMatch from "./ButtonAutoMatch";
 import TableViewHeaderRow from "./TableViewHeaderRow";
 import TableViewHeaderRowRelationColumn from "./TableViewHeaderRowRelationColumn";
 import getScrollParams from "../helpers/getScrollParams";
+import SheetCell from "./SheetCell";
+import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
+import convertColumnToNumber from "../helpers/convertColumnToNumber";
+import ButtonSimple from "./ButtonSimple";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -207,10 +211,7 @@ const RelationSheetView = () => {
     }
 
     const checkListScrollToBottom = (e) => {
-        const visibleHeight = e.target.clientHeight;
-        const scrollHeight = e.target.scrollHeight;
-
-        const scrolled = e.target.scrollTop;
+        const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight + 3 >= scrollHeight) {
             if((currentListPage) * ROWS_PER_PAGE < currentSelectMenuFiltered.length) {
@@ -232,27 +233,9 @@ const RelationSheetView = () => {
 
     const sortSheet = (col, i) => {
         setRelationColumnSort(0);
-        let sortType = 0;
 
-        if(col === 'l.p.') {
-            col = '0';
-        }
-
-        const newSorting = columnsSorting.map((item, index) => {
-            if(index === i) {
-                if(item === 0 || item === 2) {
-                    sortType = 1;
-                }
-                else if(item === 1) {
-                    sortType = 2;
-                }
-
-                return sortType;
-            }
-            else {
-                return 0;
-            }
-        });
+        const { newSorting, sortType } = getColumnsSortingAndSortType(i, columnsSorting);
+        col = convertColumnToNumber(col);
 
         setColumnsSorting(newSorting);
         setRelationSheetSorted(sortByColumn(relationSheet, col, sortType));
@@ -377,14 +360,12 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Widoczność
 
-                    <button className="btn btn--selectAll"
-                            onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
                         Konfiguruj w okienku
-                    </button>
-                    <button className="btn btn--selectAll"
-                            onClick={() => { setCellsFormatModalVisible(true); }}>
+                    </ButtonSimple>
+                    <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
                         Formatuj widoczność komórek
-                    </button>
+                    </ButtonSimple>
                 </div>
             </div>
 
@@ -392,18 +373,15 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
-                    {outputSheetExportColumns.filter((_, index) => (index > dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                                                                                         onClick={() => { handleExportColumnsChange(-1); }}>
+                    {outputSheetExportColumns.filter((_, index) => (index > dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <ButtonSimple onClick={() => { handleExportColumnsChange(-1); }}>
                         Zaznacz wszystkie
-                    </button> : <button className="btn btn--selectAll"
-                                        onClick={() => { handleExportColumnsChange(-2); }}>
+                    </ButtonSimple> : <ButtonSimple onClick={() => { handleExportColumnsChange(-2); }}>
                         Odznacz wszystkie
-                    </button>}
+                    </ButtonSimple>}
 
-                    <button className="btn btn--selectAll"
-                            onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(1); }}>
                         Konfiguruj w okienku
-                    </button>
+                    </ButtonSimple>
                 </div>
             </div>
 
@@ -516,12 +494,7 @@ const RelationSheetView = () => {
                                             maxHeight: getColumnMaxHeight()
                                         }}
                                         key={index}>
-                                {cellValue ? <Tooltip title={cellValue}
-                                                      followCursor={true}
-                                                      size="small"
-                                                      position="top">
-                                    {cellValue}
-                                </Tooltip> : ''}
+                                <SheetCell>{cellValue}</SheetCell>
                             </div>
                         }
                     })}
@@ -585,7 +558,8 @@ const RelationSheetView = () => {
                         </> : ''}
 
                         {/* Dropdown menu */}
-                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll" onScroll={(e) => { checkListScrollToBottom(e) }}>
+                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll"
+                                                                          onScroll={checkListScrollToBottom}>
                             {currentSelectMenuToDisplay?.map((item, index) => {
                                 const value = Object.entries(dataSheet[item.dataRowIndex])
                                     .filter((_, index) => (showInSelectMenuColumns[index]))

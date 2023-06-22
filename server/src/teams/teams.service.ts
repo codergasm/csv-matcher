@@ -99,11 +99,6 @@ export class TeamsService {
             .getRawMany();
     }
 
-    addTrailingZero(n) {
-        if(n < 10) return `0${n}`;
-        else return n;
-    }
-
     printFirstDayOfCurrentMonth(date) {
         return `${date.getFullYear()}-${date.getMonth()+1}-01 00:00:00`
     }

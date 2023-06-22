@@ -9,6 +9,9 @@ import CellsFormatModal from "./CellsFormatModal";
 import { ROWS_PER_PAGE } from "../static/constans";
 import TableViewHeaderRow from "./TableViewHeaderRow";
 import getScrollParams from "../helpers/getScrollParams";
+import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
+import convertColumnToNumber from "../helpers/convertColumnToNumber";
+import SheetCell from "./SheetCell";
 
 const DataSheetView = () => {
     const { dataSheet } = useContext(AppContext);
@@ -161,30 +164,10 @@ const DataSheetView = () => {
     const sortSheet = (col, i) => {
         setSortingClicked(true);
 
-        let sortType = 0;
-
-        if(col === 'l.p.') {
-            col = '0';
-        }
-
-        const newSorting = columnsSorting.map((item, index) => {
-            if(index === i) {
-                if(item === 0 || item === 2) {
-                    sortType = 1;
-                }
-                else if(item === 1) {
-                    sortType = 2;
-                }
-
-                return sortType;
-            }
-            else {
-                return 0;
-            }
-        });
+        const { newSorting, sortType } = getColumnsSortingAndSortType(i, columnsSorting);
+        col = convertColumnToNumber(col);
 
         setColumnsSorting(newSorting);
-
         setDataSheetSorted(sortByColumn(dataSheet, col, sortType));
     }
 
@@ -222,8 +205,14 @@ const DataSheetView = () => {
         }
     }
 
+    const columnWithMinWidth = () => {
+        return {
+            width: getColumnMinWidth()
+        }
+    }
+
     return <div className="sheet scroll"
-                onScroll={(e) => { checkScrollToBottom(e); }}>
+                onScroll={checkScrollToBottom}>
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
@@ -236,118 +225,111 @@ const DataSheetView = () => {
                                                      setCellsHeight={setCellsHeight}
                                                      closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
 
+        <div className="sheet__table__info">
+            <div className="cell--legend">
+                Widoczność
 
-                <div className="sheet__table__info">
-                    <div className="cell--legend">
-                        Widoczność
+                <button className="btn btn--selectAll"
+                        onClick={() => { setColumnsSettingsModalVisible(3); }}>
+                    Konfiguruj w okienku
+                </button>
+                <button className="btn btn--selectAll"
+                        onClick={() => { setCellsFormatModalVisible(true); }}>
+                    Formatuj widoczność komórek
+                </button>
+            </div>
+        </div>
 
-                        <button className="btn btn--selectAll"
-                                onClick={() => { setColumnsSettingsModalVisible(3); }}>
-                            Konfiguruj w okienku
-                        </button>
-                        <button className="btn btn--selectAll"
-                                onClick={() => { setCellsFormatModalVisible(true); }}>
-                            Formatuj widoczność komórek
-                        </button>
-                    </div>
-                </div>
+        <div className="sheet__table__info">
+            <div className="cell--legend">
+                Pokazuj w podpowiadajce
 
-                <div className="sheet__table__info">
-                    <div className="cell--legend">
-                        Pokazuj w podpowiadajce
+                {showInSelectMenuColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                       onClick={() => { handleSelectMenuColumnsChange(-1); }}>
+                    Zaznacz wszystkie
+                </button> : <button className="btn btn--selectAll"
+                        onClick={() => { handleSelectMenuColumnsChange(-2); }}>
+                    Odznacz wszystkie
+                </button>}
 
-                        {showInSelectMenuColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                               onClick={() => { handleSelectMenuColumnsChange(-1); }}>
-                            Zaznacz wszystkie
-                        </button> : <button className="btn btn--selectAll"
-                                onClick={() => { handleSelectMenuColumnsChange(-2); }}>
-                            Odznacz wszystkie
-                        </button>}
+                <button className="btn btn--selectAll"
+                        onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                    Konfiguruj w okienku
+                </button>
+            </div>
+        </div>
 
-                        <button className="btn btn--selectAll"
-                                onClick={() => { setColumnsSettingsModalVisible(1); }}>
-                            Konfiguruj w okienku
-                        </button>
-                    </div>
-                </div>
+        <div className="sheet__table">
+            <div className="line line--noFlex">
+                {showInSelectMenuColumns.map((item, index) => {
+                    if(columnsVisibility[index]) {
+                        return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                    style={columnWithMinWidth()}
+                                    key={index}>
+                            <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleSelectMenuColumnsChange(index); }}>
 
-                <div className="sheet__table">
-                    <div className="line line--noFlex">
-                        {showInSelectMenuColumns.map((item, index) => {
-                            if(columnsVisibility[index]) {
-                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
-                                            style={{
-                                                minWidth: getColumnMinWidth()
-                                            }}
-                                            key={index}>
-                                    <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                            onClick={() => { handleSelectMenuColumnsChange(index); }}>
-
-                                    </button>
-                                </div>
-                            }
-                            else {
-                                return '';
-                            }
-                        })}
-                    </div>
-
-                    <div className="line line--exportLegend" ref={exportLegend}>
-                        <div className="cell--legend">
-                            Uwzględnij w eksporcie
-
-                            {outputSheetExportColumns.filter((_, index) => ((index < columnsNames.length) && (index !== 0))).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                                    onClick={() => { handleExportColumnsChange(-1); }}>
-                                Zaznacz wszystkie
-                            </button> : <button className="btn btn--selectAll"
-                                                onClick={() => { handleExportColumnsChange(-2); }}>
-                                Odznacz wszystkie
-                            </button>}
-
-                            <button className="btn btn--selectAll"
-                                    onClick={() => { setColumnsSettingsModalVisible(2); }}>
-                                Konfiguruj w okienku
                             </button>
                         </div>
-                    </div>
-                    <div className="line line--noFlex">
-                        {outputSheetExportColumns.map((item, index) => {
-                            if((index < columnsNames?.length) && (columnsVisibility[index])) {
-                                if(index === 0) {
-                                    return <div className="check__cell check__cell--first"
-                                                style={{
-                                                    minWidth: getColumnMinWidth()
-                                                }}
-                                                key={index}>
-                                        <button className="btn btn--check btn--notVisible"
-                                                disabled={true}>
+                    }
+                    else {
+                        return '';
+                    }
+                })}
+            </div>
 
-                                        </button>
-                                    </div>
-                                }
-                                else {
-                                    return <div className="check__cell"
-                                                style={{
-                                                    minWidth: getColumnMinWidth()
-                                                }}
-                                                key={index}>
-                                        <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                                onClick={() => { handleExportColumnsChange(index); }}>
+            <div className="line line--exportLegend" ref={exportLegend}>
+                <div className="cell--legend">
+                    Uwzględnij w eksporcie
 
-                                        </button>
-                                    </div>
-                                }
-                            }
-                        })}
-                    </div>
+                    {outputSheetExportColumns.filter((_, index) => ((index < columnsNames.length) && (index !== 0))).findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                            onClick={() => { handleExportColumnsChange(-1); }}>
+                        Zaznacz wszystkie
+                    </button> : <button className="btn btn--selectAll"
+                                        onClick={() => { handleExportColumnsChange(-2); }}>
+                        Odznacz wszystkie
+                    </button>}
 
-                    <TableViewHeaderRow columnsNames={columnsNames}
-                                        columnsVisibility={columnsVisibility}
-                                        columnsSorting={columnsSorting}
-                                        removeSorting={removeSorting}
-                                        getColumnMinWidth={getColumnMinWidth}
-                                        sortSheet={sortSheet} />
+                    <button className="btn btn--selectAll"
+                            onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                        Konfiguruj w okienku
+                    </button>
                 </div>
+            </div>
+            <div className="line line--noFlex">
+                {outputSheetExportColumns.map((item, index) => {
+                    if((index < columnsNames?.length) && (columnsVisibility[index])) {
+                        if(index === 0) {
+                            return <div className="check__cell check__cell--first"
+                                        style={columnWithMinWidth()}
+                                        key={index}>
+                                <button className="btn btn--check btn--notVisible"
+                                        disabled={true}>
+
+                                </button>
+                            </div>
+                        }
+                        else {
+                            return <div className="check__cell"
+                                        style={columnWithMinWidth()}
+                                        key={index}>
+                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleExportColumnsChange(index); }}>
+
+                                </button>
+                            </div>
+                        }
+                    }
+                })}
+            </div>
+
+            <TableViewHeaderRow columnsNames={columnsNames}
+                                columnsVisibility={columnsVisibility}
+                                columnsSorting={columnsSorting}
+                                removeSorting={removeSorting}
+                                getColumnMinWidth={getColumnMinWidth}
+                                sortSheet={sortSheet} />
+        </div>
 
         {rowsToRender.map((item, index) => {
             return <div className="line line--tableRow"
@@ -362,16 +344,8 @@ const DataSheetView = () => {
                                         maxHeight: getColumnMaxHeight()
                                     }}
                                     key={index}>
-                            {cellValue ? <Tooltip title={cellValue}
-                                                  followCursor={true}
-                                                  size="small"
-                                                  position="top">
-                                {cellValue}
-                            </Tooltip> : ''}
+                            <SheetCell>{cellValue}</SheetCell>
                         </div>
-                    }
-                    else {
-                        return '';
                     }
                 })}
             </div>
