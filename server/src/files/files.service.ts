@@ -32,7 +32,8 @@ export class FilesService {
         });
     }
 
-    async saveSheet(files, email, teamOwner) {
+    async saveSheet(body, files) {
+        const { email, teamOwner } = body;
         const sheetFile = files.sheet[0];
 
         const numberOfRows = this.getNumberOfRows(sheetFile);
@@ -58,23 +59,21 @@ export class FilesService {
         }
     }
 
+    async deleteSheetAssignmentToSchemas(id) {
+        await this.schemasSheetsRepository.delete({
+            data_sheet: id
+        });
+        await this.schemasSheetsRepository.delete({
+            relation_sheet: id
+        });
+    }
+
     async deleteSheet(id) {
-        // Get file by id
         const fileRow = await this.filesRepository.findOneBy({id});
 
         if(fileRow) {
-            // Delete file
             fs.unlinkSync(fileRow.filepath);
-
-            // Delete assignments to schemas
-            await this.schemasSheetsRepository.delete({
-                data_sheet: id
-            });
-            await this.schemasSheetsRepository.delete({
-                relation_sheet: id
-            });
-
-            // Delete row from database
+            await this.deleteSheetAssignmentToSchemas(id);
             return this.filesRepository.delete({id});
         }
         else {
@@ -123,18 +122,20 @@ export class FilesService {
             .execute();
     }
 
-    async updateFile(id, files, name, email) {
+    async getFileSizeInBytes(path) {
+        return (await fs.promises.stat(path)).size;
+    }
+
+    async updateFile(body, files) {
+        const { id, name, email } = body;
         const sheetFile = files.sheet[0];
 
         const numberOfRows = this.getNumberOfRows(sheetFile);
-        const filesize = (await fs.promises.stat(sheetFile.path)).size
+        const filesize = await this.getFileSizeInBytes(sheetFile.path);
 
-        const user = await this.usersRepository.findOneBy({
-            email
-        });
+        const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
-            // Get old file path
             const oldFileRow = await this.filesRepository.findOneBy({id});
 
             // Save new file in database

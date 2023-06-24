@@ -3,43 +3,13 @@ import {FilesService} from "./files.service";
 import {FileFieldsInterceptor} from "@nestjs/platform-express";
 import {FileUploadHelper} from "../common/FileUploadHelper";
 import {diskStorage} from "multer";
-import * as fs from 'fs';
+import moveFilesToTeamDirectory from "../common/moveFilesToTeamDirectory";
 
 @Controller('files')
 export class FilesController {
     constructor(
         private readonly filesService: FilesService
     ) {
-    }
-
-    async moveFilesToProperDirectory(files, teamId) {
-        let imageIndex = 0;
-
-        if(files?.sheet?.length) {
-            for(const item of files.sheet) {
-                try {
-                    await fs.promises.mkdir(`${item.destination}/${teamId}`, {
-                        recursive: true
-                    });
-                    await fs.promises.rename(item.path, `${item.destination}/${teamId}/${item.filename}`);
-                }
-                catch(e) {
-                    // If directory already exists
-                    try {
-                        await fs.promises.rename(item.path, `${item.destination}/${teamId}/${item.filename}`);
-                    } catch(e) {}
-                }
-
-                files.sheet[imageIndex] = {
-                    ...item,
-                    path: `${item.destination}/${teamId}/${item.filename}`,
-                    destination: `${item.destination}/${teamId}`
-                }
-                imageIndex++;
-            }
-        }
-
-        return files;
     }
 
     @Get('/getFileById/:id')
@@ -59,11 +29,8 @@ export class FilesController {
     async saveSheet(@UploadedFiles() files: {
         sheet?: Express.Multer.File[],
     }, @Body() body) {
-        const { email, teamId, teamOwner } = body;
-
-        files = await this.moveFilesToProperDirectory(files, teamId);
-
-        return this.filesService.saveSheet(files, email, teamOwner);
+        files = await moveFilesToTeamDirectory(files, body.teamId);
+        return this.filesService.saveSheet(body, files);
     }
 
     @Delete(`/deleteSheet/:id`)
@@ -78,7 +45,8 @@ export class FilesController {
 
     @Patch('/assignFileOwnershipToTeam')
     async assignFileOwnershipToTeam(@Body() body) {
-        return this.filesService.assignFileOwnershipToTeam(body.fileId, body.teamId);
+        const { fileId, teamId } = body;
+        return this.filesService.assignFileOwnershipToTeam(fileId, teamId);
     }
 
     @Patch('/updateFile')
@@ -93,15 +61,13 @@ export class FilesController {
     async updateFile(@UploadedFiles() files: {
         sheet?: Express.Multer.File[],
     }, @Body() body) {
-        const { id, name, email, teamId } = body;
-
-        files = await this.moveFilesToProperDirectory(files, teamId);
-
-        return this.filesService.updateFile(id, files, name, email);
+        files = await moveFilesToTeamDirectory(files, body.teamId);
+        return this.filesService.updateFile(body, files);
     }
 
     @Patch('/updateFileName')
     async updateFileName(@Body() body) {
-        return this.filesService.updateFileName(body.id, body.name);
+        const { id, name } = body;
+        return this.filesService.updateFileName(id, name);
     }
 }
