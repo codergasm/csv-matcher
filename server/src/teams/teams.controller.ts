@@ -24,13 +24,13 @@ export class TeamsController {
     @UseGuards(JwtAuthGuard)
     @Post('/createTeam')
     createTeam(@Body() body) {
-        return this.teamsService.createTeam(body.name, body.teamUrl, body.email);
+        return this.teamsService.createTeam(body);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch('/updateTeamName')
     updateTeamName(@Body() body) {
-        return this.teamsService.updateTeamName(body.name, body.team_url, body.id);
+        return this.teamsService.updateTeamName(body);
     }
 
     @UseGuards(JwtAuthGuard)

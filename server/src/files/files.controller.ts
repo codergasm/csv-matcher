@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post, Res, UploadedFiles, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, UploadedFiles, UseInterceptors} from '@nestjs/common';
 import {FilesService} from "./files.service";
 import {FileFieldsInterceptor} from "@nestjs/platform-express";
 import {FileUploadHelper} from "../common/FileUploadHelper";

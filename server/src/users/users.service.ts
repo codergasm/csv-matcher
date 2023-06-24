@@ -9,6 +9,7 @@ import { v4 as uuid } from 'uuid';
 import {MailerService} from "@nestjs-modules/mailer";
 import {JwtService} from "@nestjs/jwt";
 import {UsersVerificationEntity} from "../entities/users_verification.entity";
+import accountVerificationMail from "../mails/accountVerificationMail";
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,13 @@ export class UsersService {
     ) {
     }
 
+    createPasswordHash(password) {
+        return crypto
+            .createHash('sha256')
+            .update(password)
+            .digest('hex');
+    }
+
     async registerUser(email: string, password: string) {
         const existingUser = await this.usersRepository.findOneBy({
             email
@@ -35,29 +43,10 @@ export class UsersService {
             throw new HttpException('Użytkownik o podanym adresie e-mail już istnieje', 400);
         }
         else {
-            const passwordHash = crypto
-                .createHash('sha256')
-                .update(password)
-                .digest('hex');
-
+            const passwordHash = this.createPasswordHash(password);
             const token = await uuid();
 
-            await this.mailerService.sendMail({
-                to: email,
-                from: `RowMatcher <${process.env.EMAIL_ADDRESS}>`,
-                subject: 'Aktywuj swoje konto w RowMatcher.com',
-                html: `<div>
-                    <h2>
-                        Dziękujemy, że jesteś z nami!
-                    </h2>
-                    <p>
-                        Oto Twój link aktywacyjny:
-                    </p>
-                    <a href="${process.env.WEBSITE_URL}/weryfikacja?token=${token}">
-                        ${process.env.WEBSITE_URL}/weryfikacja?token=${token}
-                    </a>
-                </div>`
-            });
+            await this.mailerService.sendMail(accountVerificationMail(email, token));
 
             await this.usersRepository.save({
                 email,
@@ -98,14 +87,9 @@ export class UsersService {
     async loginUser(email: string, password: string) {
         const payload = { username: email, sub: password, role: 'user' };
 
-        const passwordHash = crypto
-            .createHash('sha256')
-            .update(password)
-            .digest('hex');
-
         const user = await this.usersRepository.findOneBy({
             email,
-            password: passwordHash
+            password: this.createPasswordHash(password)
         });
 
         if(user) {
@@ -127,14 +111,12 @@ export class UsersService {
 
     async addToTeamRequest(userId: number, teamId: number) {
         try {
-            const res = await this.addToTeamUsersRequestsRepository.save({
+            return this.addToTeamUsersRequestsRepository.save({
                 user_id: userId,
                 team_id: teamId,
                 created_datetime: new Date(),
                 status: 'waiting'
             });
-
-            return res;
         }
         catch(e) {
             let errorMessage = 'Coś poszło nie tak... Prosimy spróbować później'
@@ -157,26 +139,16 @@ export class UsersService {
     }
 
     async changePassword(oldPassword, newPassword, email) {
-        const passwordHash = crypto
-            .createHash('sha256')
-            .update(oldPassword)
-            .digest('hex');
-
         const user = await this.usersRepository.findBy({
             email,
-            password: passwordHash
+            password: this.createPasswordHash(oldPassword)
         });
 
         if(user?.length) {
-            const newPasswordHash = crypto
-                .createHash('sha256')
-                .update(newPassword)
-                .digest('hex');
-
             return this.usersRepository
                 .createQueryBuilder()
                 .update({
-                    password: newPasswordHash
+                    password: this.createPasswordHash(newPassword)
                 })
                 .where({
                     email
@@ -251,11 +223,10 @@ export class UsersService {
         }
     }
 
-    async updateUserRights(email,
-                           can_edit_team_match_schemas,
-                           can_delete_team_match_schemas,
-                           can_edit_team_files,
-                           can_delete_team_files) {
+    async updateUserRights(body) {
+        const { email, can_edit_team_match_schemas, can_delete_team_match_schemas,
+            can_edit_team_files, can_delete_team_files } = body;
+
         return this.usersRepository
             .createQueryBuilder()
             .update({

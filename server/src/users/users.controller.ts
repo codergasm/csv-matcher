@@ -25,7 +25,8 @@ export class UsersController {
 
     @Post('/register')
     registerUser(@Body() body) {
-        return this.usersService.registerUser(body.email, body.password);
+        const { email, password } = body;
+        return this.usersService.registerUser(email, password);
     }
 
     @Post('/verify')
@@ -35,13 +36,15 @@ export class UsersController {
 
     @Post('/login')
     loginUser(@Body() body) {
-        return this.usersService.loginUser(body.email, body.password);
+        const  { email, password } = body;
+        return this.usersService.loginUser(email, password);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('/addToTeamRequest')
     async addToTeamRequest(@Body() body) {
-        return this.usersService.addToTeamRequest(body.userId, body.teamId);
+        const { userId, teamId } = body;
+        return this.usersService.addToTeamRequest(userId, teamId);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -53,13 +56,15 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @Patch('/changePassword')
     changePassword(@Body() body) {
-        return this.usersService.changePassword(body.oldPassword, body.newPassword, body.email);
+        const { oldPassword, newPassword, email } = body;
+        return this.usersService.changePassword(oldPassword, newPassword, email);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('/joinTeam')
     joinTeam(@Body() body) {
-        return this.usersService.joinTeam(body.teamId, body.email);
+        const { teamId, email } = body;
+        return this.usersService.joinTeam(teamId, email);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -83,21 +88,20 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @Patch('/updateUserRights')
     updateUserRights(@Body() body) {
-        const { email, can_edit_team_match_schemas, can_delete_team_match_schemas,
-            can_edit_team_files, can_delete_team_files } = body;
-        return this.usersService.updateUserRights(email, can_edit_team_match_schemas, can_delete_team_match_schemas,
-            can_edit_team_files, can_delete_team_files);
+        return this.usersService.updateUserRights(body);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('/acceptJoinRequest')
     acceptJoinRequest(@Body() body) {
-        return this.usersService.acceptJoinRequest(body.userId, body.teamId);
+        const { userId, teamId } = body;
+        return this.usersService.acceptJoinRequest(userId, teamId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('/rejectJoinRequest')
     rejectJoinRequest(@Body() body) {
-        return this.usersService.rejectJoinRequest(body.userId, body.teamId);
+        const { userId, teamId } = body;
+        return this.usersService.rejectJoinRequest(userId, teamId);
     }
 }

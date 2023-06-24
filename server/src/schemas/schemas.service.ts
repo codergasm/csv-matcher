@@ -42,8 +42,9 @@ export class SchemasService {
         }
     }
 
-    async saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject,
-                     email, teamOwner, dataSheetId, relationSheetId) {
+    async saveSchema(body) {
+        const { name, matchedStringsArray, automaticMatcherSettingsObject,
+            email, teamOwner, dataSheetId, relationSheetId } = body;
         const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
@@ -74,24 +75,23 @@ export class SchemasService {
         }
     }
 
-    async updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId) {
-        let updateObject = {};
+    async updateSchema(body) {
+        const { id, name, matchedStringsArray, automaticMatcherSettingsObject,
+            dataSheetId, relationSheetId } = body;
+
+        let updateObject: any = {
+            matched_strings_array: JSON.stringify(matchedStringsArray),
+            automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
+        };
 
         if(name) {
             updateObject = {
-                name,
-                matched_strings_array: JSON.stringify(matchedStringsArray),
-                automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
-            }
-        }
-        else {
-            updateObject = {
-                matched_strings_array: JSON.stringify(matchedStringsArray),
-                automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
+                ...updateObject,
+                name: name
             }
         }
 
-        const res = await this.schemasRepository
+        const updateSchemaResponse = await this.schemasRepository
             .createQueryBuilder()
             .update(updateObject)
             .where({
@@ -120,11 +120,11 @@ export class SchemasService {
                     .execute();
             }
             else {
-                return res;
+                return updateSchemaResponse;
             }
         }
         else {
-            return res;
+            return updateSchemaResponse;
         }
     }
 
@@ -186,7 +186,7 @@ export class SchemasService {
             .execute();
     }
 
-    async detachSheetsFromSchema(dataSheet, relationSheet, matchSchema) {
+    async detachSheetsFromSchemaBySheetsAndSchemaId(dataSheet, relationSheet, matchSchema) {
         return this.schemasSheetsRepository.delete({
             data_sheet: dataSheet,
             relation_sheet: relationSheet,
@@ -194,8 +194,21 @@ export class SchemasService {
         });
     }
 
-    async detachSheetsFromSchemaById(id) {
+    async detachSheetsFromSchemaBySchemaId(id) {
         return this.schemasSheetsRepository.delete({id});
+    }
+
+    convertArrayOfObjectsToRowShortcuts(arrayOfObjects) {
+        const regex = /[^A-Za-z0-9]/g;
+        return arrayOfObjects.map((item) => {
+            return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
+                item[1].toString().replace(regex, '').substring(0, 10))).join(';');
+        })
+    }
+
+    convertFileToArrayOfObjects(fileRow) {
+        const fileContent = fs.readFileSync(fileRow.filepath, 'utf-8');
+        return papa.parse(fileContent, { header: true }).data;
     }
 
     async getNumberOfMatchedRows(schemasSheetsRowId) {
@@ -214,23 +227,11 @@ export class SchemasService {
             if(dataSheetRow && relationSheetRow && matchSchemaRow) {
                 const matchedStringsArray = JSON.parse(matchSchemaRow.matched_strings_array);
 
-                // Convert files to array of objects
-                const dataFileContent = fs.readFileSync(dataSheetRow.filepath, 'utf-8');
-                const relationFileContent = fs.readFileSync(relationSheetRow.filepath, 'utf-8');
-                const dataSheet = papa.parse(dataFileContent, { header: true }).data;
-                const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+                const dataSheet = this.convertFileToArrayOfObjects(dataSheetRow);
+                const relationSheet = this.convertFileToArrayOfObjects(relationSheetRow);
 
-                const regex = /[^A-Za-z0-9]/g;
-
-                // Convert array of objects to row shortcuts
-                const dataSheetShortcuts = dataSheet.map((item) => {
-                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
-                        item[1].toString().replace(regex, '').substring(0, 10))).join(';');
-                });
-                const relationSheetShortcuts = relationSheet.map((item) => {
-                    return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
-                        item[1].toString().replace(regex, '').substring(0, 10))).join(';');
-                });
+                const dataSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(dataSheet);
+                const relationSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(relationSheet);
 
                 const matchedRows = matchedStringsArray.filter((item) => {
                     return (dataSheetShortcuts.includes(item[0]) && relationSheetShortcuts.includes(item[1])) ||
@@ -256,31 +257,19 @@ export class SchemasService {
         if(dataSheetRow && relationSheetRow && matchSchemaRow) {
             const matchedStringsArray = JSON.parse(matchSchemaRow.matched_strings_array);
 
-            // Convert files to array of objects
-            const dataFileContent = fs.readFileSync(dataSheetRow.filepath, 'utf-8');
-            const relationFileContent = fs.readFileSync(relationSheetRow.filepath, 'utf-8');
-            const dataSheet = papa.parse(dataFileContent, { header: true }).data;
-            const relationSheet = papa.parse(relationFileContent, { header: true }).data;
+            const dataSheet = this.convertFileToArrayOfObjects(dataSheetRow);
+            const relationSheet = this.convertFileToArrayOfObjects(relationSheetRow);
 
-            const regex = /[^A-Za-z0-9]/g;
-
-            // Convert array of objects to row shortcuts
-            const dataSheetShortcuts = dataSheet.map((item) => {
-                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
-                    item[1].toString().replace(regex, '').substring(0, 10))).join(';');
-            });
-            const relationSheetShortcuts = relationSheet.map((item) => {
-                return Object.entries(item).filter((_, index) => (index < 10)).map((item) => (
-                    item[1].toString().replace(regex, '').substring(0, 10))).join(';');
-            });
+            const dataSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(dataSheet);
+            const relationSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(relationSheet);
 
             const matchedRows = matchedStringsArray.map((item) => {
                 const matchDataString = item[0];
                 const matchRelationString = item[1];
-                const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item, index) => {
-                    return item === matchDataString;
-                });
-                const relationSheetMatchIndex = relationSheetShortcuts.findIndex((item) => (item === matchRelationString));
+                const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item) =>
+                    (item === matchDataString));
+                const relationSheetMatchIndex = relationSheetShortcuts.findIndex((item) =>
+                    (item === matchRelationString));
 
                 if(dataSheetMatchIndex !== -1 && relationSheetMatchIndex !== -1) {
                     return [dataSheetMatchIndex, relationSheetMatchIndex];
@@ -292,10 +281,9 @@ export class SchemasService {
 
             const matchedRowsInRelationSheet = matchedRows.map((item) => (item[1]));
 
-            return relationSheetShortcuts.map((item, index) => {
-                if(matchedRowsInRelationSheet.includes(index)) {
-                    const relationSheetIndex = index;
-                    const matchedRow = matchedRows.find((item, index) => (item[1] === relationSheetIndex))
+            return relationSheetShortcuts.map((item, relationSheetIndex) => {
+                if(matchedRowsInRelationSheet.includes(relationSheetIndex)) {
+                    const matchedRow = matchedRows.find((item) => (item[1] === relationSheetIndex))
 
                     if(matchedRow) {
                         return matchedRow[0];

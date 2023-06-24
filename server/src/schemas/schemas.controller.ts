@@ -24,18 +24,13 @@ export class SchemasController {
     @UseGuards(JwtAuthGuard)
     @Post('/saveSchema')
     saveSchema(@Body() body) {
-        const { name, matchedStringsArray, automaticMatcherSettingsObject,
-            email, teamOwner, dataSheetId, relationSheetId } = body;
-        return this.schemasService.saveSchema(name, matchedStringsArray, automaticMatcherSettingsObject,
-            email, teamOwner, dataSheetId, relationSheetId);
+        return this.schemasService.saveSchema(body);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch('/updateSchema')
     updateSchema(@Body() body) {
-        const { id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId } = body;
-        return this.schemasService.updateSchema(id, name, matchedStringsArray, automaticMatcherSettingsObject,
-            dataSheetId, relationSheetId);
+        return this.schemasService.updateSchema(body);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -48,7 +43,8 @@ export class SchemasController {
     @UseGuards(JwtAuthGuard)
     @Patch('/assignSchemaToTeam')
     assignSchemaToTeam(@Body() body) {
-        return this.schemasService.assignSchemaToTeam(body.id, body.email);
+        const { id, email } = body;
+        return this.schemasService.assignSchemaToTeam(id, email);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -60,7 +56,8 @@ export class SchemasController {
     @UseGuards(JwtAuthGuard)
     @Post('/assignSheetsToSchema')
     assignSheetsToSchema(@Body() body) {
-        return this.schemasService.assignSheetsToSchema(body.dataSheet, body.relationSheet, body.matchSchema);
+        const { dataSheet, relationSheet, matchSchema } = body;
+        return this.schemasService.assignSheetsToSchema(dataSheet, relationSheet, matchSchema);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -68,13 +65,13 @@ export class SchemasController {
     detachSheetsFromSchema(@Param('dataSheet') dataSheet,
                            @Param('relationSheet') relationSheet,
                            @Param('matchSchema') matchSchema) {
-        return this.schemasService.detachSheetsFromSchema(dataSheet, relationSheet, matchSchema);
+        return this.schemasService.detachSheetsFromSchemaBySheetsAndSchemaId(dataSheet, relationSheet, matchSchema);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete('/detachSheetsFromSchema/:id')
-    detachSheetsFromSchemaById(@Param('id') id) {
-        return this.schemasService.detachSheetsFromSchemaById(id);
+    detachSheetsFromSchemaBySchemaId(@Param('id') id) {
+        return this.schemasService.detachSheetsFromSchemaBySchemaId(id);
     }
 
     @UseGuards(JwtAuthGuard)

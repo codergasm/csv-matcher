@@ -7,6 +7,8 @@ import {AddToTeamUsersRequestsEntity} from "../entities/add_to_team_users_reques
 import {FilesEntity} from "../entities/files.entity";
 import {CorrelationJobsEntity} from "../entities/correlation_jobs.entity";
 import {MatchSchemasEntity} from "../entities/match_schemas.entity";
+import generateUniqueSixDigitNumber from "../common/generateUniqueNDigitNumber";
+import printFirstDayOfTheMonth from "../common/printFirstDayOfTheMonth";
 
 @Injectable()
 export class TeamsService {
@@ -36,23 +38,19 @@ export class TeamsService {
         return this.teamsRepository.find();
     }
 
-    generateUniqueSixDigitNumber(inputArray) {
-        let number;
-        do {
-            number = Math.floor(Math.random() * 900000) + 100000;
-        } while (inputArray.includes(number));
+    async generateUniqueTeamId() {
+        const allTeams = await this.teamsRepository.find();
+        const allTeamsIds = allTeams.map((item) => (item.id));
 
-        return number;
+        return generateUniqueSixDigitNumber(allTeamsIds, 6);
     }
 
-    async createTeam(name, teamUrl, email) {
+    async createTeam(body) {
+        const { name, teamUrl, email } = body;
         const user = await this.usersRepository.findOneBy({email});
 
         if(user) {
-            const allTeams = await this.teamsRepository.find();
-            const allTeamsIds = allTeams.map((item) => (item.id));
-
-            const newTeamId = this.generateUniqueSixDigitNumber(allTeamsIds);
+            const newTeamId = await this.generateUniqueTeamId();
 
             await this.teamsRepository.save({
                 id: newTeamId,
@@ -77,12 +75,14 @@ export class TeamsService {
         }
     }
 
-    async updateTeamName(name, team_url, id) {
+    async updateTeamName(body) {
+        const { name, teamUrl, id } = body;
+
         return this.teamsRepository
             .createQueryBuilder()
             .update({
                 name,
-                team_url
+                team_url: teamUrl
             })
             .where({
                 id
@@ -99,52 +99,56 @@ export class TeamsService {
             .getRawMany();
     }
 
-    printFirstDayOfCurrentMonth(date) {
-        return `${date.getFullYear()}-${date.getMonth()+1}-01 00:00:00`
-    }
-
     async getTeamMembers(id) {
         const members = await this.usersRepository.findBy({
             team_id: id
         });
         const today = new Date();
-        const firstDayOfCurrentMonth = this.printFirstDayOfCurrentMonth(today);
+        const firstDayOfCurrentMonth = printFirstDayOfTheMonth(today);
 
-        let membersWithExtraInfo = [];
+        let membersWithData = [];
 
         for(const member of members) {
-            const memberFiles = await this.filesRepository.findBy({
-                owner_user_id: member.id
-            });
-
-            const memberSchemas = await this.schemasRepository.findBy({
-                owner_user_id: member.id
-            });
+            const memberId = member.id;
+            const memberFiles = await this.getFilesByUserId(memberId);
+            const memberSchemas = await this.getSchemasByUserId(memberId);
 
             const memberAutoMatchRowsInCurrentMonth = await this.correlationJobsRepository
                 .createQueryBuilder()
                 .andWhere({
-                    user_id: member.id
+                    user_id: memberId
                 })
                 .andWhere(`creation_datetime >= :firstDayOfCurrentMonth`, {
                     firstDayOfCurrentMonth
                 })
                 .execute();
 
-            const numberOfRowsUsed = memberAutoMatchRowsInCurrentMonth.map((item) => {
+            const numberOfMemberAutoMatchRowsInCurrentMonth = memberAutoMatchRowsInCurrentMonth.map((item) => {
                 return item.CorrelationJobsEntity_rowCount;
             }).reduce((prev, curr) => {
                 return prev + curr;
             }, 0);
 
-            membersWithExtraInfo.push({
+            membersWithData.push({
                 ...member,
                 numberOfFiles: memberFiles?.length,
                 numberOfSchemas: memberSchemas?.length,
-                autoMatchRowsUsed: numberOfRowsUsed
+                autoMatchRowsUsed: numberOfMemberAutoMatchRowsInCurrentMonth
             });
         }
 
-        return membersWithExtraInfo;
+        return membersWithData;
+    }
+
+    async getSchemasByUserId(id) {
+        return this.schemasRepository.findBy({
+            owner_user_id: id
+        });
+    }
+
+    async getFilesByUserId(id) {
+        return this.filesRepository.findBy({
+            owner_user_id: id
+        });
     }
 }
