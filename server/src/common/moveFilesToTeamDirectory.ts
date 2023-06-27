@@ -1,4 +1,4 @@
-import fs from "fs";
+import * as fs from "fs";
 
 const moveFilesToTeamDirectory = async (files, teamId) => {
     let imageIndex = 0;
@@ -9,6 +9,7 @@ const moveFilesToTeamDirectory = async (files, teamId) => {
                 await fs.promises.mkdir(`${item.destination}/${teamId}`, {
                     recursive: true
                 });
+
                 await fs.promises.rename(item.path, `${item.destination}/${teamId}/${item.filename}`);
             }
             catch(e) {

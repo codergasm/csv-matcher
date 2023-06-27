@@ -160,6 +160,8 @@ const LoadFilesView = ({user}) => {
             setCurrentView(1);
         }
         catch(e) {
+            console.log(e);
+            setLoading(false);
             alert('Nie udało się dodać plików. Pamiętaj, aby pliki były zapisane w formacie .csv lub .txt');
         }
     }

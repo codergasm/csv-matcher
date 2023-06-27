@@ -63,7 +63,11 @@ export class TeamsService {
             return this.usersRepository
                 .createQueryBuilder()
                 .update({
-                    team_id: newTeamId
+                    team_id: newTeamId,
+                    can_delete_team_files: true,
+                    can_edit_team_files: true,
+                    can_delete_team_match_schemas: true,
+                    can_edit_team_match_schemas: true
                 })
                 .where({
                     id: user.id

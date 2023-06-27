@@ -34,7 +34,7 @@ import {join} from "path";
       password: process.env.DATABASE_PASSWORD, // user password
       database: process.env.DATABASE_NAME, // name of our database,
       autoLoadEntities: true, // models will be loaded automatically
-      synchronize: false
+      synchronize: true
     }),
     TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity]),
       MailerModule.forRoot({
