@@ -1,23 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {getTeamMembers} from "../api/teams";
+import React from 'react';
 import TeamTableHeader from "./TeamTableHeader";
 import TeamTableMemberRow from "./TeamTableMemberRow";
 import TeamTableOwnerRow from "./TeamTableOwnerRow";
 
-const TeamViewTable = ({team, isOwner, updateTeamMembers}) => {
-    const [members, setMembers] = useState([]);
-
-    useEffect(() => {
-        if(team?.id) {
-            getTeamMembers(team.id)
-                .then((res) => {
-                    if(res?.data) {
-                        setMembers(res.data);
-                    }
-                });
-        }
-    }, [team, updateTeamMembers]);
-
+const TeamViewTable = ({isOwner, members, setMembers}) => {
     return <div className="teamTable w scroll">
         <div className="sheet__table">
             <TeamTableHeader />

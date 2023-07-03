@@ -1,20 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
-const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, header, hideFirstColumn, extraIndex}) => {
-    const [allColumnsSelected, setAllColumnsSelected] = useState(false);
+const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
+                                  header, hideFirstColumn, extraIndex}) => {
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     const handleColumnsChange = (i) => {
         setColumns(prevState => {
             return prevState.map((item, index) => {
-                if(index === i) return !item;
-                else return item;
+                return index === i ? !item : item;
             });
         });
     }
-
-    useEffect(() => {
-        setAllColumnsSelected(columns.findIndex((item) => (!item)) === -1);
-    }, [columns]);
 
     const removeAllColumns = () => {
         setColumns(prevState => (prevState.map(() => false)));
@@ -26,7 +25,7 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, he
 
     return <div className="modal">
         <button className="btn btn--closeModal"
-                onClick={() => { closeModal(); }}>
+                onClick={closeModal}>
             &times;
         </button>
 
@@ -35,10 +34,16 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, he
                 {header}
             </h3>
 
-            <button className="btn btn--selectAll btn--selectAll--modal"
-                    onClick={() => { allColumnsSelected ? removeAllColumns() : selectAllColumns(); }}>
-                {allColumnsSelected ? 'Odznacz' : 'Zaznacz'} wszystkie
-            </button>
+            <div className="flex modal__inner__selectButtons">
+                <button className="btn btn--selectAll btn--selectAll--modal"
+                        onClick={selectAllColumns}>
+                    Zaznacz wszystkie
+                </button>
+                <button className="btn btn--selectAll btn--selectAll--modal"
+                        onClick={removeAllColumns}>
+                    Odznacz wszystkie
+                </button>
+            </div>
 
             <div className="modal__inner__columns">
                 {columnsNames.map((item, index) => {
@@ -49,8 +54,8 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, he
                                 {item}
                             </span>
 
-                            <button className={columns[hideFirstColumn ? index-(extraIndex ? 0 : 1) : index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleColumnsChange(index+(extraIndex ? extraIndex : 0)); }}>
+                            <button className={columns[hideFirstColumn ? index-(!isNaN(extraIndex) ? 0 : 1) : index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleColumnsChange(index+(!isNaN(extraIndex) ? extraIndex : 0)); }}>
 
                             </button>
                         </label>
@@ -62,11 +67,10 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns, he
             </div>
 
             <button className="btn btn--modalConfirm"
-                    onClick={() => { closeModal(); }}>
+                    onClick={closeModal}>
                 Zamknij
             </button>
         </div>
-
     </div>
 };
 

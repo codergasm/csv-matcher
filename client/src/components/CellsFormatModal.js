@@ -1,8 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import CloseModalButton from "./CloseModalButton";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 
 const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
     const [height, setHeight] = useState(-1);
+
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     useEffect(() => {
         if(cellsHeight !== -1) {

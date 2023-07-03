@@ -23,7 +23,11 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                                                        closeSideEffectsFunction={() => { setUpdateFiles(p => !p); }}
                                                        submitFunction={assignFileOwnershipToTeam}
                                                        submitFunctionParameters={[fileToAssignToTeamId, teamId]}
-                                                       text="Uwaga! Jeśli uczynisz Twój zespół właścicielem, to będziesz posiadać dostęp do tego pliku, gdy tylko przestaniesz być członkiem tego zespołu. Dzięki temu podejściu zespół nie musi martwić się o osoby odchodzące z zespołu i utworzone przez nich pliki. Jeżeli Twoje uprawnienia w zespole są ograniczone (np. nie możesz edytować lub usuwać schematów) - to utracisz tą możliwość po zmianie właścicielstwa."
+                                                       text={`Pamiętaj o tym! Jeśli uczynisz Twój zespół właścicielem tego pliku, to będziesz posiadać do niego 
+                                                       dostęp tylko gdy jesteś członkiem tego zespołu. Dzięki temu podejściu zespół nie musi martwić się o osoby 
+                                                       odchodzące z zespołu i utworzone przez nich pliki. Pliki zespołu zawsze zostają w zespole. 
+                                                       Jeżeli Twoje uprawnienia w zespole są ograniczone (np. nie możesz edytować lub usuwać schematów) 
+                                                       - to utracisz tą możliwość po zmianie właścicielstwa.`}
                                                        successText="Plik został przypisany do zespołu"
                                                        confirmBtnText="Przypisz"
                                                        backBtnText="Powrót"

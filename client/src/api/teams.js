@@ -39,5 +39,9 @@ const getTeamMembers = (id) => {
     return axios.get(`/teams/getTeamMembers/${id}`, getConfigWithAuthHeader());
 }
 
+const deleteTeam = (id) => {
+    return axios.delete(`/teams/deleteTeam/${id}`, getConfigWithAuthHeader());
+}
+
 export { getTeamById, getAllTeams, generateTeamUrl, createTeam, updateTeamName,
-    getWaitingJoinTeamRequests, getTeamMembers }
+    getWaitingJoinTeamRequests, getTeamMembers, deleteTeam }

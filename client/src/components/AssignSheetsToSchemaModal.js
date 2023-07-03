@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import Loader from "./Loader";
-import fileIcon from '../static/img/file.svg';
-import addIcon from '../static/img/add.svg';
-import {getFilesByUser, updateSheet} from "../api/files";
+import {getFilesByUser} from "../api/files";
 import {assignSheetsToSchema} from "../api/schemas";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNotification, matchSchema}) => {
     const [loading, setLoading] = useState(false);
@@ -11,6 +11,14 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
     const [files, setFiles] = useState([]);
     const [dataSheetId, setDataSheetId] = useState(0);
     const [relationSheetId, setRelationSheetId] = useState(0);
+
+    const closeModalWrapper = () => {
+        setUpdateSchemas(p => !p);
+        closeModal();
+    }
+
+    useCloseModalOnOutsideClick(closeModalWrapper);
+    useActionOnEscapePress(closeModalWrapper);
 
     useEffect(() => {
         getFilesByUser()
@@ -33,11 +41,6 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
                 showBottomNotification(-1);
                 closeModalWrapper();
             });
-    }
-
-    const closeModalWrapper = () => {
-        setUpdateSchemas(p => !p);
-        closeModal();
     }
 
     return <div className="modal modal--chooseSheets">

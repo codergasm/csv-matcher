@@ -2,21 +2,38 @@ import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
 import getScrollParams from "../helpers/getScrollParams";
+import ButtonSimple from "./ButtonSimple";
+import CellsFormatModal from "./CellsFormatModal";
+import ColumnsSettingsModal from "./ColumnsSettingsModal";
+import {AppContext} from "../pages/CorrelationPage";
 
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = () => {
-    const { outputSheet, outputSheetExportColumns } = useContext(ViewContext);
+    const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns,
+        outputSheetColumnsVisibility, setOutputSheetColumnsVisibility } = useContext(ViewContext);
+    const { dataSheet } = useContext(AppContext);
 
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [finalExportColumns, setFinalExportColumns] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
+    const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
+    const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
+    const [cellsHeight, setCellsHeight] = useState(-1);
 
     useEffect(() => {
         setFinalExportColumns(outputSheetExportColumns);
     }, [outputSheetExportColumns]);
+
+    useEffect(() => {
+        if(columnsNames?.length) {
+            if(!outputSheetColumnsVisibility?.length) {
+                setOutputSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+            }
+        }
+    }, [columnsNames]);
 
     useEffect(() => {
         if(outputSheet?.length) {
@@ -98,14 +115,43 @@ const OutputSheetView = () => {
         }
     }
 
+    const getColumnMaxHeight = () => {
+        return cellsHeight !== -1 ? `${cellsHeight}px` : 'unset';
+    }
+
     return <div className="sheetWrapper">
+        {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
+                                                     setCellsHeight={setCellsHeight}
+                                                     closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
+
+        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
+                                                             columnsNames={columnsNames}
+                                                             extraIndex={0}
+                                                             hideFirstColumn={columnsSettingsModalVisible === 1}
+                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetColumnsVisibility : outputSheetExportColumns}
+                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setOutputSheetExportColumns}
+                                                             header={columnsSettingsModalVisible === 1 ? 'Widoczność kolumn' : 'Uwzględnij w eksporcie'} /> : ''}
+
         <button className="btn btn--export"
-                onClick={() => { exportOutputSheet(); }}>
+                onClick={exportOutputSheet}>
             Eksportuj arkusz wyjściowy
         </button>
 
         <div className="sheet scroll"
              onScroll={(e) => { checkScrollToBottom(e); }}>
+            <div className="sheet__table__info">
+                <div className="cell--legend">
+                    Widoczność
+
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                        Konfiguruj w okienku
+                    </ButtonSimple>
+                    <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
+                        Formatuj widoczność komórek
+                    </ButtonSimple>
+                </div>
+            </div>
+
             <div className="line line--exportLegend">
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
@@ -117,13 +163,17 @@ const OutputSheetView = () => {
                                         onClick={() => { handleOutputSheetExportChange(-2); }}>
                         Odznacz wszystkie
                     </button>}
+
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                        Konfiguruj w okienku
+                    </ButtonSimple>
                 </div>
             </div>
 
             <div className="sheet__table">
                 <div className="line line--noFlex">
                     {outputSheetExportColumns.map((item, index) => {
-                        if(item) {
+                        if(item && outputSheetColumnsVisibility[index]) {
                             return <div className="check__cell"
                                         style={getStyleWithMinWidth()}
                                         key={index}>
@@ -140,7 +190,7 @@ const OutputSheetView = () => {
                 </div>
 
                 <div className="line line--noFlex">
-                    {columnsNames.filter((_, index) => (outputSheetExportColumns[index]))
+                    {columnsNames.filter((_, index) => (outputSheetExportColumns[index] && outputSheetColumnsVisibility[index]))
                         .map((item, index) => {
                             return <div className="sheet__header__cell"
                                         style={getStyleWithMinWidth()}
@@ -154,15 +204,18 @@ const OutputSheetView = () => {
             {rowsToRender.map((item, index) => {
                 return <div className="line line--tableRow"
                            key={index}>
-                    {Object.entries(item).filter((_, index) => (outputSheetExportColumns[index]))
+                    {Object.entries(item).filter((_, index) => (outputSheetExportColumns[index] && outputSheetColumnsVisibility[index]))
                         .map((item, index, array) => {
-                        const cellValue = item[1];
+                            const cellValue = item[1];
 
-                        return <div className="sheet__body__row__cell"
-                                    style={getStyleWithMinWidth()}
-                                   key={index}>
-                            {cellValue}
-                        </div>
+                            return <div className="sheet__body__row__cell"
+                                        style={{
+                                            minWidth: getColumnMinWidth(),
+                                            maxHeight: getColumnMaxHeight()
+                                        }}
+                                        key={index}>
+                                {cellValue}
+                            </div>
                     })}
                 </div>
             })}

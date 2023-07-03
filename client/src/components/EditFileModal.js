@@ -5,6 +5,8 @@ import addIcon from '../static/img/add.svg';
 import {updateSheet} from "../api/files";
 import CloseModalButton from "./CloseModalButton";
 import {errorText} from "../static/content";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const [newName, setNewName] = useState('');
@@ -12,6 +14,14 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const closeModalWrapper = () => {
+        setUpdateFiles(p => !p);
+        closeModal();
+    }
+
+    useCloseModalOnOutsideClick(closeModalWrapper);
+    useActionOnEscapePress(closeModalWrapper);
 
     useEffect(() => {
         if(name) {
@@ -42,11 +52,6 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
             setNewName(e.target.files[0]?.name);
             setFile(e.target.files[0]);
         }
-    }
-
-    const closeModalWrapper = () => {
-        setUpdateFiles(p => !p);
-        closeModal();
     }
 
     return <div className="modal modal--leaveTeam modal--editFile">

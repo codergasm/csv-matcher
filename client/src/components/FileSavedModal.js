@@ -1,8 +1,13 @@
 import React from 'react';
 import checkIcon from '../static/img/yes.svg';
 import CloseModalButton from "./CloseModalButton";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const FileSavedModal = ({closeModal}) => {
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
+
     return <div className="modal modal--fileSaved">
         <CloseModalButton onClick={closeModal} />
 

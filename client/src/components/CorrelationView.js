@@ -8,12 +8,13 @@ import {createRowShortcut, makeId} from "../helpers/others";
 import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
 import {getSchemaById} from "../api/schemas";
 import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
+import QuickBottomInfo from "./QuickBottomInfo";
 
 const ViewContext = React.createContext(null);
 
 const CorrelationView = ({user}) => {
     const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
-        dataSheetId, relationSheetId,
+        dataSheetId, relationSheetId, dataSheetName, relationSheetName,
         dataDelimiter, relationDelimiter } = useContext(AppContext);
 
     // 0 - data, 1 - relation, 2 - output
@@ -45,6 +46,19 @@ const CorrelationView = ({user}) => {
     const [selectListLoading, setSelectListLoading] = useState(false);
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
+    const [dataSheetColumnsVisibility, setDataSheetColumnsVisibility] = useState([]);
+    const [relationSheetColumnsVisibility, setRelationSheetColumnsVisibility] = useState([]);
+    const [outputSheetColumnsVisibility, setOutputSheetColumnsVisibility] = useState([]);
+    const [numberOfMatches, setNumberOfMatches] = useState(-1);
+    const [afterMatchClean, setAfterMatchClean] = useState(false);
+
+    useEffect(() => {
+        if(numberOfMatches !== -1) {
+            setTimeout(() => {
+                setNumberOfMatches(-1);
+            }, 5500);
+        }
+    }, [numberOfMatches]);
 
     useEffect(() => {
         switch(currentSheet) {
@@ -234,7 +248,7 @@ const CorrelationView = ({user}) => {
         if(correlationMatrix[0]?.length) {
             setSelectListLoading(true);
 
-            if(selectList?.length) {
+            if(selectList?.length && !afterMatchClean) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
                     false, showInSelectMenuColumns,
@@ -244,16 +258,23 @@ const CorrelationView = ({user}) => {
                             if(selectList?.length) {
                                 const newSelectList = res.data;
 
-                                setSelectList(prevState => {
-                                    return prevState.map((item, index) => {
-                                        if(indexesInSelectListToOverride.includes(index) || 1) {
-                                            return newSelectList[index];
-                                        }
-                                        else {
-                                            return item;
-                                        }
-                                    });
+                                const selectListToUpdate = selectList.map((item, index) => {
+                                    if(indexesInSelectListToOverride.includes(index) || 1) {
+                                        return newSelectList[index];
+                                    }
+                                    else {
+                                        return item;
+                                    }
                                 });
+
+                                const matches = selectListToUpdate.filter((item) => {
+                                    if(item) {
+                                        return parseInt(item[0]?.similarity) >= matchThreshold;
+                                    }
+                                    return false;
+                                });
+                                setNumberOfMatches(matches?.length);
+                                setSelectList(selectListToUpdate);
                             }
                             else {
                                 setSelectList(res.data);
@@ -264,6 +285,7 @@ const CorrelationView = ({user}) => {
                     });
             }
             else {
+                setAfterMatchClean(false);
                 setSelectList(relationSheet.map((relationRowItem, relationRowIndex) => {
                     return dataSheet.map((dataRowItem, dataRowIndex) => {
                         return {
@@ -311,7 +333,10 @@ const CorrelationView = ({user}) => {
 
         setIndexesOfCorrelatedRows(prevState => {
             return prevState.map((item, index) => {
-                if(index === relationRowIndex) {
+                if(item === dataRowIndex) {
+                    return -1;
+                }
+                else if(index === relationRowIndex) {
                     return dataRowIndex;
                 }
                 else {
@@ -426,6 +451,9 @@ const CorrelationView = ({user}) => {
     return <ViewContext.Provider value={{
                 showInSelectMenuColumns, setShowInSelectMenuColumns,
                 outputSheetExportColumns, setOutputSheetExportColumns,
+                dataSheetColumnsVisibility, setDataSheetColumnsVisibility,
+                relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
+                outputSheetColumnsVisibility, setOutputSheetColumnsVisibility,
                 matchType, setMatchType,
                 priorities, setPriorities,
                 matchSchemaArray, setMatchSchemaArray,
@@ -441,17 +469,21 @@ const CorrelationView = ({user}) => {
                 selectList, setSelectList,
                 selectListLoading,
                 currentSheet, setCurrentSheet,
-                correlate, progressCount
+                correlate, progressCount,
+                setIndexesOfCorrelatedRows, setCorrelationMatrix,
+                setManuallyCorrelatedRows, setAfterMatchClean
             }}>
         <div className="container container--correlation">
             <div className="homepage homepage--correlation">
                 <ChooseAndSaveSchema user={user} />
 
                 <div className="correlation__viewPicker flex">
-                    <ButtonCorrelationViewPicker index={0}>
+                    <ButtonCorrelationViewPicker index={0}
+                                                 fileName={dataSheetName}>
                         Arkusz 1
                     </ButtonCorrelationViewPicker>
-                    <ButtonCorrelationViewPicker index={1}>
+                    <ButtonCorrelationViewPicker index={1}
+                                                 fileName={relationSheetName}>
                         Arkusz 2
                     </ButtonCorrelationViewPicker>
                     <ButtonCorrelationViewPicker index={2}>
@@ -461,6 +493,10 @@ const CorrelationView = ({user}) => {
 
                 {sheetComponent}
             </div>
+
+            {numberOfMatches !== -1 ? <QuickBottomInfo time={5000}>
+                Wykonane dopasowania: {numberOfMatches}
+            </QuickBottomInfo> : ''}
         </div>
     </ViewContext.Provider>
 };

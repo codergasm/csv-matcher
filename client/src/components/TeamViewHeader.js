@@ -6,12 +6,15 @@ import editIcon from '../static/img/edit.svg';
 import checkIcon from '../static/img/check.svg';
 import Loader from "./Loader";
 import {errorText} from "../static/content";
+import LeaveTeamButton from "./LeaveTeamButton";
+import DeleteTeamModal from "./DeleteTeamModal";
 
-const TeamViewHeader = ({team, setTeam, isOwner}) => {
+const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
     const [name, setName] = useState('');
     const [newName, setNewName] = useState('');
     const [newTeamUrl, setNewTeamUrl] = useState('');
     const [leaveTeamModalVisible, setLeaveTeamModalVisible] = useState(false);
+    const [deleteTeamModalVisible, setDeleteTeamModalVisible] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [updateMode, setUpdateMode] = useState(false);
@@ -98,6 +101,10 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
         {leaveTeamModalVisible ? <LeaveTeamModal closeModal={() => { setLeaveTeamModalVisible(false); }}
                                                  setTeam={setTeam} /> : ''}
 
+        {deleteTeamModalVisible ? <DeleteTeamModal closeModal={() => { setDeleteTeamModalVisible(false); }}
+                                                   teamId={team?.id}
+                                                   setTeam={setTeam} /> : ''}
+
         <h3 className="teamNameHeader">
             Twój zespół:
 
@@ -114,9 +121,12 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
                 Zmień nazwę
             </button> : <Loader width={40} />) : <button className="btn--edit" onClick={() => { setUpdateMode(true); }}>
                 <img className="img" src={editIcon} alt="edytuj" />
-            </button>) : <button className="btn btn--leaveTeam" onClick={() => { setLeaveTeamModalVisible(true); }}>
-                Opuść zespół
-            </button>}
+            </button>) : ''}
+
+            <LeaveTeamButton isTeamEmpty={isTeamEmpty}
+                             isOwner={isOwner}
+                             setDeleteTeamModalVisible={setDeleteTeamModalVisible}
+                             setLeaveTeamModalVisible={setLeaveTeamModalVisible} />
 
             {error ? <span className="error error--updateTeamName">
                 {error}
@@ -126,11 +136,13 @@ const TeamViewHeader = ({team, setTeam, isOwner}) => {
                 <span>
                     ID:
                     <span className="teamId">{team.id}</span>
+
                     {!copied ? <button className="btn--edit btn--copy"
-                                       onClick={() => { copyId(); }}>
+                                       onClick={copyId}>
                         <img className="img" src={copyIcon} alt="kopiuj" />
                     </button> : <img className="img--copied" src={checkIcon} alt="skopiowano" />}
                 </span>
+
                 <span className="teamId--info">
                     Podaj ten numer członkom swojego zespołu, aby mogli się do niego dodać
                 </span>

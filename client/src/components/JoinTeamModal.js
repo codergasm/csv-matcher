@@ -1,12 +1,18 @@
 import React, {useState} from 'react';
 import {sendRequestToJoinTeam} from "../api/users";
 import Loader from "./Loader";
+import {errorText} from "../static/content";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const JoinTeamModal = ({closeModal}) => {
     const [teamId, setTeamId] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     const joinTeam = () => {
         if(teamId) {
@@ -17,20 +23,20 @@ const JoinTeamModal = ({closeModal}) => {
                         setSuccess(true);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 })
         }
     }
 
     return <div className="modal modal--createNewTeam">
         <button className="btn btn--closeModal"
-                onClick={() => { closeModal(); }}>
+                onClick={closeModal}>
             &times;
         </button>
 
@@ -45,15 +51,18 @@ const JoinTeamModal = ({closeModal}) => {
                        placeholder="id zespołu" />
 
                 {!loading ? <button className="btn btn--joinTeam"
-                                    onClick={() => { joinTeam(); }}>
+                                    onClick={joinTeam}>
                     Dołącz
                 </button> : <Loader width={50} />}
             </> :  <>
-                <h4 className="afterRegister__header afterRegister__header--center">
+                {success ? <h4 className="afterRegister__header afterRegister__header--center">
                     Zgłoszenie do zespołu zostało wysłane. Po akceptacji przez właściciela dołączysz do zespołu.
-                </h4>
+                </h4> : <h4 className="afterRegister__header afterRegister__header--center">
+                    {error}
+                </h4>}
 
-                <a className="btn btn--afterRegister" href="/">
+                <a className="btn btn--afterRegister"
+                   href="/">
                     Wróć na stronę główną
                 </a>
             </>}

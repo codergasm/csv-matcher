@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Patch, Post, UseGuards} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, UseGuards} from '@nestjs/common';
 import {TeamsService} from "./teams.service";
 import {JwtAuthGuard} from "../common/jwt-auth.guard";
 
@@ -43,5 +43,11 @@ export class TeamsController {
     @Get('/getTeamMembers/:id')
     getTeamMembers(@Param('id') id) {
         return this.teamsService.getTeamMembers(id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('/deleteTeam/:id')
+    deleteTeam(@Param('id') id) {
+        return this.teamsService.deleteTeam(id);
     }
 }

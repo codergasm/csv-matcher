@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorrelationView from "../components/CorrelationView";
 import {getSchemasByUser} from "../api/schemas";
+import {getFileById} from "../api/files";
 
 const AppContext = React.createContext(null);
 
@@ -20,6 +21,8 @@ const CorrelationPage = ({user}) => {
     const [updateSchemas, setUpdateSchemas] = useState(false);
     const [dataSheetId, setDataSheetId] = useState(0);
     const [relationSheetId, setRelationSheetId] = useState(0);
+    const [dataSheetName, setDataSheetName] = useState('');
+    const [relationSheetName, setRelationSheetName] = useState('');
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -27,9 +30,14 @@ const CorrelationPage = ({user}) => {
         const sheet2 = params.get('sheet2');
         const schema = params.get('schema');
 
-        if(parseInt(sheet1) && parseInt(sheet2)) {
-            setDataSheetId(parseInt(sheet1));
-            setRelationSheetId(parseInt(sheet2));
+        const sheet1Id = parseInt(sheet1);
+        const sheet2Id = parseInt(sheet2);
+
+        if(sheet1Id && sheet2Id) {
+            setFilenames(sheet1Id, sheet2Id);
+
+            setDataSheetId(sheet1Id);
+            setRelationSheetId(sheet2Id);
 
             if(parseInt(schema)) {
                 setCurrentSchemaId(parseInt(schema));
@@ -79,6 +87,22 @@ const CorrelationPage = ({user}) => {
         }
     }, [currentView, user]);
 
+    const setFilenames = (sheet1Id, sheet2Id) => {
+        getFileById(sheet1Id)
+            .then((res) => {
+                if(res?.data) {
+                    setDataSheetName(res.data.filename);
+                }
+            });
+
+        getFileById(sheet2Id)
+            .then((res) => {
+                if(res?.data) {
+                    setRelationSheetName(res.data.filename);
+                }
+            })
+    }
+
     return <AppContext.Provider value={{
         currentView, setCurrentView,
         dataFile, setDataFile, relationFile, setRelationFile,
@@ -86,7 +110,8 @@ const CorrelationPage = ({user}) => {
         dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
         schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
         availableForUserSchemas, setAvailableForUserSchemas,
-        dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId
+        dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId,
+        dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName
     }}>
         {mainComponent}
     </AppContext.Provider>

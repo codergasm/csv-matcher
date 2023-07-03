@@ -6,6 +6,8 @@ import getSimilarityColor from "../helpers/getSimilarityColor";
 import {findSubstrings} from "../helpers/others";
 import ColorMarkedText from "./ColorMarkedText";
 import CloseModalButton from "./CloseModalButton";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -17,6 +19,9 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
     const [selectList, setSelectList] = useState([]);
     const [joinStringOfColumnsFromRelationSheet, setJoinStringOfColumnsFromRelationSheet] = useState('');
     const [columnsNamesInConditions, setColumnsNamesInConditions] = useState([]);
+
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     useEffect(() => {
         setColumnsNamesInConditions(priorities.map((item) => (item.conditions.map((item) => (item.dataSheet)))).flat());

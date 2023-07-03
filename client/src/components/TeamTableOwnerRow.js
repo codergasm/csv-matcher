@@ -1,28 +1,41 @@
-import React from 'react';
+import React, {useState} from 'react';
 import checkIcon from "../static/img/check.svg";
 import {updateUserRights} from "../api/users";
+import Loader from "./Loader";
+import QuickBottomInfo from "./QuickBottomInfo";
+
+const rightsList = ['can_edit_team_files', 'can_delete_team_files',
+    'can_edit_team_match_schemas', 'can_delete_team_match_schemas'];
 
 const TeamTableOwnerRow = ({item, index, members, setMembers}) => {
-    const toggleMemberRights = (email, name) => {
+    const [loadingRightsRequest, setLoadingRightsRequest] = useState(-2);
+
+    const toggleMemberRights = async (email, rightType) => {
         const userToUpdate = members.find((item) => (item.email === email));
+        const rightNameToChange = rightsList[rightType];
+
+        const isRightToChange = (right) => {
+            return right === rightNameToChange;
+        }
 
         if(userToUpdate) {
-            const can_edit_team_files = name === 'can_edit_team_files' ? !userToUpdate.can_edit_team_files :
-                userToUpdate.can_edit_team_files;
-            const can_delete_team_files = name === 'can_delete_team_files' ? !userToUpdate.can_delete_team_files :
-                userToUpdate.can_delete_team_files;
-            const can_edit_team_match_schemas = name === 'can_edit_team_match_schemas' ? !userToUpdate.can_edit_team_match_schemas :
-                userToUpdate.can_edit_team_match_schemas;
-            const can_delete_team_match_schemas = name === 'can_delete_team_match_schemas' ? !userToUpdate.can_delete_team_match_schemas :
-                userToUpdate.can_delete_team_match_schemas;
+            let allRights = [];
 
-            updateUserRights(email, can_edit_team_files, can_delete_team_files, can_edit_team_match_schemas, can_delete_team_match_schemas);
+            for(const right of rightsList) {
+                let newRight = isRightToChange(right) ? !userToUpdate[right] : userToUpdate[right];
+                allRights.push(newRight);
+            }
+
+            setLoadingRightsRequest(rightType);
+            await updateUserRights(email, ...allRights);
+            setLoadingRightsRequest(-1);
+
+            const rightsObject = allRights.reduce((acc, curr, index) => {
+                return {...acc, [rightsList[index]]: curr}
+            }, {});
 
             updateMembersList(email, {
-                can_edit_team_files,
-                can_delete_team_files,
-                can_edit_team_match_schemas,
-                can_delete_team_match_schemas
+                ...rightsObject
             });
         }
     }
@@ -61,30 +74,20 @@ const TeamTableOwnerRow = ({item, index, members, setMembers}) => {
         <div className="sheet__header__cell">
             {item.autoMatchRowsUsed}
         </div>
-        <div className="sheet__header__cell">
-            <button className="btn--rights"
-                    onClick={() => { toggleMemberRights(item.email, 'can_edit_team_files') }}>
-                {item.can_edit_team_files ? <img className="img--check" src={checkIcon} alt="tak" /> : ''}
-            </button>
-        </div>
-        <div className="sheet__header__cell">
-            <button className="btn--rights"
-                    onClick={() => { toggleMemberRights(item.email, 'can_delete_team_files') }}>
-                {item.can_delete_team_files ? <img className="img--check" src={checkIcon} alt="tak" /> : ''}
-            </button>
-        </div>
-        <div className="sheet__header__cell">
-            <button className="btn--rights"
-                    onClick={() => { toggleMemberRights(item.email, 'can_edit_team_match_schemas') }}>
-                {item.can_edit_team_match_schemas ? <img className="img--check" src={checkIcon} alt="tak" /> : ''}
-            </button>
-        </div>
-        <div className="sheet__header__cell">
-            <button className="btn--rights"
-                    onClick={() => { toggleMemberRights(item.email, 'can_delete_team_match_schemas') }}>
-                {item.can_delete_team_match_schemas ? <img className="img--check" src={checkIcon} alt="tak" /> : ''}
-            </button>
-        </div>
+
+        {rightsList.map((rightName, rightIndex) => {
+            return <div className="sheet__header__cell"
+                        key={rightIndex}>
+                {loadingRightsRequest === rightIndex ? <Loader width={20} /> : <button className="btn--rights"
+                                                                              onClick={() => { toggleMemberRights(item.email, rightIndex) }}>
+                    {item[rightName] ? <img className="img--check" src={checkIcon} alt="tak" /> : ''}
+                </button>}
+            </div>
+        })}
+
+        {loadingRightsRequest === -1 ? <QuickBottomInfo time={2000}>
+            Prawa zostały zaktualizowane
+        </QuickBottomInfo> : ''}
     </div>
 };
 

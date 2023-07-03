@@ -3,10 +3,12 @@ import LoadingPage from "../pages/LoadingPage";
 import TeamViewHeader from "./TeamViewHeader";
 import TeamViewTable from "./TeamViewTable";
 import JoinTeamRequests from "./JoinTeamRequests";
+import {getTeamMembers} from "../api/teams";
 
 const TeamView = ({team, setTeam, user}) => {
     const [isOwner, setIsOwner] = useState(false);
     const [updateTeamMembers, setUpdateTeamMembers] = useState(false);
+    const [members, setMembers] = useState([]);
 
     useEffect(() => {
         if(team?.owner_id === user?.id) {
@@ -14,14 +16,27 @@ const TeamView = ({team, setTeam, user}) => {
         }
     }, [team, user]);
 
+    useEffect(() => {
+        if(team?.id) {
+            getTeamMembers(team.id)
+                .then((res) => {
+                    if(res?.data) {
+                        setMembers(res.data);
+                    }
+                });
+        }
+    }, [team, updateTeamMembers]);
+
     return team ? <div className="container">
         <div className="homepage">
             <TeamViewHeader team={team}
                             setTeam={setTeam}
+                            isTeamEmpty={members.length === 1}
                             isOwner={isOwner} />
-            <TeamViewTable team={team}
-                           updateTeamMembers={updateTeamMembers}
+            <TeamViewTable members={members}
+                           setMembers={setMembers}
                            isOwner={isOwner} />
+
             {isOwner ? <JoinTeamRequests team={team}
                                          setUpdateTeamMembers={setUpdateTeamMembers} /> : ''}
         </div>

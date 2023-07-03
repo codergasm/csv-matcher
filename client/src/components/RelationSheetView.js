@@ -6,7 +6,6 @@ import arrowDown from '../static/img/arrow-down.svg';
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import { Tooltip } from 'react-tippy';
 import {checkCommonElement, findSubstrings, sortByColumn, sortRelationColumn} from "../helpers/others";
-import sortIcon from "../static/img/sort-down.svg";
 import Loader from "./Loader";
 import CellsFormatModal from "./CellsFormatModal";
 import FullValueModal from "./FullValueModal";
@@ -22,11 +21,14 @@ import SheetCell from "./SheetCell";
 import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
 import convertColumnToNumber from "../helpers/convertColumnToNumber";
 import ButtonSimple from "./ButtonSimple";
+import OverrideMatchModal from "./OverrideMatchModal";
+import DeleteMatchesModal from "./DeleteMatchesModal";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns,
         manuallyCorrelatedRows, selectList, priorities, schemaCorrelatedRows,
+        relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
         showInSelectMenuColumns, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
@@ -41,7 +43,6 @@ const RelationSheetView = () => {
     const [showSelectMenu, setShowSelectMenu] = useState(-1);
     const [searchInputValue, setSearchInputValue] = useState('');
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
-    const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSorting, setColumnsSorting] = useState([]);
     const [relationColumnSort, setRelationColumnSort] = useState(0);
@@ -53,6 +54,10 @@ const RelationSheetView = () => {
     const [fullCellValueSubstringsIndexes, setFullCellValueSubstringsIndexes] = useState([]);
     const [showFullCellValue, setShowFullCellValue] = useState('');
     const [markLettersRows, setMarkLettersRows] = useState([]);
+    const [overrideMatchModalVisible, setOverrideMatchModalVisible] = useState(false);
+    const [dataRowIndexForManualCorrelation, setDataRowIndexForManualCorrelation] = useState(-1);
+    const [relationRowIndexForManualCorrelation, setRelationRowIndexForManualCorrelation] = useState(-1);
+    const [deleteMatchesModalVisible, setDeleteMatchesModalVisible] = useState(false);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -135,8 +140,8 @@ const RelationSheetView = () => {
 
     useEffect(() => {
         if(columnsNames?.length) {
-            if(!columnsVisibility?.length) {
-                setColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+            if(!relationSheetColumnsVisibility?.length) {
+                setRelationSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
             }
             if(!columnsSorting?.length) {
                 setColumnsSorting(columnsNames.map(() => (0)));
@@ -145,8 +150,10 @@ const RelationSheetView = () => {
     }, [columnsNames]);
 
     useEffect(() => {
-        setMinColumnWidth(125 / (columnsVisibility.filter((item) => (item)).length));
-    }, [columnsVisibility]);
+        if(relationSheetColumnsVisibility) {
+            setMinColumnWidth(125 / (relationSheetColumnsVisibility.filter((item) => (item)).length));
+        }
+    }, [relationSheetColumnsVisibility]);
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {
@@ -320,9 +327,21 @@ const RelationSheetView = () => {
         }
     }
 
+    const addManualCorrelationWrapper = (e, item) => {
+        if(indexesOfCorrelatedRows.includes(item.dataRowIndex)) {
+            e.stopPropagation();
+            setOverrideMatchModalVisible(true);
+            setDataRowIndexForManualCorrelation(item.dataRowIndex);
+            setRelationRowIndexForManualCorrelation(item.relationRowIndex);
+        }
+        else {
+            addManualCorrelation(item.dataRowIndex, item.relationRowIndex);
+        }
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
-                                                 columnsVisibility={columnsVisibility}
+                                                 columnsVisibility={relationSheetColumnsVisibility}
                                                  closeModal={() => { setAutoMatchModalVisible(false); }}
                                                  relationSheetColumns={columnsNames} /> : ''}
 
@@ -330,8 +349,8 @@ const RelationSheetView = () => {
                                                              columnsNames={columnsNames}
                                                              extraIndex={columnsSettingsModalVisible === 1 ? dataSheetColumnsNames.length : 0}
                                                              hideFirstColumn={columnsSettingsModalVisible === 1}
-                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetExportColumns.slice(dataSheetColumnsNames.length) : columnsVisibility}
-                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetExportColumns : setColumnsVisibility}
+                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetExportColumns.slice(dataSheetColumnsNames.length) : relationSheetColumnsVisibility}
+                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetExportColumns : setRelationSheetColumnsVisibility}
                                                              header={columnsSettingsModalVisible === 1 ? 'Uwzględnij w eksporcie' : 'Widoczność kolumn'} /> : ''}
 
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
@@ -341,6 +360,12 @@ const RelationSheetView = () => {
         {showFullCellValue ? <FullValueModal value={showFullCellValue}
                                              indexes={fullCellValueSubstringsIndexes}
                                              closeModal={() => { setShowFullCellValue(''); }}  /> : ''}
+
+        {overrideMatchModalVisible ? <OverrideMatchModal closeModal={() => { setOverrideMatchModalVisible(false); }}
+                                                         doOverride={() => { addManualCorrelation(dataRowIndexForManualCorrelation,
+                                                             relationRowIndexForManualCorrelation) }} /> : ''}
+
+        {deleteMatchesModalVisible ? <DeleteMatchesModal closeModal={() => { console.log('close'); setDeleteMatchesModalVisible(false); }} /> : ''}
 
         <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
             Automatycznie dopasuj
@@ -388,7 +413,7 @@ const RelationSheetView = () => {
             <div className="sheet__table">
                 <div className="line line--noFlex">
                     {outputSheetExportColumns.map((item, index) => {
-                        if((index >= dataSheetColumnsNames?.length) && columnsVisibility[index-dataSheetColumnsNames?.length]) {
+                        if((index >= dataSheetColumnsNames?.length) && relationSheetColumnsVisibility[index-dataSheetColumnsNames?.length]) {
                             if(index === dataSheetColumnsNames?.length) {
                                 return <div className="check__cell check__cell--first"
                                             style={columnWithMinWidth()}
@@ -418,13 +443,14 @@ const RelationSheetView = () => {
 
                 <div className="line line--noFlex">
                     <TableViewHeaderRow columnsNames={columnsNames}
-                                        columnsVisibility={columnsVisibility}
+                                        columnsVisibility={relationSheetColumnsVisibility}
                                         columnsSorting={columnsSorting}
                                         getColumnMinWidth={getColumnMinWidth}
                                         sortSheet={sortSheet}
                                         removeSorting={removeSorting} />
 
                     <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
+                                                      setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
                                                       sortRelationColumnByMatch={sortRelationColumnByMatch} />
                 </div>
             </div>
@@ -487,7 +513,7 @@ const RelationSheetView = () => {
                     {Object.entries(item).map((item, index) => {
                         const cellValue = item[1];
 
-                        if(columnsVisibility[index]) {
+                        if(relationSheetColumnsVisibility[index]) {
                             return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                         style={{
                                             minWidth: getColumnMinWidth(),
@@ -573,9 +599,8 @@ const RelationSheetView = () => {
                                     substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, valueToDisplay);
                                 }
 
-                                return <button className="select__menu__item"
-                                               disabled={indexesOfCorrelatedRows.includes(item.dataRowIndex)}
-                                               onClick={(e) => { indexesOfCorrelatedRows.includes(item.dataRowIndex) ? e.stopPropagation() : addManualCorrelation(item.dataRowIndex, item.relationRowIndex); }}
+                                return <button className={indexesOfCorrelatedRows.includes(item.dataRowIndex) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
+                                               onClick={(e) => {addManualCorrelationWrapper(e, item); }}
                                                key={index}>
                                     <span className="select__menu__item__value">
                                         {valueToDisplay.length === value.length ? <ColorMarkedText string={value}

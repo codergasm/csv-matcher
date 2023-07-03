@@ -1,10 +1,20 @@
 import React from 'react';
 import ColorMarkedText from "./ColorMarkedText";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const FullValueModal = ({closeModal, indexes, value}) => {
+    const closeModalWrapper = (e) => {
+        e?.stopPropagation();
+        closeModal();
+    }
+
+    useCloseModalOnOutsideClick(closeModalWrapper);
+    useActionOnEscapePress(closeModalWrapper);
+
     return <div className="modal modal--cellsFormat">
         <button className="btn btn--closeModal"
-                onClick={(e) => { e.stopPropagation(); closeModal(); }}>
+                onClick={closeModalWrapper}>
             &times;
         </button>
 

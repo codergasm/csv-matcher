@@ -1,12 +1,23 @@
 import React, {useState} from 'react';
 import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import {errorText} from "../static/content";
 
 const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, submitFunctionParameters, successText,
                            text, confirmBtnText, backBtnText, backBtnLink}) => {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const closeModalWrapper = () => {
+        closeSideEffectsFunction();
+        closeModal();
+    }
+
+    useCloseModalOnOutsideClick(closeModalWrapper);
+    useActionOnEscapePress(closeModalWrapper);
 
     const handleSubmit = () => {
         setLoading(true);
@@ -18,13 +29,13 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                         setSuccess(true);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setLoading(false);
                 })
-                .catch((err) => {
+                .catch(() => {
                     setLoading(false);
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 });
         }
         else {
@@ -34,25 +45,20 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                         setSuccess(true);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(errorText);
                     }
                     setLoading(false);
                 })
-                .catch((err) => {
+                .catch(() => {
                     setLoading(false);
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(errorText);
                 });
         }
     }
 
-    const closeModalWrapper = () => {
-        closeSideEffectsFunction();
-        closeModal();
-    }
-
     return <div className="modal modal--leaveTeam">
         <button className="btn btn--closeModal"
-                onClick={() => { closeModalWrapper(); }}>
+                onClick={closeModalWrapper}>
             &times;
         </button>
 
@@ -66,10 +72,11 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
 
                 {!loading ? <div className="flex flex--twoButtons">
                     <button className="btn btn--leaveTeam"
-                            onClick={() => { handleSubmit(); }}>
+                            onClick={handleSubmit}>
                         {confirmBtnText}
                     </button>
-                    <button className="btn btn--neutral" onClick={() => { closeModalWrapper(); }}>
+                    <button className="btn btn--neutral"
+                            onClick={closeModalWrapper}>
                         Anuluj
                     </button>
                 </div>: <Loader width={50} />}
@@ -78,7 +85,8 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                     {error ? error : successText}
                 </h4>
 
-                <a className="btn btn--afterRegister" href={backBtnLink}>
+                <a className="btn btn--afterRegister"
+                   href={backBtnLink}>
                     {backBtnText}
                 </a>
             </>}

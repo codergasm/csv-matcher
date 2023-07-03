@@ -13,7 +13,8 @@ const LoadFilesView = ({user}) => {
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
         relationSheet, setRelationSheet, dataSheetId, setDataSheetId,
-        relationSheetId, setRelationSheetId } = useContext(AppContext);
+        relationSheetId, setRelationSheetId,
+        setDataSheetName, setRelationSheetName } = useContext(AppContext);
 
     const [files, setFiles] = useState([]);
     const [filesToChoose, setFilesToChoose] = useState([]);
@@ -146,6 +147,7 @@ const LoadFilesView = ({user}) => {
 
                 if(newDataSheet) {
                     setDataSheetId(newDataSheet.data.id);
+                    setDataSheetName(newDataSheet.data.filename);
                 }
             }
             if(!relationSheetId) {
@@ -153,6 +155,7 @@ const LoadFilesView = ({user}) => {
 
                 if(newRelationSheet) {
                     setRelationSheetId(newRelationSheet.data.id);
+                    setRelationSheetName(newRelationSheet.data.filename);
                 }
             }
 

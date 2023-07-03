@@ -155,4 +155,59 @@ export class TeamsService {
             owner_user_id: id
         });
     }
+
+    async deleteTeam(id) {
+        const teamRow = await this.teamsRepository.findOneBy({id});
+
+        if(teamRow) {
+            const teamOwnerId = teamRow.owner_id;
+
+            await this.removeTeamIdFromUsers(id);
+            await this.removeFilesFromTeam(id, teamOwnerId);
+            await this.removeMatchSchemasFromTeam(id, teamOwnerId);
+
+            return this.teamsRepository.delete({id});
+        }
+        else {
+            throw new BadRequestException('Nie znaleziono zespolu');
+        }
+    }
+
+    async removeTeamIdFromUsers(id) {
+        return this.usersRepository
+            .createQueryBuilder()
+            .update({
+                team_id: null
+            })
+            .where({
+                team_id: id
+            })
+            .execute();
+    }
+
+    async removeFilesFromTeam(id, teamOwnerId) {
+        return this.filesRepository
+            .createQueryBuilder()
+            .update({
+                owner_team_id: null,
+                owner_user_id: teamOwnerId
+            })
+            .where({
+                owner_team_id: id
+            })
+            .execute();
+    }
+
+    async removeMatchSchemasFromTeam(id, teamOwnerId) {
+        return this.schemasRepository
+            .createQueryBuilder()
+            .update({
+                owner_team_id: null,
+                owner_user_id: teamOwnerId
+            })
+            .where({
+                owner_team_id: id
+            })
+            .execute();
+    }
 }

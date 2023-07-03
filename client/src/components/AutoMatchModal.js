@@ -4,6 +4,8 @@ import ReactSlider from 'react-slider'
 import TestConfigurationModal from "./TestConfigurationModal";
 import ProgressBar from "./ProgressBar";
 import {AppContext} from "../pages/CorrelationPage";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
@@ -47,6 +49,9 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
             }
         ]
      */
+
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     useEffect(() => {
         setDataSheetColumnsFiltered(dataSheetColumns?.slice(1));
@@ -223,7 +228,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
         <div className="modal">
             <button className="btn btn--closeModal"
-                    onClick={() => { closeModal(); }}>
+                    onClick={closeModal}>
                 &times;
             </button>
 
@@ -363,7 +368,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                     </div>
 
                     <button className="btn btn--addPriority"
-                            onClick={() => { addPriority(); }}>
+                            onClick={addPriority}>
                         + Dodaj priorytet
                     </button>
 

@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {createTeam, generateTeamUrl, getAllTeams} from "../api/teams";
 import Loader from "./Loader";
+import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const CreateNewTeamModal = ({closeModal}) => {
     const [name, setName] = useState('');
@@ -9,6 +11,9 @@ const CreateNewTeamModal = ({closeModal}) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useCloseModalOnOutsideClick(closeModal);
+    useActionOnEscapePress(closeModal);
 
     useEffect(() => {
         getAllTeams()

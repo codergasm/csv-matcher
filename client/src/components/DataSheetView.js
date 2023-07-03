@@ -2,9 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
-import sortIcon from '../static/img/sort-down.svg';
 import {sortByColumn} from "../helpers/others";
-import {Tooltip} from "react-tippy";
 import CellsFormatModal from "./CellsFormatModal";
 import { ROWS_PER_PAGE } from "../static/constans";
 import TableViewHeaderRow from "./TableViewHeaderRow";
@@ -16,7 +14,8 @@ import SheetCell from "./SheetCell";
 const DataSheetView = () => {
     const { dataSheet } = useContext(AppContext);
     const { showInSelectMenuColumns, setShowInSelectMenuColumns,
-        outputSheetExportColumns, setOutputSheetExportColumns } = useContext(ViewContext);
+        outputSheetExportColumns, setOutputSheetExportColumns,
+        dataSheetColumnsVisibility, setDataSheetColumnsVisibility } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [dataSheetSorted, setDataSheetSorted] = useState([]);
@@ -24,7 +23,6 @@ const DataSheetView = () => {
     const [columnsNames, setColumnsNames] = useState([]);
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
-    const [columnsVisibility, setColumnsVisibility] = useState([]);
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSorting, setColumnsSorting] = useState([]); // 0 - no sorting, 1 - ascending, 2 - descending
     const [sortingClicked, setSortingClicked] = useState(false);
@@ -47,8 +45,8 @@ const DataSheetView = () => {
 
     useEffect(() => {
         if(columnsNames?.length) {
-            if(!columnsVisibility?.length) {
-                setColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+            if(!dataSheetColumnsVisibility?.length) {
+                setDataSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
             }
 
             if(!columnsSorting?.length) {
@@ -58,8 +56,10 @@ const DataSheetView = () => {
     }, [columnsNames]);
 
     useEffect(() => {
-        setMinColumnWidth(100 / (columnsVisibility.filter((item) => (item)).length));
-    }, [columnsVisibility]);
+        if(dataSheetColumnsVisibility) {
+            setMinColumnWidth(100 / (dataSheetColumnsVisibility.filter((item) => (item)).length));
+        }
+    }, [dataSheetColumnsVisibility]);
 
     const handleSelectMenuColumnsChange = (i) => {
         if(i === -2) {
@@ -133,7 +133,7 @@ const DataSheetView = () => {
             return outputSheetExportColumns.slice(1, columnsNames.length);
         }
         else {
-            return columnsVisibility;
+            return dataSheetColumnsVisibility;
         }
     }
 
@@ -145,7 +145,7 @@ const DataSheetView = () => {
             return setOutputSheetExportColumns;
         }
         else {
-            return setColumnsVisibility;
+            return setDataSheetColumnsVisibility;
         }
     }
 
@@ -262,7 +262,7 @@ const DataSheetView = () => {
         <div className="sheet__table">
             <div className="line line--noFlex">
                 {showInSelectMenuColumns.map((item, index) => {
-                    if(columnsVisibility[index]) {
+                    if(dataSheetColumnsVisibility[index]) {
                         return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
                                     style={columnWithMinWidth()}
                                     key={index}>
@@ -278,7 +278,8 @@ const DataSheetView = () => {
                 })}
             </div>
 
-            <div className="line line--exportLegend" ref={exportLegend}>
+            <div className="line line--exportLegend"
+                 ref={exportLegend}>
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
@@ -298,7 +299,7 @@ const DataSheetView = () => {
             </div>
             <div className="line line--noFlex">
                 {outputSheetExportColumns.map((item, index) => {
-                    if((index < columnsNames?.length) && (columnsVisibility[index])) {
+                    if((index < columnsNames?.length) && (dataSheetColumnsVisibility[index])) {
                         if(index === 0) {
                             return <div className="check__cell check__cell--first"
                                         style={columnWithMinWidth()}
@@ -324,7 +325,7 @@ const DataSheetView = () => {
             </div>
 
             <TableViewHeaderRow columnsNames={columnsNames}
-                                columnsVisibility={columnsVisibility}
+                                columnsVisibility={dataSheetColumnsVisibility}
                                 columnsSorting={columnsSorting}
                                 removeSorting={removeSorting}
                                 getColumnMinWidth={getColumnMinWidth}
@@ -337,7 +338,7 @@ const DataSheetView = () => {
                 {Object.entries(item).map((item, index) => {
                     const cellValue = item[1];
 
-                    if(columnsVisibility[index]) {
+                    if(dataSheetColumnsVisibility[index]) {
                         return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                     style={{
                                         minWidth: getColumnMinWidth(),
