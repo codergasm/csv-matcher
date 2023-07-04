@@ -86,6 +86,7 @@ const RegisterPage = () => {
             {status === 0 ? <form className="form form--register shadow">
                 <InputPrimary label={'Adres e-mail'}
                               placeholder={'E-mail'}
+                              type={'email'}
                               value={email}
                               setValue={setEmail} />
                 <InputPrimary label={'Hasło'}

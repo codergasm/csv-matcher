@@ -57,6 +57,7 @@ const LoginPage = () => {
                 <InputPrimary label={'Adres e-mail'}
                               placeholder={'E-mail'}
                               value={email}
+                              type={'email'}
                               setValue={setEmail} />
                 <InputPrimary label={'Hasło'}
                               placeholder={'Hasło'}
