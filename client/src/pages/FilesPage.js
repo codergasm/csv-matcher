@@ -4,7 +4,6 @@ import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
 import PageHeader from "../components/PageHeader";
-import ErrorInfo from "../components/ErrorInfo";
 import FileUploader from "../components/FileUploader";
 
 const FilesPage = ({user}) => {

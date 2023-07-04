@@ -28,6 +28,7 @@ const FileUploader = ({user, setUpdateFiles}) => {
         saveSheet(e.target.files[0], user.teamId, false)
             .then((res) => {
                 if(res?.status === 201) {
+                    setUpdateFiles(p => !p);
                     setFileSavedModalVisible(true);
                 }
                 else {
