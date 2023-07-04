@@ -8,6 +8,7 @@ import SchemaPicker from "./SchemaPicker";
 import {settings} from "../helpers/settings";
 import FilePicker from "./FilePicker";
 import Row from "./Row";
+import convertResponseToObject from "../helpers/convertResponseToObject";
 
 const LoadFilesView = ({user}) => {
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
@@ -124,20 +125,6 @@ const LoadFilesView = ({user}) => {
         });
     }
 
-    const convertResponseToObject = (data) => {
-        const obj = data.map((item, index) => {
-            return {
-                '0': index+1,
-                ...item
-            }
-        });
-
-        // Add missing keys and convert values to string
-        return addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
-            return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));
-        });
-    }
-
     const saveFiles = async () => {
         try {
             setLoading(true);
@@ -163,7 +150,6 @@ const LoadFilesView = ({user}) => {
             setCurrentView(1);
         }
         catch(e) {
-            console.log(e);
             setLoading(false);
             alert('Nie udało się dodać plików. Pamiętaj, aby pliki były zapisane w formacie .csv lub .txt');
         }

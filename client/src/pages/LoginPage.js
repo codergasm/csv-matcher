@@ -6,6 +6,7 @@ import InputPrimary from "../components/InputPrimary";
 import ErrorInfo from "../components/ErrorInfo";
 import ButtonSubmit from "../components/ButtonSubmit";
 import PageHeader from "../components/PageHeader";
+import {SESSION_TIME} from "../static/constans";
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -41,9 +42,9 @@ const LoginPage = () => {
 
     const setUserCookies = (jwt) => {
         const cookies = new Cookies();
-        cookies.set('access_token', jwt, { path: '/' });
-        cookies.set('email_rowmatcher', email.toString().split('@')[0], { path: '/' });
-        cookies.set('email_rowmatcher_domain', email.toString().split('@')[1], { path: '/' });
+        cookies.set('access_token', jwt, { path: '/', maxAge: SESSION_TIME });
+        cookies.set('email_rowmatcher', email.toString().split('@')[0], { path: '/', maxAge: SESSION_TIME });
+        cookies.set('email_rowmatcher_domain', email.toString().split('@')[1], { path: '/', maxAge: SESSION_TIME });
     }
 
     return <div className="container">

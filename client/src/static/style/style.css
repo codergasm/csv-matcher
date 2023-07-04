@@ -465,6 +465,10 @@ table, table * {
     margin: 20px auto;
 }
 
+.btn--autoMatch {
+    margin: 20px 0;
+}
+
 .btn--remove {
     background: red;
     width: 100px;
@@ -1827,6 +1831,11 @@ input[type=number] {
 
 .line--membersHeader {
     border-bottom: 2px solid var(--primary);
+    position: sticky;
+    top: 0;
+    left: 0;
+    background: #fff;
+    z-index: 100;
 }
 
 .img--rights {
@@ -2032,13 +2041,31 @@ input[type=number] {
 .btn--addNewFile {
     position: relative;
     margin: 30px auto;
-    width: 500px;
-    height: 50px;
-    border-radius: 5px;
-    background: var(--primary);
+    max-width: 100%;
+    width: 400px;
+    height: 150px;
+    border-radius: 15px;
+    background: #fff;
     font-size: 18px;
     font-weight: 700;
-    color: #fff;
+    color: #313131;
+    border: 3px dashed #dddddd;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn--addNewFile--grey {
+    background: #efefef;
+}
+
+.btn--addNewFile--white {
+    background: #fff;
+}
+
+.btn--addNewFile:hover {
+    background: #efefef;
 }
 
 .input--addNewFile {
@@ -2177,6 +2204,11 @@ input[type=number] {
     filter: brightness(0) invert(1);
     width: 20px;
     margin-left: 12px;
+}
+
+.img--upload {
+    margin-bottom: 10px;
+    width: 40px;
 }
 
 .label--ownership {
@@ -2406,7 +2438,7 @@ input[type=number] {
 }
 
 .modal__sheetsList__inner {
-    height: 300px;
+    height: 200px;
 }
 
 .modal__sheetsList__item {
@@ -2537,7 +2569,7 @@ input[type=number] {
     left: 0;
     transform-origin: bottom left;
     transition: .2s all;
-    z-index: 1000;
+    z-index: 1100;
 }
 
 .fileNameInfo {
@@ -2551,4 +2583,52 @@ input[type=number] {
 .modal__inner__selectButtons {
     width: 80%;
     margin: auto;
+}
+
+.fileViewHeader {
+    margin: 120px auto 40px;
+}
+
+.fileViewHeader__text {
+    font-size: 24px;
+    text-align: center;
+}
+
+.sheet__table__info--data1,
+.sheet__table__info--data2 {
+    position: sticky;
+    left: 0;
+}
+
+.sheet__table__info--data1 {
+    top: 0;
+}
+
+.sheet__table__info--data2 {
+    top: 40px;
+}
+
+.fileLoader {
+    margin: 40px auto;
+}
+
+.flex--w {
+    width: 80%;
+    margin: auto;
+}
+
+.flex--relationButtons {
+    max-width: 800px;
+    position: relative;
+    overflow: visible;
+}
+
+.matchTypeSelectLabel {
+    position: relative;
+}
+
+.matchTypeSelectLabel > span {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
 }

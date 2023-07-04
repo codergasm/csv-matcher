@@ -4,13 +4,15 @@ import {getFilesByUser} from "../api/files";
 import {assignSheetsToSchema} from "../api/schemas";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import FileUploader from "./FileUploader";
 
-const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNotification, matchSchema}) => {
+const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNotification, matchSchema, user}) => {
     const [loading, setLoading] = useState(false);
 
     const [files, setFiles] = useState([]);
     const [dataSheetId, setDataSheetId] = useState(0);
     const [relationSheetId, setRelationSheetId] = useState(0);
+    const [updateFiles, setUpdateFiles] = useState(false);
 
     const closeModalWrapper = () => {
         setUpdateSchemas(p => !p);
@@ -27,7 +29,7 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
                     setFiles(res.data);
                 }
             });
-    }, []);
+    }, [updateFiles]);
 
     const handleSubmit = () => {
         setLoading(true);
@@ -45,7 +47,7 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
 
     return <div className="modal modal--chooseSheets">
         <button className="btn btn--closeModal"
-                onClick={() => { closeModalWrapper(); }}>
+                onClick={closeModalWrapper}>
             &times;
         </button>
 
@@ -54,6 +56,7 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
                 <h4 className="modal__header">
                     Arkusz 1
                 </h4>
+
                 <div className="modal__sheetsList__inner scroll">
                     {files.map((item, index) => {
                         return <button className={item.id === dataSheetId ? "modal__sheetsList__item modal__sheetsList__item--selected" : "modal__sheetsList__item"}
@@ -63,12 +66,16 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
                         </button>
                     })}
                 </div>
+
+                <FileUploader setUpdateFiles={setUpdateFiles}
+                              user={user} />
             </div>
 
             <div className="modal__sheetsList">
                 <h4 className="modal__header">
                     Arkusz 2
                 </h4>
+
                 <div className="modal__sheetsList__inner scroll">
                     {files.map((item, index) => {
                         return <button className={item.id === relationSheetId ? "modal__sheetsList__item modal__sheetsList__item--selected" : "modal__sheetsList__item"}
@@ -78,6 +85,9 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
                         </button>
                     })}
                 </div>
+
+                <FileUploader setUpdateFiles={setUpdateFiles}
+                              user={user} />
             </div>
 
             {!loading ? <button className="btn btn--submitFormNewTeam btn--assignSheetsToSchemaSubmit"

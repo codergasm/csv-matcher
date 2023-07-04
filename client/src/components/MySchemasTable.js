@@ -3,14 +3,13 @@ import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
 import arrowIcon from '../static/img/arrow-expand.svg';
-import editIcon from '../static/img/edit.svg';
-import saveIcon from '../static/img/check.svg';
-import {assignSchemaToTeam, deleteSchema, detachSheetsFromSchemaById, updateSchemaName} from "../api/schemas";
+import {assignSchemaToTeam, deleteSchema, detachSheetsFromSchemaById} from "../api/schemas";
 import AssignSheetsToSchemaModal from "./AssignSheetsToSchemaModal";
 import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";
+import SchemaNameEditionCell from "./SchemaNameEditionCell";
 
-const MySchemasTable = ({schemas, allFiles, teamId, setUpdateSchemas}) => {
+const MySchemasTable = ({schemas, allFiles, setUpdateSchemas, user}) => {
     const columnsNames = [
         'nazwa schematu', 'data utworzenia', 'edycja', 'zwiń/rozwiń'
     ];
@@ -28,8 +27,6 @@ const MySchemasTable = ({schemas, allFiles, teamId, setUpdateSchemas}) => {
     const [sheetsVisible, setSheetsVisible] = useState([]);
     const [chooseSheetsModalVisible, setChooseSheetsModalVisible] = useState(false);
     const [chooseSheetsSchemaId, setChooseSheetsSchemaId] = useState(null);
-    const [newName, setNewName] = useState('');
-    const [editNameMode, setEditNameMode] = useState(false);
 
     useEffect(() => {
         if(schemas) {
@@ -66,23 +63,6 @@ const MySchemasTable = ({schemas, allFiles, teamId, setUpdateSchemas}) => {
         else return '';
     }
 
-    const handleEditNameClick = (id, index) => {
-        if(editNameMode && newName) {
-            updateSchemaName(id, newName)
-                .then(() => {
-                   setEditNameMode(false);
-                   setUpdateSchemas(p => !p);
-                })
-                .catch(() => {
-                    setEditNameMode(false);
-                });
-        }
-        else {
-            setNewName(Object.entries(schemas)[index][1][0].schemas_name);
-            setEditNameMode(true);
-        }
-    }
-
     return <div className="teamTable teamTable--schemas w">
         {assignSchemeToTeamModalVisible ? <DecisionModal closeModal={() => { setAssignSchemeToTeamModalVisible(false); }}
                                                        closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
@@ -117,6 +97,7 @@ const MySchemasTable = ({schemas, allFiles, teamId, setUpdateSchemas}) => {
         /> : ''}
 
         {chooseSheetsModalVisible ? <AssignSheetsToSchemaModal setUpdateSchemas={setUpdateSchemas}
+                                                               user={user}
                                                                matchSchema={chooseSheetsSchemaId}
                                                                showBottomNotification={setChooseSheetsSchemaId}
                                                                closeModal={() => { setChooseSheetsModalVisible(false); }} /> : ''}
@@ -141,19 +122,12 @@ const MySchemasTable = ({schemas, allFiles, teamId, setUpdateSchemas}) => {
                 return <div className="schemaLine" key={index}>
                     {/* Main row */}
                     <div className="line line--member line--borderBottom">
-                        <div className="sheet__header__cell">
-                            {editNameMode ? <input className="input input--teamName input--schemaName--edit"
-                                                   onKeyDown={(e) => { if(e.key === 'Enter') handleEditNameClick(schema.schemas_id, index); }}
-                                                   onChange={(e) => { setNewName(e.target.value); }}
-                                                   value={newName} /> : <span>
-                                {schema.schemas_name}
-                            </span>}
+                        <SchemaNameEditionCell schemas={schemas}
+                                               schema={schema}
+                                               index={index}
+                                               canEdit={true}
+                                               setUpdateSchemas={setUpdateSchemas} />
 
-                            <button className="btn btn--edit btn--editSchema"
-                                    onClick={() => { handleEditNameClick(schema.schemas_id, index); }}>
-                                <img className="img" src={editNameMode ? saveIcon : editIcon} alt="edytuj" />
-                            </button>
-                        </div>
                         <div className="sheet__header__cell" dangerouslySetInnerHTML={{
                             __html: getDateFromString(schema.schemas_created_datetime)
                         }}>

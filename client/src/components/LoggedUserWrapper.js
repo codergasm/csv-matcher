@@ -9,6 +9,7 @@ import LoadingPage from "../pages/LoadingPage";
 import FilesPage from "../pages/FilesPage";
 import SchemasPage from "../pages/SchemasPage";
 import redirectToHomepage from "../helpers/redirectToHomepage";
+import FileViewPage from "../pages/FileViewPage";
 
 const LoggedUserWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -57,6 +58,9 @@ const LoggedUserWrapper = ({page}) => {
                                             break;
                                         case 6:
                                             setRender(<ChangePassword />);
+                                            break;
+                                        case 7:
+                                            setRender(<FileViewPage />);
                                             break;
                                         default:
                                             redirectToHomepage();

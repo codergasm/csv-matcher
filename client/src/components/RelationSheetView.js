@@ -23,6 +23,9 @@ import convertColumnToNumber from "../helpers/convertColumnToNumber";
 import ButtonSimple from "./ButtonSimple";
 import OverrideMatchModal from "./OverrideMatchModal";
 import DeleteMatchesModal from "./DeleteMatchesModal";
+import Row from "./Row";
+import Select from "react-select";
+import MatchTypeSelect from "./MatchTypeSelect";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet } = useContext(AppContext);
@@ -323,7 +326,7 @@ const RelationSheetView = () => {
 
     const columnWithMinWidth = () => {
         return {
-            width: getColumnMinWidth()
+            minWidth: getColumnMinWidth()
         }
     }
 
@@ -365,11 +368,15 @@ const RelationSheetView = () => {
                                                          doOverride={() => { addManualCorrelation(dataRowIndexForManualCorrelation,
                                                              relationRowIndexForManualCorrelation) }} /> : ''}
 
-        {deleteMatchesModalVisible ? <DeleteMatchesModal closeModal={() => { console.log('close'); setDeleteMatchesModalVisible(false); }} /> : ''}
+        {deleteMatchesModalVisible ? <DeleteMatchesModal closeModal={() => { setDeleteMatchesModalVisible(false); }} /> : ''}
 
-        <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
-            Automatycznie dopasuj
-        </ButtonAutoMatch>
+        <div className="flex flex--w flex--relationButtons">
+            <MatchTypeSelect />
+
+            <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
+                Automatycznie dopasuj
+            </ButtonAutoMatch>
+        </div>
 
         {showInSelectMenuColumns.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
             <span>
@@ -381,7 +388,7 @@ const RelationSheetView = () => {
         {selectList?.length && !selectListLoading ? <div className="sheet scroll"
                                    onScroll={checkScrollToBottom}>
 
-            <div className="sheet__table__info">
+            <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
                     Widoczność
 
@@ -394,7 +401,7 @@ const RelationSheetView = () => {
                 </div>
             </div>
 
-            <div className="sheet__table__info">
+            <div className="sheet__table__info sheet__table__info--data2">
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 

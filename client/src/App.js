@@ -44,6 +44,9 @@ const App = () => {
     <Route path="/zmien-haslo">
       <LoggedUserWrapper page={6} />
     </Route>
+    <Route path="/podglad-pliku">
+      <LoggedUserWrapper page={7} />
+    </Route>
   </Router>
 }
 

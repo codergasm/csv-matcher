@@ -207,7 +207,7 @@ const DataSheetView = () => {
 
     const columnWithMinWidth = () => {
         return {
-            width: getColumnMinWidth()
+            minWidth: getColumnMinWidth()
         }
     }
 
@@ -225,7 +225,7 @@ const DataSheetView = () => {
                                                      setCellsHeight={setCellsHeight}
                                                      closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
 
-        <div className="sheet__table__info">
+        <div className="sheet__table__info sheet__table__info--data1">
             <div className="cell--legend">
                 Widoczność
 
@@ -240,7 +240,7 @@ const DataSheetView = () => {
             </div>
         </div>
 
-        <div className="sheet__table__info">
+        <div className="sheet__table__info sheet__table__info--data2">
             <div className="cell--legend">
                 Pokazuj w podpowiadajce
 
@@ -324,12 +324,14 @@ const DataSheetView = () => {
                 })}
             </div>
 
-            <TableViewHeaderRow columnsNames={columnsNames}
-                                columnsVisibility={dataSheetColumnsVisibility}
-                                columnsSorting={columnsSorting}
-                                removeSorting={removeSorting}
-                                getColumnMinWidth={getColumnMinWidth}
-                                sortSheet={sortSheet} />
+            <div className="line line--noFlex">
+                <TableViewHeaderRow columnsNames={columnsNames}
+                                    columnsVisibility={dataSheetColumnsVisibility}
+                                    columnsSorting={columnsSorting}
+                                    removeSorting={removeSorting}
+                                    getColumnMinWidth={getColumnMinWidth}
+                                    sortSheet={sortSheet} />
+            </div>
         </div>
 
         {rowsToRender.map((item, index) => {

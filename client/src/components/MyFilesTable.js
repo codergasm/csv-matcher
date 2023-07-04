@@ -4,7 +4,9 @@ import {assignFileOwnershipToTeam, deleteSheet} from "../api/files";
 import DecisionModal from "./DecisionModal";
 import editIcon from '../static/img/edit.svg';
 import deleteIcon from '../static/img/no.svg';
+import viewIcon from '../static/img/eye.svg';
 import EditFileModal from "./EditFileModal";
+import FilenameEditionCell from "./FilenameEditionCell";
 
 const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
     const columnsNames = [
@@ -63,9 +65,13 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
             {files.map((item, index) => {
                     return <div className="line line--member"
                                 key={index}>
-                        <div className="sheet__header__cell">
-                            {item.filename}
-                        </div>
+
+                        <FilenameEditionCell item={item}
+                                             index={index}
+                                             files={files}
+                                             canUpdate={true}
+                                             setUpdateFiles={setUpdateFiles} />
+
                         <div className="sheet__header__cell" dangerouslySetInnerHTML={{
                             __html: getDateFromString(item.created_datetime)
                         }}>
@@ -77,12 +83,18 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                         <div className="sheet__header__cell">
                             {getStringWithFileSize(item.filesize)}
                         </div>
+
                         <div className="sheet__header__cell sheet__header__cell--column">
                             <div className="flex flex--action">
                                 <button className="btn--action"
                                         onClick={() => { setEditFile(item); setEditFileModalVisible(true); }}>
                                     <img className="img" src={editIcon} alt="edytuj" />
                                 </button>
+                                <a className="btn--action"
+                                   target="_blank"
+                                   href={`/podglad-pliku?id=${item.id}`}>
+                                    <img className="img" src={viewIcon} alt="zobacz" />
+                                </a>
                                 <button className="btn--action"
                                         onClick={() => { setDeleteFileId(item.id); setDeleteFileModalVisible(true); }}>
                                     <img className="img" src={deleteIcon} alt="usuń" />

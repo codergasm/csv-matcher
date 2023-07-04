@@ -49,7 +49,7 @@ export class SchemasService {
 
         if(user) {
             try {
-                const schema = await this.schemasRepository.save({
+               const schema = await this.schemasRepository.save({
                     name,
                     matched_strings_array: JSON.stringify(matchedStringsArray),
                     automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),

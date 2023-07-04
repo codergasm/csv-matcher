@@ -1,19 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {getFilesByUser, saveSheet} from "../api/files";
+import {getFilesByUser} from "../api/files";
 import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
-import addIcon from '../static/img/add.svg';
-import {errorText} from "../static/content";
 import PageHeader from "../components/PageHeader";
 import ErrorInfo from "../components/ErrorInfo";
+import FileUploader from "../components/FileUploader";
 
 const FilesPage = ({user}) => {
     const [userFiles, setUserFiles] = useState([]);
     const [teamFiles, setTeamFiles] = useState([]);
     const [updateFiles, setUpdateFiles] = useState(false);
     const [fileSavedModalVisible, setFileSavedModalVisible] = useState(false);
-    const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         getFilesByUser()
@@ -26,21 +24,6 @@ const FilesPage = ({user}) => {
                }
             });
     }, [updateFiles]);
-
-    const addNewFileWrapper = (e) => {
-        saveSheet(e.target.files[0], user.teamId, false)
-            .then((res) => {
-                if(res?.status === 201) {
-                    setFileSavedModalVisible(true);
-                }
-                else {
-                    setSaveError(errorText);
-                }
-            })
-            .catch(() => {
-                setSaveError(errorText);
-            });
-    }
 
     const closeFileSavedModal = () => {
         setUpdateFiles(p => !p);
@@ -55,13 +38,8 @@ const FilesPage = ({user}) => {
                 Twoje pliki
             </PageHeader>
 
-            <div className="btn btn--addNewFile">
-                <input className="input--addNewFile"
-                       type="file"
-                       onChange={addNewFileWrapper} />
-                Dodaj nowy plik
-                <img className="img--add" src={addIcon} alt="dodaj" />
-            </div>
+            <FileUploader setUpdateFiles={setUpdateFiles}
+                          user={user} />
 
             <MyFilesTable files={userFiles}
                           teamId={user.teamId}
@@ -76,8 +54,6 @@ const FilesPage = ({user}) => {
                             canUpdate={user.canEditTeamFiles}
                             canDelete={user.canDeleteTeamFiles}
                             setUpdateFiles={setUpdateFiles} />
-
-            <ErrorInfo content={saveError} />
         </div>
     </div>
 };
