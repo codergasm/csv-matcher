@@ -33,7 +33,7 @@ import {join} from "path";
       username: process.env.DATABASE_USERNAME, // username
       password: process.env.DATABASE_PASSWORD, // user password
       database: process.env.DATABASE_NAME, // name of our database,
-      autoLoadEntities: false, // models will be loaded automatically
+      autoLoadEntities: true, // models will be loaded automatically
       synchronize: false
     }),
     TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity]),
