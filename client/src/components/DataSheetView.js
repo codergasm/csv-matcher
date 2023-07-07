@@ -10,9 +10,10 @@ import getScrollParams from "../helpers/getScrollParams";
 import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
 import convertColumnToNumber from "../helpers/convertColumnToNumber";
 import SheetCell from "./SheetCell";
+import {getSchemaById} from "../api/schemas";
 
 const DataSheetView = () => {
-    const { dataSheet } = useContext(AppContext);
+    const { dataSheet, currentSchemaId } = useContext(AppContext);
     const { showInSelectMenuColumns, setShowInSelectMenuColumns,
         outputSheetExportColumns, setOutputSheetExportColumns,
         dataSheetColumnsVisibility, setDataSheetColumnsVisibility } = useContext(ViewContext);
@@ -46,20 +47,47 @@ const DataSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             if(!dataSheetColumnsVisibility?.length) {
-                setDataSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+                if(currentSchemaId > 0) {
+                    getSchemaById(currentSchemaId)
+                        .then((res) => {
+                            if(res?.data) {
+                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).dataSheetColumnsVisibility;
+
+                                if(columnsVisibilityFromDatabase.length === columnsNames.length) {
+                                    setDataSheetColumnsVisibility(columnsVisibilityFromDatabase);
+                                }
+                                else {
+                                    setDefaultDataSheetColumnsVisibility();
+                                }
+                            }
+                            else {
+                                setDefaultDataSheetColumnsVisibility();
+                            }
+                        })
+                        .catch(() => {
+                            setDefaultDataSheetColumnsVisibility();
+                        });
+                }
+                else {
+                    setDefaultDataSheetColumnsVisibility();
+                }
             }
 
             if(!columnsSorting?.length) {
                 setColumnsSorting(columnsNames.map(() => (0)));
             }
         }
-    }, [columnsNames]);
+    }, [columnsNames, currentSchemaId]);
 
     useEffect(() => {
         if(dataSheetColumnsVisibility) {
             setMinColumnWidth(100 / (dataSheetColumnsVisibility.filter((item) => (item)).length));
         }
     }, [dataSheetColumnsVisibility]);
+
+    const setDefaultDataSheetColumnsVisibility = () => {
+        setDataSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+    }
 
     const handleSelectMenuColumnsChange = (i) => {
         if(i === -2) {

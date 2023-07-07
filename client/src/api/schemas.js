@@ -10,17 +10,23 @@ const getSchemasByUser = () => {
     return axios.get(`/schemas/getSchemasByUser/${getLoggedUserEmail()}`, getConfigWithAuthHeader());
 }
 
-const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, email,
-                    teamOwner, dataSheetId, relationSheetId) => {
+const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+                    matchType, matchFunction,
+                    email, teamOwner, dataSheetId, relationSheetId) => {
     return axios.post(`/schemas/saveSchema`, {
-        name, matchedStringsArray, automaticMatcherSettingsObject, email, teamOwner,
-        dataSheetId, relationSheetId
+        name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+        matchType, matchFunction,
+        email, teamOwner, dataSheetId, relationSheetId
     }, getConfigWithAuthHeader());
 }
 
-const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId) => {
+const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+                      matchType, matchFunction,
+                      dataSheetId, relationSheetId) => {
     return axios.patch(`/schemas/updateSchema`, {
-        id, name, matchedStringsArray, automaticMatcherSettingsObject, dataSheetId, relationSheetId
+        id, name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+        matchType, matchFunction,
+        dataSheetId, relationSheetId
     }, getConfigWithAuthHeader());
 }
 

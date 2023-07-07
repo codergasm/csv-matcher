@@ -30,6 +30,7 @@ const CorrelationView = ({user}) => {
     const [correlationStatus, setCorrelationStatus] = useState(0);
 
     const [matchType, setMatchType] = useState(0);
+    const [matchFunction, setMatchFunction] = useState(0);
     const [priorities, setPriorities] = useState([]);
     const [matchSchemaArray, setMatchSchemaArray] = useState([]);
 
@@ -75,14 +76,16 @@ const CorrelationView = ({user}) => {
     }, [currentSheet]);
 
     useEffect(() => {
-        // Change matching every time currentSchemaId change
+        // Change matching and columns settings every time currentSchemaId change
         if(dataSheetId > 0 && relationSheetId > 0 && currentSchemaId > 0) {
             getSchemaById(currentSchemaId)
                 .then((res) => {
                     if(res?.data) {
+                        setMatchType(res.data.match_type);
+                        setMatchFunction(res.data.match_function);
                         setPriorities(JSON.parse(res.data.automatic_matcher_settings_object));
                     }
-                })
+                });
 
             correlateUsingSchema(dataSheetId, relationSheetId, currentSchemaId)
                 .then((res) => {
@@ -97,8 +100,7 @@ const CorrelationView = ({user}) => {
         }
     }, [currentSchemaId, dataSheetId, relationSheetId]);
 
-    useEffect(() => {
-        // Select column with most content for showInSelectMenuColumns
+    const selectColumnWithMostContentInDataSheet = () => {
         const dataSheetSample = dataSheet.slice(0, 10);
         const columnsContent = dataSheetSample.map((item) => {
             return Object.entries(item).map((item) => (item[1]));
@@ -118,8 +120,32 @@ const CorrelationView = ({user}) => {
             }
         }
 
-        setShowInSelectMenuColumns(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
-    }, [dataSheet]);
+        return { columnsContent, columnWithMostContent }
+    }
+
+    useEffect(() => {
+        if(dataSheet?.length) {
+            if(currentSchemaId > 0) {
+                getSchemaById(currentSchemaId)
+                    .then((res) => {
+                        if(res?.data) {
+                            const columnsSettingsObject = JSON.parse(res.data.columns_settings_object);
+                            const showInSelectMenuColumnsFromDatabase = columnsSettingsObject.showInSelectMenuColumns;
+
+                            if(Object.entries(dataSheet[0]).length === showInSelectMenuColumnsFromDatabase.length) {
+                                setShowInSelectMenuColumns(showInSelectMenuColumnsFromDatabase);
+                            }
+                            else {
+                                setDefaultShowInSelectMenuColumns();
+                            }
+                        }
+                    });
+            }
+            else {
+                setDefaultShowInSelectMenuColumns();
+            }
+        }
+    }, [dataSheet, currentSchemaId]);
 
     useEffect(() => {
         setIndexesOfCorrelatedRows(relationSheet.map(() => (-1)));
@@ -148,10 +174,31 @@ const CorrelationView = ({user}) => {
                 });
             }));
 
-            setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (1))
-                .concat(Object.entries(relationSheet[0]).map(() => (1))));
+            if(currentSchemaId > 0) {
+                getSchemaById(currentSchemaId)
+                    .then((res) => {
+                        if(res?.data) {
+                            const columnsSettingsObject = JSON.parse(res.data.columns_settings_object);
+                            const outputSheetExportColumnsFromDatabase = columnsSettingsObject.outputSheetExportColumns;
+
+                            if(Object.entries(dataSheet[0]).length + Object.entries(relationSheet[0]).length
+                                === outputSheetExportColumnsFromDatabase.length) {
+                                setOutputSheetExportColumns(outputSheetExportColumnsFromDatabase);
+                            }
+                            else {
+                                setDefaultOutputSheetExportColumns();
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        setDefaultOutputSheetExportColumns();
+                    })
+            }
+            else {
+                setDefaultOutputSheetExportColumns();
+            }
         }
-    }, [dataSheet, relationSheet]);
+    }, [dataSheet, relationSheet, currentSchemaId]);
 
     useEffect(() => {
         let intervalId;
@@ -166,6 +213,16 @@ const CorrelationView = ({user}) => {
 
         return () => clearInterval(intervalId);
     }, [correlationStatus]);
+
+    const setDefaultShowInSelectMenuColumns = () => {
+        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInDataSheet();
+        setShowInSelectMenuColumns(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+    }
+
+    const setDefaultOutputSheetExportColumns = () => {
+        setOutputSheetExportColumns(Object.entries(dataSheet[0]).map(() => (1))
+            .concat(Object.entries(relationSheet[0]).map(() => (1))));
+    }
 
     const findMax = (arr) => {
         let maxEl = arr[0];
@@ -359,7 +416,7 @@ const CorrelationView = ({user}) => {
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, matchThreshold, user.id)
+            manuallyCorrelatedRows, matchThreshold, user.id, matchFunction)
             .then((res) => {
                if(res?.data) {
                    const newIndexesOfCorrelatedRows = res.data.indexesOfCorrelatedRowsTmp;
@@ -455,6 +512,7 @@ const CorrelationView = ({user}) => {
                 relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
                 outputSheetColumnsVisibility, setOutputSheetColumnsVisibility,
                 matchType, setMatchType,
+                matchFunction, setMatchFunction,
                 priorities, setPriorities,
                 matchSchemaArray, setMatchSchemaArray,
                 outputSheet, setOutputSheet,

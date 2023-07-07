@@ -9,10 +9,12 @@ import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
     'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
+const matchFunctions = ['Dopasowanie stringów',
+    'Pokrycie wartości z ark. 1 w ark. 2', 'Pokrycie wartości z ark. 2 w ark. 1'];
 
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility}) => {
     const { relationSheet } = useContext(AppContext);
-    const { priorities, setPriorities, matchType, setMatchType, progressCount,
+    const { priorities, setPriorities, matchType, setMatchType, matchFunction, setMatchFunction, progressCount,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows, matchThreshold, setMatchThreshold,
         avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows } = useContext(ViewContext);
 
@@ -85,8 +87,8 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
             return [...prevState, {
                 conditions: [
                     {
-                        dataSheet: dataSheetColumns[0],
-                        relationSheet: relationSheetColumns[0]
+                        dataSheet: dataSheetColumns[1],
+                        relationSheet: relationSheetColumns[1]
                     }
                 ],
                 logicalOperators: []
@@ -100,8 +102,8 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                 if(priorityIndex === index) {
                     return {
                         conditions: [...item.conditions, {
-                            dataSheet: dataSheetColumns[0],
-                            relationSheet: relationSheetColumns[0]
+                            dataSheet: dataSheetColumns[1],
+                            relationSheet: relationSheetColumns[1]
                         }],
                         logicalOperators: [...item.logicalOperators, logicalOperator]
                     }
@@ -140,7 +142,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     const updateLogicalOperator = (priority, condition, value) => {
-        setPriorities(prevState => {
+       setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
                     return {
@@ -159,7 +161,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                     return item;
                 }
             })
-        })
+        });
     }
 
     const deletePriority = (priority) => {
@@ -199,26 +201,26 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     }
 
     useEffect(() => {
-        if(dataSheetColumnsFiltered?.length) {
+        if((dataSheetColumnsFiltered?.length) && (dataSheetColumnsFiltered.length !== dataSheetColumns.length - 1)) {
             updateCondition(currentDataSheetPriorityIndex, currentDataSheetIndex, 'dataSheet', dataSheetColumnsFiltered[0]);
         }
     }, [dataSheetColumnsFiltered]);
 
     useEffect(() => {
-        if(relationSheetColumnsFiltered?.length) {
+        if((relationSheetColumnsFiltered?.length) && (relationSheetColumnsFiltered.length !== relationSheetColumns.length - 1)) {
             updateCondition(currentRelationSheetPriorityIndex, currentRelationSheetIndex, 'relationSheet', relationSheetColumnsFiltered[0]);
         }
     }, [relationSheetColumnsFiltered]);
 
-    const updateDataSheetSearch = (priorityIndex, index, val) => {
+    const updateDataSheetSearch = (priorityIndex, conditionIndex, val) => {
         setCurrentDataSheetPriorityIndex(priorityIndex);
-        setCurrentDataSheetIndex(index);
+        setCurrentDataSheetIndex(conditionIndex);
         setDataSheetSearch(val);
     }
 
-    const updateRelationSheetSearch = (priorityIndex, index, val) => {
+    const updateRelationSheetSearch = (priorityIndex, conditionIndex, val) => {
         setCurrentRelationSheetPriorityIndex(priorityIndex);
-        setCurrentRelationSheetIndex(index);
+        setCurrentRelationSheetIndex(conditionIndex);
         setRelationSheetSearch(val);
     }
 
@@ -251,6 +253,20 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                             <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                     disabled={index > 0} // tmp: only first option works
                                     onClick={() => { setMatchType(index); }}>
+
+                            </button>
+                            {item}
+                        </label>
+                    })}
+
+                    <h3 className="modal__header">
+                        Funkcja dopasowania
+                    </h3>
+                    {matchFunctions.map((item, index) => {
+                        return <label className="modal__label"
+                                      key={index}>
+                            <button className={matchFunction === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { setMatchFunction(index); }}>
 
                             </button>
                             {item}

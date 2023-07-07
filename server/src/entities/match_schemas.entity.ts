@@ -14,6 +14,15 @@ export class MatchSchemasEntity {
     @Column()
     automatic_matcher_settings_object: string;
 
+    @Column()
+    columns_settings_object: string;
+
+    @Column()
+    match_type: number;
+
+    @Column()
+    match_function: number;
+
     @Column({
         nullable: true
     })

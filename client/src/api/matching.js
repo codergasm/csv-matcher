@@ -47,7 +47,7 @@ const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, matchThreshold, userId) => {
+                  manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType) => {
 
     const formData = new FormData();
     const config = {
@@ -68,6 +68,7 @@ const matching = (jobId, priorities, correlationMatrix,
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
     formData.append('matchThreshold', matchThreshold);
     formData.append('userId', userId);
+    formData.append('similarityFunctionType', similarityFunctionType);
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));

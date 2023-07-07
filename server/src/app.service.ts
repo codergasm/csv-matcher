@@ -31,6 +31,42 @@ export class AppService {
         return papa.parse(dataFileContent, { header: true }).data;
     }
 
+    findLongestSubstring(X, Y) {
+        const m = X.length;
+        const n = Y.length;
+
+        let LCStuff = Array(m + 1).fill(0).map(()=>Array(n + 1).fill(0));
+
+        let result = 0;
+        let i, j;
+
+        for (i = 0; i <= m; i++) {
+            for (j = 0; j <= n; j++) {
+                if (i == 0 || j == 0)
+                    LCStuff[i][j] = 0;
+                else if (X[i - 1] == Y[j - 1]) {
+                    LCStuff[i][j] = LCStuff[i - 1][j - 1] + 1;
+                    result = Math.max(result, LCStuff[i][j]);
+                } else
+                    LCStuff[i][j] = 0;
+            }
+        }
+
+        return result;
+    }
+
+    getSimilarityFunction(type, a, b) {
+        if(type === 0) {
+            return stringSimilarity(a, b);
+        }
+        else if(type === 1) {
+            return this.findLongestSubstring(a, b) / b.length;
+        }
+        else {
+            return this.findLongestSubstring(a, b) / a.length;
+        }
+    }
+
     getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength) {
         try {
             return Array.from(Array(parseInt(relationSheetLength)).keys()).map((relationRowItem, relationRowIndex) => {
@@ -87,7 +123,7 @@ export class AppService {
   }
 
     async getSimilarityScores(jobId, conditions, logicalOperators, correlationMatrix, dataSheet,
-                        relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect) {
+                        relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect, similarityFunctionType) {
         let allSimilarities = [];
         let i = 0;
 
@@ -106,7 +142,8 @@ export class AppService {
                         const relationSheetPart = relationRow[conditions[i].relationSheet];
 
                         if(dataSheetPart && relationSheetPart) {
-                            const pairSimilarity = stringSimilarity(dataSheetPart.toString(), relationSheetPart.toString());
+                            const pairSimilarity = this.getSimilarityFunction(similarityFunctionType,
+                                                                              dataSheetPart.toString(), relationSheetPart.toString());
                             similarities.push(pairSimilarity);
                         }
                         else {
@@ -176,7 +213,7 @@ export class AppService {
     }
 
     async getCorrelationMatrix(jobId, priorities, correlationMatrix, dataSheet, relationSheet,
-                               indexesOfCorrelatedRows, overrideAllRows, fromSelect = false) {
+                               indexesOfCorrelatedRows, overrideAllRows, similarityFunctionType, fromSelect = false) {
         let correlationMatrixTmp = [];
         let priorityIndex = 0;
 
@@ -186,7 +223,8 @@ export class AppService {
             const logicalOperators = priority.logicalOperators.map((item) => (parseInt(item)));
             const similarityScores = await this.getSimilarityScores(jobId, priority.conditions, logicalOperators,
                                                                     correlationMatrix, dataSheet, relationSheet,
-                                                                    indexesOfCorrelatedRows, overrideAllRows, fromSelect);
+                                                                    indexesOfCorrelatedRows, overrideAllRows, fromSelect,
+                                                                    similarityFunctionType);
 
             let relationRowIndex = 0;
             for(const relationRowSimilarities of similarityScores) {
@@ -201,7 +239,7 @@ export class AppService {
     }
 
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter, priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold, userId) {
+            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType) {
       const dataSheet = await this.convertFileToArrayOfObjects(dataFile);
       const relationSheet = await this.convertFileToArrayOfObjects(relationFile);
 
@@ -210,7 +248,7 @@ export class AppService {
       // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
       let correlationMatrixTmp = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), correlationMatrix,
           dataSheet, relationSheet,
-          indexesOfCorrelatedRows, overrideAllRows)
+          indexesOfCorrelatedRows, overrideAllRows, similarityFunctionType);
       let i = 0;
       let indexesOfCorrelatedRowsTmp = JSON.parse(indexesOfCorrelatedRows);
 

@@ -32,7 +32,7 @@ export class AppController {
     const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-      manuallyCorrelatedRows, matchThreshold, userId } = body;
+      manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType } = body;
 
     return this.appService.correlate(jobId,
         dataFilePath ? dataFilePath : files[0],
@@ -40,6 +40,6 @@ export class AppController {
         dataFileDelimiter, relationFileDelimiter,
         priorities, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        manuallyCorrelatedRows, matchThreshold, userId);
+        manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType);
   }
 }

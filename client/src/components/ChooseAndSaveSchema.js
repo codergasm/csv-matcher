@@ -1,15 +1,16 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Tooltip} from "react-tippy";
 import Select from 'react-select';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import {saveSchema, updateSchema} from "../api/schemas";
 import BottomNotification from "./BottomNotification";
+import {errorText} from "../static/content";
 
 const ChooseAndSaveSchema = ({user}) => {
     const { schemas, availableForUserSchemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
         dataSheetId, relationSheetId } = useContext(AppContext);
-    const { priorities, matchSchemaArray } = useContext(ViewContext);
+    const { priorities, matchSchemaArray, showInSelectMenuColumns, outputSheetExportColumns, dataSheetColumnsVisibility,
+        relationSheetColumnsVisibility, outputSheetColumnsVisibility, matchType, matchFunction } = useContext(ViewContext);
 
     const [name, setName] = useState('');
     const [notificationText, setNotificationText] = useState('');
@@ -38,8 +39,18 @@ const ChooseAndSaveSchema = ({user}) => {
         }
     }, [notificationText]);
 
+    const getColumnsSettingsObject = () => {
+        return {
+            showInSelectMenuColumns,
+            outputSheetExportColumns,
+            dataSheetColumnsVisibility, relationSheetColumnsVisibility, outputSheetColumnsVisibility
+        }
+    }
+
     const createSchemaWrapper = () => {
-        saveSchema(name, matchSchemaArray, priorities, user.email, false, dataSheetId, relationSheetId)
+        saveSchema(name, matchSchemaArray, priorities, getColumnsSettingsObject(),
+            matchType, matchFunction,
+            user.email, false, dataSheetId, relationSheetId)
             .then((res) => {
                 setUpdateSchemas(p => !p);
                 setCurrentSchemaId(res?.data?.id);
@@ -47,19 +58,20 @@ const ChooseAndSaveSchema = ({user}) => {
                 setNotificationText('Schemat został dodany');
             })
             .catch(() => {
-                setNotificationText('Coś poszło nie tak... Prosimy spróbować później');
+                setNotificationText(errorText);
                 setNotificationColor('#ff0000');
             });
     }
 
     const updateSchemaWrapper = () => {
-        updateSchema(currentSchemaId, name, matchSchemaArray, priorities, dataSheetId, relationSheetId)
-            .then((res) => {
+        updateSchema(currentSchemaId, name, matchSchemaArray, priorities,
+            getColumnsSettingsObject(), matchType, matchFunction, dataSheetId, relationSheetId)
+            .then(() => {
                 setNotificationColor('#508345');
                 setNotificationText('Schemat został zaktualizowany');
             })
             .catch(() => {
-                setNotificationText('Coś poszło nie tak... Prosimy spróbować później');
+                setNotificationText(errorText);
                 setNotificationColor('#ff0000');
             });
     }

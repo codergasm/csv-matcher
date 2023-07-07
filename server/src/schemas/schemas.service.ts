@@ -43,7 +43,8 @@ export class SchemasService {
     }
 
     async saveSchema(body) {
-        const { name, matchedStringsArray, automaticMatcherSettingsObject,
+        const { name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+            matchType, matchFunction,
             email, teamOwner, dataSheetId, relationSheetId } = body;
         const user = await this.usersRepository.findOneBy({email});
 
@@ -53,9 +54,12 @@ export class SchemasService {
                     name,
                     matched_strings_array: JSON.stringify(matchedStringsArray),
                     automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
+                    columns_settings_object: JSON.stringify(columnsSettingsObject),
                     owner_user_id: teamOwner ? null : user.id,
                     owner_team_id: teamOwner ? user.team_id : null,
-                    created_datetime: new Date()
+                    created_datetime: new Date(),
+                    match_type: matchType,
+                    match_function: matchFunction
                 });
 
                 if(dataSheetId && relationSheetId) {
@@ -76,12 +80,16 @@ export class SchemasService {
     }
 
     async updateSchema(body) {
-        const { id, name, matchedStringsArray, automaticMatcherSettingsObject,
+        const { id, name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
+            matchType, matchFunction,
             dataSheetId, relationSheetId } = body;
 
         let updateObject: any = {
             matched_strings_array: JSON.stringify(matchedStringsArray),
-            automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject)
+            automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
+            columns_settings_object: JSON.stringify(columnsSettingsObject),
+            match_type: matchType,
+            match_function: matchFunction
         };
 
         if(name) {

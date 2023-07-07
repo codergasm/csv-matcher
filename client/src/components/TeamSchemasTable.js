@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
@@ -8,58 +8,21 @@ import AssignSheetsToSchemaModal from "./AssignSheetsToSchemaModal";
 import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";
 import SchemaNameEditionCell from "./SchemaNameEditionCell";
+import withSchemasTable from "../hoc/withSchemasTable";
 
-const TeamSchemasTable = ({schemas, canEdit, canDelete, allFiles, user, setUpdateSchemas}) => {
-    const columnsNames = [
-        'nazwa schematu', 'data utworzenia', 'edycja', 'zwiń/rozwiń'
-    ];
-    const sheetsColumnsNames = [
-        'arkusz 1', 'arkusz 2', 'ilość rekordów w arkuszu 1 z dopasowaniem do arkusza 2',
-        'ilość rekordów w arkuszu 2 z dopasowaniem do arkusza 1', 'opcje'
-    ];
+const TeamSchemasTable = (props) => {
+    const {schemas, setUpdateSchemas, user,
+        canEdit, canDelete, getFileName,
+        getFileRowCount, sheetsVisible,
+        handleSheetsVisibilityChange,
+        columnsNames, sheetsColumnsNames,
+        chooseSheetsModalVisible, setChooseSheetsModalVisible,
+        chooseSheetsSchemaId, setChooseSheetsSchemaId} = props;
 
     const [deleteSchemeId, setDeleteSchemeId] = useState(null);
     const [deleteSchemeModalVisible, setDeleteSchemeModalVisible] = useState(false);
     const [detachSheetFromSchemaId, setDetachSheetFromSchemaId] = useState(null);
     const [detachSheetFromSchemaModalVisible, setDetachSheetFromSchemaModalVisible] = useState(false);
-    const [sheetsVisible, setSheetsVisible] = useState([]);
-    const [chooseSheetsModalVisible, setChooseSheetsModalVisible] = useState(false);
-    const [chooseSheetsSchemaId, setChooseSheetsSchemaId] = useState(null);
-
-    useEffect(() => {
-        if(schemas) {
-            setSheetsVisible(Object.entries(schemas).map(() => false));
-        }
-    }, [schemas]);
-
-    useEffect(() => {
-        if(chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1) {
-            setTimeout(() => {
-                setChooseSheetsSchemaId(null);
-            }, 3000);
-        }
-    }, [chooseSheetsSchemaId]);
-
-    const handleSheetsVisibilityChange = (i, value) => {
-        setSheetsVisible(prevState => (prevState.map((item, index) => {
-            if(i === index) return value;
-            else return item;
-        })));
-    }
-
-    const getFileName = (id) => {
-        const file = allFiles.find((item) => (item.id === id));
-
-        if(file) return file.filename;
-        else return '';
-    }
-
-    const getFileRowCount = (id) => {
-        const file = allFiles.find((item) => (item.id === id));
-
-        if(file) return file.row_count;
-        else return '';
-    }
 
     return <div className="teamTable teamTable--schemas w">
         {deleteSchemeModalVisible ? <DecisionModal closeModal={() => { setDeleteSchemeModalVisible(false); }}
@@ -200,4 +163,4 @@ const TeamSchemasTable = ({schemas, canEdit, canDelete, allFiles, user, setUpdat
     </div>
 };
 
-export default TeamSchemasTable;
+export default withSchemasTable(TeamSchemasTable);

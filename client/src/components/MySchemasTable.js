@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
@@ -8,15 +8,15 @@ import AssignSheetsToSchemaModal from "./AssignSheetsToSchemaModal";
 import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";
 import SchemaNameEditionCell from "./SchemaNameEditionCell";
+import withSchemasTable from "../hoc/withSchemasTable";
 
-const MySchemasTable = ({schemas, allFiles, setUpdateSchemas, user}) => {
-    const columnsNames = [
-        'nazwa schematu', 'data utworzenia', 'edycja', 'zwiń/rozwiń'
-    ];
-    const sheetsColumnsNames = [
-        'arkusz 1', 'arkusz 2', 'ilość rekordów w arkuszu 1 z dopasowaniem do arkusza 2',
-        'ilość rekordów w arkuszu 2 z dopasowaniem do arkusza 1', 'opcje'
-    ];
+const MySchemasTable = (props) => {
+    const {schemas, setUpdateSchemas, user,
+        getFileName,getFileRowCount, sheetsVisible,
+        handleSheetsVisibilityChange,
+        chooseSheetsModalVisible, setChooseSheetsModalVisible,
+        columnsNames, sheetsColumnsNames,
+        chooseSheetsSchemaId, setChooseSheetsSchemaId} = props;
 
     const [schemeToAssignToTeamId, setSchemeToAssignToTeamId] = useState(null);
     const [assignSchemeToTeamModalVisible, setAssignSchemeToTeamModalVisible] = useState(false);
@@ -24,44 +24,6 @@ const MySchemasTable = ({schemas, allFiles, setUpdateSchemas, user}) => {
     const [deleteSchemeModalVisible, setDeleteSchemeModalVisible] = useState(false);
     const [detachSheetFromSchemaId, setDetachSheetFromSchemaId] = useState(null);
     const [detachSheetFromSchemaModalVisible, setDetachSheetFromSchemaModalVisible] = useState(false);
-    const [sheetsVisible, setSheetsVisible] = useState([]);
-    const [chooseSheetsModalVisible, setChooseSheetsModalVisible] = useState(false);
-    const [chooseSheetsSchemaId, setChooseSheetsSchemaId] = useState(null);
-
-    useEffect(() => {
-        if(schemas) {
-            setSheetsVisible(Object.entries(schemas).map(() => false));
-        }
-    }, [schemas]);
-
-    useEffect(() => {
-        if(chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1) {
-            setTimeout(() => {
-                setChooseSheetsSchemaId(null);
-            }, 3000);
-        }
-    }, [chooseSheetsSchemaId]);
-
-    const handleSheetsVisibilityChange = (i, value) => {
-        setSheetsVisible(prevState => (prevState.map((item, index) => {
-            if(i === index) return value;
-            else return item;
-        })));
-    }
-
-    const getFileName = (id) => {
-        const file = allFiles.find((item) => (item.id === id));
-
-        if(file) return file.filename;
-        else return '';
-    }
-
-    const getFileRowCount = (id) => {
-        const file = allFiles.find((item) => (item.id === id));
-
-        if(file) return file.row_count;
-        else return '';
-    }
 
     return <div className="teamTable teamTable--schemas w">
         {assignSchemeToTeamModalVisible ? <DecisionModal closeModal={() => { setAssignSchemeToTeamModalVisible(false); }}
@@ -217,4 +179,4 @@ const MySchemasTable = ({schemas, allFiles, setUpdateSchemas, user}) => {
     </div>
 };
 
-export default MySchemasTable;
+export default withSchemasTable(MySchemasTable);

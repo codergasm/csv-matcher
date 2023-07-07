@@ -23,12 +23,12 @@ import convertColumnToNumber from "../helpers/convertColumnToNumber";
 import ButtonSimple from "./ButtonSimple";
 import OverrideMatchModal from "./OverrideMatchModal";
 import DeleteMatchesModal from "./DeleteMatchesModal";
-import Row from "./Row";
-import Select from "react-select";
 import MatchTypeSelect from "./MatchTypeSelect";
+import {getSchemaById} from "../api/schemas";
+import MatchFunctionSelect from "./MatchFunctionSelect";
 
 const RelationSheetView = () => {
-    const { dataSheet, relationSheet } = useContext(AppContext);
+    const { dataSheet, relationSheet, currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns,
         manuallyCorrelatedRows, selectList, priorities, schemaCorrelatedRows,
         relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
@@ -144,19 +144,46 @@ const RelationSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             if(!relationSheetColumnsVisibility?.length) {
-                setRelationSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+                if(currentSchemaId > 0) {
+                    getSchemaById(currentSchemaId)
+                        .then((res) => {
+                            if(res?.data) {
+                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).relationSheetColumnsVisibility;
+
+                                if(columnsNames.length === columnsVisibilityFromDatabase.length) {
+                                    setRelationSheetColumnsVisibility(columnsVisibilityFromDatabase);
+                                }
+                                else {
+                                    setDefaultRelationSheetColumnsVisibility();
+                                }
+                            }
+                            else {
+                                setDefaultRelationSheetColumnsVisibility();
+                            }
+                        })
+                        .catch(() => {
+                            setDefaultRelationSheetColumnsVisibility();
+                        });
+                }
+                else {
+                    setDefaultRelationSheetColumnsVisibility();
+                }
             }
             if(!columnsSorting?.length) {
                 setColumnsSorting(columnsNames.map(() => (0)));
             }
         }
-    }, [columnsNames]);
+    }, [columnsNames, currentSchemaId]);
 
     useEffect(() => {
         if(relationSheetColumnsVisibility) {
             setMinColumnWidth(125 / (relationSheetColumnsVisibility.filter((item) => (item)).length));
         }
     }, [relationSheetColumnsVisibility]);
+
+    const setDefaultRelationSheetColumnsVisibility = () => {
+        setRelationSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+    }
 
     const handleExportColumnsChange = (i) => {
         if(i === -2) {
@@ -371,7 +398,10 @@ const RelationSheetView = () => {
         {deleteMatchesModalVisible ? <DeleteMatchesModal closeModal={() => { setDeleteMatchesModalVisible(false); }} /> : ''}
 
         <div className="flex flex--w flex--relationButtons">
-            <MatchTypeSelect />
+            <div className="flex">
+                <MatchTypeSelect />
+                <MatchFunctionSelect />
+            </div>
 
             <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
                 Automatycznie dopasuj

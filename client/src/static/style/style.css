@@ -2619,9 +2619,18 @@ input[type=number] {
 }
 
 .flex--relationButtons {
-    max-width: 800px;
     position: relative;
     overflow: visible;
+}
+
+.flex--relationButtons > .flex {
+    width: 60%;
+    max-width: 600px;
+    justify-content: flex-start;
+}
+
+.flex--relationButtons > .flex > *:first-child {
+    margin-right: 60px;
 }
 
 .matchTypeSelectLabel {

@@ -1,5 +1,5 @@
 import React from 'react';
-import 'react-tippy/dist/tippy.css'
+import 'react-tippy/dist/tippy.css';
 import './static/style/style.css';
 import axios from "axios";
 import { BrowserRouter as Router, Route } from 'react-router-dom';

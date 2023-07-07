@@ -6,13 +6,14 @@ import ButtonSimple from "./ButtonSimple";
 import CellsFormatModal from "./CellsFormatModal";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import {AppContext} from "../pages/CorrelationPage";
+import {getSchemaById} from "../api/schemas";
 
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = () => {
     const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility } = useContext(ViewContext);
-    const { dataSheet } = useContext(AppContext);
+    const { currentSchemaId } = useContext(AppContext);
 
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
@@ -30,10 +31,33 @@ const OutputSheetView = () => {
     useEffect(() => {
         if(columnsNames?.length) {
             if(!outputSheetColumnsVisibility?.length) {
-                setOutputSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+                if(currentSchemaId > 0) {
+                    getSchemaById(currentSchemaId)
+                        .then((res) => {
+                            if(res?.data) {
+                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).outputSheetColumnsVisibility;
+
+                                if(columnsNames.length === columnsVisibilityFromDatabase?.length) {
+                                    setOutputSheetColumnsVisibility(columnsVisibilityFromDatabase);
+                                }
+                                else {
+                                    setDefaultOutputSheetColumnsVisibility();
+                                }
+                            }
+                            else {
+                                setDefaultOutputSheetColumnsVisibility();
+                            }
+                        })
+                        .catch(() => {
+                            setDefaultOutputSheetColumnsVisibility();
+                        });
+                }
+                else {
+                    setDefaultOutputSheetColumnsVisibility();
+                }
             }
         }
-    }, [columnsNames]);
+    }, [columnsNames, currentSchemaId]);
 
     useEffect(() => {
         if(outputSheet?.length) {
@@ -45,6 +69,10 @@ const OutputSheetView = () => {
     useEffect(() => {
         setMinColumnWidth(100 / (outputSheetExportColumns.filter((item) => (item)).length));
     }, [outputSheetExportColumns]);
+
+    const setDefaultOutputSheetColumnsVisibility = () => {
+        setOutputSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+    }
 
     const handleOutputSheetExportChange = (i) => {
         if(i === -2) {
