@@ -1,13 +1,13 @@
 describe('Change password', () => {
   it('Change password', () => {
-    const oldPassword = 'Wujas;1234';
-    const newPassword = 'Wujas;123';
-    const email = 'sajmon0031@gmail.com';
+    const oldPassword = 'Wujas;123';
+    const newPassword = 'Wujas;1234';
+    const email = 'new_account@gmail.com';
 
     // Login
     cy.visit('/zaloguj-sie');
 
-    cy.get('input[type=email]').type('sajmon0031@gmail.com');
+    cy.get('input[type=email]').type(email);
     cy.get('input[type=password]').type(oldPassword);
 
     cy.get('.btn--submitForm').click();
@@ -46,5 +46,18 @@ describe('Change password', () => {
     cy.get('.btn--submitForm').click();
 
     cy.url().should('include', '/home');
+
+    // Change password back to old
+    cy.visit('/zmien-haslo');
+    cy.get('input')
+        .then((items) => {
+          cy.get(items[0]).type(newPassword);
+          cy.get(items[1]).type(oldPassword);
+          cy.get(items[2]).type(oldPassword);
+
+          cy.get('.btn--submitForm').click();
+
+          cy.get('.afterRegister').should('exist');
+        });
   });
 })
