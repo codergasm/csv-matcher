@@ -55,15 +55,16 @@ export class AppService {
         return result;
     }
 
-    getSimilarityFunction(type, a, b) {
+    getSimilarityFunction(type: number, a, b) {
         if(type === 0) {
             return stringSimilarity(a, b);
         }
         else if(type === 1) {
-            return this.findLongestSubstring(a, b) / b.length;
+            const res = this.findLongestSubstring(a, b);
+            return res / a.length;
         }
         else {
-            return this.findLongestSubstring(a, b) / a.length;
+            return this.findLongestSubstring(a, b) / b.length;
         }
     }
 
@@ -85,7 +86,7 @@ export class AppService {
     }
 
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
-                      isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) {
+                      isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength, similarityFunctionType: number) {
       if(isCorrelationMatrixEmpty === 'true') {
           return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
       }
@@ -96,7 +97,7 @@ export class AppService {
           // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
           const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
                                                                     dataSheet, relationSheet,[],
-                                                       true, true);
+                                                       true, similarityFunctionType);
 
           await this.finishCorrelationJob(jobId, relationSheet.length);
 
@@ -123,7 +124,7 @@ export class AppService {
   }
 
     async getSimilarityScores(jobId, conditions, logicalOperators, correlationMatrix, dataSheet,
-                        relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect, similarityFunctionType) {
+                        relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect, similarityFunctionType: number) {
         let allSimilarities = [];
         let i = 0;
 
@@ -213,7 +214,7 @@ export class AppService {
     }
 
     async getCorrelationMatrix(jobId, priorities, correlationMatrix, dataSheet, relationSheet,
-                               indexesOfCorrelatedRows, overrideAllRows, similarityFunctionType, fromSelect = false) {
+                               indexesOfCorrelatedRows, overrideAllRows, similarityFunctionType: number, fromSelect = false) {
         let correlationMatrixTmp = [];
         let priorityIndex = 0;
 

@@ -309,7 +309,7 @@ const CorrelationView = ({user}) => {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
                     false, showInSelectMenuColumns,
-                    dataSheet.length, relationSheet.length)
+                    dataSheet.length, relationSheet.length, matchFunction)
                     .then((res) => {
                         if(res?.data) {
                             if(selectList?.length) {

@@ -8,7 +8,8 @@ const getProgressByJobId = (jobId) => {
 }
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
-                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength) => {
+                       isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength,
+                       similarityFunctionType) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -25,6 +26,7 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     formData.append('showInSelectMenuColumns', JSON.stringify(showInSelectMenuColumns));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
+    formData.append('similarityFunctionType', similarityFunctionType);
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, ''));

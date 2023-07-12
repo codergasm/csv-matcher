@@ -21,7 +21,8 @@ export class AppController {
         body.dataFilePath ? body.dataFilePath : files[0],
         body.relationFilePath ? body.relationFilePath : files[body.dataFilePath ? 0 : 1],
         body.dataDelimiter, body.relationDelimiter,
-        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength, body.relationSheetLength);
+        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength,
+        body.relationSheetLength, parseInt(body.similarityFunctionType));
   }
 
   @UseGuards(JwtAuthGuard)
@@ -40,6 +41,6 @@ export class AppController {
         dataFileDelimiter, relationFileDelimiter,
         priorities, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType);
+        manuallyCorrelatedRows, matchThreshold, userId, parseInt(similarityFunctionType));
   }
 }
