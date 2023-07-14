@@ -43,6 +43,9 @@ const LoggedUserHeader = () => {
                 <HeaderMenuLink href={'/zespol'}>
                     Zespół
                 </HeaderMenuLink>
+                <HeaderMenuLink href={'/plany'}>
+                    Plany
+                </HeaderMenuLink>
 
                 <button className="header__profileImage"
                         onClick={toggleDropdownMenu}>

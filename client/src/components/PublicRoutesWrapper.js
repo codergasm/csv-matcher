@@ -6,6 +6,7 @@ import VerificationPage from "../pages/VerificationPage";
 import {authUser} from "../api/users";
 import LoadingPage from "../pages/LoadingPage";
 import redirectToHomepage from "../helpers/redirectToHomepage";
+import PlansPage from "../pages/PlansPage";
 
 const PublicRoutesWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -24,6 +25,9 @@ const PublicRoutesWrapper = ({page}) => {
             case 4:
                 setRender(<VerificationPage />);
                 break;
+            case 5:
+                setRender(<PlansPage />);
+                break;
             default:
                 redirectToHomepage();
         }
@@ -34,7 +38,12 @@ const PublicRoutesWrapper = ({page}) => {
             authUser()
                 .then((res) => {
                     if(res?.status === 201) {
-                        window.location = '/home';
+                        if(page !== 5) {
+                            window.location = '/home';
+                        }
+                        else {
+                            selectPage();
+                        }
                     }
                     else {
                         selectPage();
