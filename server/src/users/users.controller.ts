@@ -104,4 +104,10 @@ export class UsersController {
         const { userId, teamId } = body;
         return this.usersService.rejectJoinRequest(userId, teamId);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/getUserTeamPlan/:email')
+    getUserTeamPlan(@Param('email') email) {
+        return this.usersService.getUserTeamPlan(email);
+    }
 }

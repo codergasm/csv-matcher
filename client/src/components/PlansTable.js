@@ -2,10 +2,10 @@ import React from 'react';
 import PlansTableLegend from "./PlansTableLegend";
 import PlansTableItem from "./PlansTableItem";
 
-const plansColors = ['#508345', 'brown', 'silver', 'gold'];
+const plansColors = ['#508345', '#CD7F32', 'silver', 'gold'];
 
 const PlansTable = ({plans}) => {
-    return <div className="plansTable w flex">
+    return <div className="plansTable w-small flex">
         <div className="plansTable__left">
             <div className="plansTable__left__heading">
                 <h3 className="plansTable__left__header">

@@ -25,9 +25,6 @@ const App = () => {
     <Route path="/weryfikacja">
       <PublicRoutesWrapper page={4} />
     </Route>
-    <Route path="/plany">
-      <PublicRoutesWrapper page={5} />
-    </Route>
 
     {/* Logged user */}
     <Route path="/home">
@@ -51,8 +48,14 @@ const App = () => {
     <Route path="/podglad-pliku">
       <LoggedUserWrapper page={7} />
     </Route>
-    <Route path="/transakcje">
+    <Route path="/plany">
       <LoggedUserWrapper page={8} />
+    </Route>
+    <Route path="/subskrypcja">
+      <LoggedUserWrapper page={9} />
+    </Route>
+    <Route path="/transakcje">
+      <LoggedUserWrapper page={10} />
     </Route>
 
     {/* Admin */}

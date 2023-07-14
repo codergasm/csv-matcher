@@ -276,4 +276,38 @@ export class UsersService {
             })
             .execute();
     }
+
+    async getUserTeamPlan(email) {
+        const userRow = await this.usersRepository.findOneBy({
+            email
+        });
+
+        if(userRow) {
+            const teamId = userRow.team_id;
+
+            if(teamId) {
+                const teamRow = await this.teamsRepository.findOneBy({
+                    id: teamId
+                });
+
+                if(teamId) {
+                    return {
+                        plan: teamRow.current_subscription_plan_id,
+                        deadline: teamRow.current_subscription_plan_deadline
+                    }
+                }
+                else {
+                    throw new HttpException('Nie znaleziono zespołu użytkownika', 400);
+                }
+            }
+            else {
+                return {
+                    plan: 1
+                }
+            }
+        }
+        else {
+            throw new HttpException('Nie znaleziono użytkownika o podanym id', 400);
+        }
+    }
 }

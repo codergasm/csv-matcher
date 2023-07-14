@@ -14,4 +14,8 @@ export class SubscriptionsService {
     getAllSubscriptionPlans() {
         return this.subscriptionTypesRepository.find();
     }
+
+    getPlanById(id) {
+        return this.subscriptionTypesRepository.findOneBy({id});
+    }
 }

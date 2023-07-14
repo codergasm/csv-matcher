@@ -29,6 +29,10 @@
     max-width: 1600px;
 }
 
+.w-small {
+    max-width: 1200px;
+}
+
 .flex {
     display: flex;
     justify-content: space-between;
@@ -1580,7 +1584,7 @@ input[type=number] {
     bottom: -10px;
     right: 0;
     transform: translate(0, 100%);
-    width: 160px;
+    width: 220px;
     height: auto;
     background: #fff;
 }
@@ -2647,6 +2651,14 @@ input[type=number] {
     margin: 90px auto 50px;
 }
 
+.plansTable__plans__item {
+    position: relative;
+}
+
+.plansTable__plans__item--current {
+    border: 3px solid var(--primary);
+}
+
 .plansTable__plans,
 .plansTable {
    align-items: flex-start;
@@ -2663,7 +2675,7 @@ input[type=number] {
 }
 
 .plansTable__left__header {
-    font-size: 36px;
+    font-size: 32px;
 }
 
 .plansTable__left__text {
@@ -2764,7 +2776,7 @@ input[type=number] {
 }
 
 .plansTable__cell--large {
-    height: 200px;
+    height: 230px;
 }
 
 .btn--buyPlan {
@@ -2775,13 +2787,194 @@ input[type=number] {
     width: 80%;
 }
 
+.btn--buyPlan:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
 .buyPlanWrapper {
     margin-top: 30px;
     background: #fff;
     border-top: 2px solid #313131;
-    padding: 20px 0;
+    height: 120px;
 }
 
 .container--plans {
     padding-top: 40px;
+}
+
+.dropdownMenu__plan {
+    padding: 15px;
+    background: #508345;
+    display: block;
+}
+
+.dropdownMenu__plan,
+.dropdownMenu__plan * {
+    text-decoration: none !important;
+    outline: none !important;
+}
+
+.dropdownMenu__plan__name span {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.dropdownMenu__plan__deadline span {
+    font-size: 13px;
+}
+
+.dropdownMenu__plan__deadline {
+    margin-top: 5px;
+}
+
+.dropdownMenu__plan span:first-of-type {
+    padding-right: 4px;
+}
+
+.dropdownMenu__plan span {
+    color: #fff;
+}
+
+.plansTable__plans__item__currentPlanInfo {
+    position: absolute;
+    top: -30px;
+    height: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    border-radius: 8px;
+    color: #fff;
+    background: var(--primary);
+    font-weight: 700;
+}
+
+.plans__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 40px auto;
+    max-width: 1000px;
+}
+
+.plans__info * {
+    text-align: center;
+}
+
+.plans__info__header {
+    font-size: 26px;
+    margin-bottom: 30px;
+}
+
+.plans__info__text {
+    margin-bottom: 15px;
+}
+
+.btn--alertNotTeamMember {
+    width: 100%;
+    height: 50px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn--alertNotTeamMember:hover {
+    background: var(--hover) !important;
+}
+
+.modal--alertNotTeamMember .modal__inner {
+    max-height: 500px;
+}
+
+.modal--alertNotTeamOwner .modal__inner {
+    max-height: 400px;
+}
+
+.homepage__subscription {
+
+}
+
+.subscription__inner {
+    padding: 30px;
+    flex-direction: column;
+}
+
+.subscription__inner * {
+    text-align: center;
+}
+
+.subscription__inner__header {
+    font-size: 32px;
+}
+
+.subscription__inner__buttons {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn--endDate {
+    background: transparent;
+    height: 30px;
+    padding: 3px 15px;
+    margin: 20px auto 30px;
+    border-radius: 30px;
+    color: #313131;
+    font-size: 13px;
+    border: 1px solid var(--primary);
+}
+
+.btn--endDate:not(.btn--endDate--active):hover {
+    background: #efefef !important;
+}
+
+.btn--endDate--active {
+    background: var(--primary);
+    color: #fff;
+}
+
+.subscription__inner__info {
+    font-style: italic;
+    margin: 10px auto 30px;
+    max-width: 500px;
+    width: 90%;
+    font-size: 13px;
+}
+
+.subscription__inner__planName {
+    padding: 30px;
+    background: #efefef;
+    border-radius: 10px;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 20px auto;
+    min-width: 300px;
+}
+
+.subscription__inner__amountToPay {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.subscription__inner__amountToPay span:last-of-type {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.subscription__inner__amountToPay > span:first-of-type {
+    color: var(--primary);
+    font-size: 28px;
+}
+
+.btn--makePayment {
+    margin: 20px auto 0;
+    height: 50px;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 50px;
 }

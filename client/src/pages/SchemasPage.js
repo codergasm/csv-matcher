@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getSchemasByUser} from "../api/schemas";
 import MySchemasTable from "../components/MySchemasTable";
 import {groupBy} from "../helpers/others";
 import {getFilesByUser} from "../api/files";
 import TeamSchemasTable from "../components/TeamSchemasTable";
 import PageHeader from "../components/PageHeader";
+import {UserContext} from "../components/LoggedUserWrapper";
 
-const SchemasPage = ({user}) => {
+const SchemasPage = () => {
+    const { user } = useContext(UserContext);
+
     const [userSchemas, setUserSchemas] = useState([])
     const [teamSchemas, setTeamSchemas] = useState([]);
     const [userFiles, setUserFiles] = useState([]);

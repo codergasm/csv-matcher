@@ -1,4 +1,4 @@
-import {Controller, Get} from '@nestjs/common';
+import {Controller, Get, Param} from '@nestjs/common';
 import {SubscriptionsService} from "./subscriptions.service";
 
 @Controller('subscriptions')
@@ -11,5 +11,10 @@ export class SubscriptionsController {
     @Get('/getAll')
     getAllSubscriptionPlans() {
         return this.subscriptionsService.getAllSubscriptionPlans();
+    }
+
+    @Get('/getPlanById/:id')
+    getPlanById(@Param('id') id) {
+        return this.subscriptionsService.getPlanById(id);
     }
 }

@@ -5,6 +5,7 @@ import {authUser, getUserData} from "../api/users";
 import redirectToHomepage from "../helpers/redirectToHomepage";
 import LoggedUserHeader from "../components/LoggedUserHeader";
 import PageHeader from "../components/PageHeader";
+import PlansPageInfo from "../components/PlansPageInfo";
 
 const PlansPage = () => {
     const [plans, setPlans] = useState([]);
@@ -59,6 +60,7 @@ const PlansPage = () => {
                 </PageHeader>
 
                 <PlansTable plans={plans} />
+                <PlansPageInfo />
             </div>
         </div>
     </>

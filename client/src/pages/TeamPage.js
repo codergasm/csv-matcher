@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getTeamById} from "../api/teams";
 import LoadingPage from "./LoadingPage";
 import UserNotInTeamView from "../components/UserNotInTeamView";
@@ -6,8 +6,11 @@ import {isObjectEmpty} from "../helpers/others";
 import TeamView from "../components/TeamView";
 import {getUserWaitingJoinTeamRequest} from "../api/users";
 import WaitingForRequestAcceptView from "../components/WaitingForRequestAcceptView";
+import {UserContext} from "../components/LoggedUserWrapper";
 
-const TeamPage = ({user}) => {
+const TeamPage = () => {
+    const { user } = useContext(UserContext);
+
     const [team, setTeam] = useState({});
     const [render, setRender] = useState(<LoadingPage />);
 

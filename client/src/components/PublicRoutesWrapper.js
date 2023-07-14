@@ -38,12 +38,7 @@ const PublicRoutesWrapper = ({page}) => {
             authUser()
                 .then((res) => {
                     if(res?.status === 201) {
-                        if(page !== 5) {
-                            window.location = '/home';
-                        }
-                        else {
-                            selectPage();
-                        }
+                        window.location = '/home';
                     }
                     else {
                         selectPage();

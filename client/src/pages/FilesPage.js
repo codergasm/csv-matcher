@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getFilesByUser} from "../api/files";
 import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
 import PageHeader from "../components/PageHeader";
 import FileUploader from "../components/FileUploader";
+import {UserContext} from "../components/LoggedUserWrapper";
 
-const FilesPage = ({user}) => {
+const FilesPage = () => {
+    const { user } = useContext(UserContext);
+
     const [userFiles, setUserFiles] = useState([]);
     const [teamFiles, setTeamFiles] = useState([]);
     const [updateFiles, setUpdateFiles] = useState(false);

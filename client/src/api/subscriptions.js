@@ -4,4 +4,8 @@ const getAllSubscriptionPlans = () => {
     return axios.get('/subscriptions/getAll');
 }
 
-export { getAllSubscriptionPlans }
+const getPlanById = (id) => {
+    return axios.get(`/subscriptions/getPlanById/${id}`);
+}
+
+export { getAllSubscriptionPlans, getPlanById }

@@ -1,13 +1,44 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import PlansTableItemHeading from "./PlansTableItemHeading";
 import PlansTableCell from "./PlansTableCell";
+import {UserContext} from "./LoggedUserWrapper";
+import AlertNotTeamOwnerModal from "./AlertNotTeamOwnerModal";
+import AlertNotTeamMemberModal from "./AlertNotTeamMemberModal";
 
 const PlansTableItem = ({item, index, color}) => {
-    const choosePlan = () => {
+    const { user, plan } = useContext(UserContext);
 
+    const [isCurrentPlan, setIsCurrentPlan] = useState(false);
+    const [alertNotTeamOwnerVisible, setAlertNotTeamOwnerVisible] = useState(false);
+    const [alertNotTeamMemberVisible, setAlertNotTeamMemberVisible] = useState(false);
+
+    useEffect(() => {
+        if(plan?.id === item?.id) {
+            setIsCurrentPlan(true);
+        }
+    }, [plan, item]);
+
+    const choosePlan = () => {
+        if(user?.isTeamOwner) {
+            window.location = `/subskrypcja?id=${plan.id}`;
+        }
+        else if(user?.teamId) {
+            setAlertNotTeamOwnerVisible(true);
+        }
+        else {
+            setAlertNotTeamMemberVisible(true);
+        }
     }
 
-    return <div className="plansTable__plans__item" key={index}>
+    return <div className={isCurrentPlan ? "plansTable__plans__item plansTable__plans__item--current" : "plansTable__plans__item"}
+                key={index}>
+        {alertNotTeamMemberVisible ? <AlertNotTeamMemberModal closeModal={() => { setAlertNotTeamMemberVisible(false); }} /> : ''}
+        {alertNotTeamOwnerVisible ? <AlertNotTeamOwnerModal closeModal={() => { setAlertNotTeamOwnerVisible(false); }} /> : ''}
+
+        {isCurrentPlan ? <p className="plansTable__plans__item__currentPlanInfo center shadow">
+            Twój plan
+        </p> : ''}
+
         <PlansTableItemHeading name={item.name}
                                color={color}
                                price={item.price_pln}
@@ -40,11 +71,11 @@ const PlansTableItem = ({item, index, color}) => {
             </PlansTableCell>
         </div>
 
-        <div className="buyPlanWrapper">
-            <button onClick={choosePlan}
-               className="btn btn--buyPlan center">
+        <div className="buyPlanWrapper center">
+            {index !== 0 ? <button onClick={choosePlan}
+                                   className="btn btn--buyPlan center">
                 Wybierz
-            </button>
+            </button> : ''}
         </div>
     </div>
 };

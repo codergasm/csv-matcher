@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorrelationView from "../components/CorrelationView";
 import {getSchemasByUser} from "../api/schemas";
 import {getFileById} from "../api/files";
+import {UserContext} from "../components/LoggedUserWrapper";
 
 const AppContext = React.createContext(null);
 
-const CorrelationPage = ({user}) => {
+const CorrelationPage = () => {
+    const { user } = useContext(UserContext);
+
     const [currentView, setCurrentView] = useState(0);
     const [mainComponent, setMainComponent] = useState(<LoadFilesView />);
     const [dataSheet, setDataSheet] = useState({});
