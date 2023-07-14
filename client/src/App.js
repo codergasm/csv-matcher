@@ -47,9 +47,6 @@ const App = () => {
     <Route path="/podglad-pliku">
       <LoggedUserWrapper page={7} />
     </Route>
-    <Route path="/test">
-
-    </Route>
   </Router>
 }
 

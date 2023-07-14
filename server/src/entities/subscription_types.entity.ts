@@ -2,6 +2,9 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('subscription_types')
 export class SubscriptionTypesEntity {
+    @Column()
+    is_default_and_free: boolean;
+
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -18,20 +21,26 @@ export class SubscriptionTypesEntity {
     price_usd: number;
 
     @Column()
-    users_per_team_limit: number;
+    users_per_team: number;
 
     @Column()
-    files_per_team_limit: number;
+    files_per_team: number;
 
     @Column()
-    file_max_row_per_team_limit: number;
+    rows_per_file: number;
 
     @Column()
-    file_max_filesize_per_team_limit: number;
+    columns_per_file: number;
 
     @Column()
-    match_schemas_per_team_limit: number;
+    size_per_file: number;
 
     @Column()
-    automatic_matched_rows_per_team_limit: number;
+    size_per_team: number;
+
+    @Column()
+    schemas_per_team: number;
+
+    @Column()
+    matches_per_month: number;
 }
