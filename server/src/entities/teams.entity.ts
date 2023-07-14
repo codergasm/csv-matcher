@@ -16,4 +16,19 @@ export class TeamsEntity {
 
     @Column()
     owner_id: number;
+
+    @Column({
+        nullable: true
+    })
+    current_subscription_plan_id: number;
+
+    @Column({
+        nullable: true
+    })
+    current_subscription_plan_deadline: Date;
+
+    @Column({
+        nullable: true
+    })
+    subscription_renewal: Date;
 }
