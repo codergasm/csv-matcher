@@ -680,6 +680,10 @@ option {
     font-size: 15px;
 }
 
+.select--matchFunction {
+    margin-left: 0;
+}
+
 .priorities__item__condition__header {
     display: flex;
     justify-content: flex-start;
@@ -1149,6 +1153,10 @@ option {
     background: #dd0000;
 }
 
+.modal__slider__value__percent {
+    padding-top: 20px;
+}
+
 .input--matchThreshold {
     color: var(--primary);
     font-size: 32px;
@@ -1162,6 +1170,7 @@ option {
     align-items: center;
     width: 100px;
     text-align: center;
+    margin-top: 20px;
     outline: none !important;
 }
 
@@ -2536,6 +2545,10 @@ input[type=number] {
 .sheetWrapper {
     position: relative;
     width: 100%;
+}
+
+.regular {
+    font-weight: 400;
 }
 
 .header__menu {

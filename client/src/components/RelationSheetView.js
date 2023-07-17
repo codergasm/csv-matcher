@@ -480,7 +480,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         <div className="flex flex--w flex--relationButtons">
             <div className="flex">
                 <MatchTypeSelect />
-                <MatchFunctionSelect />
             </div>
 
             <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>

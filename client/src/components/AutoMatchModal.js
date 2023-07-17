@@ -14,8 +14,8 @@ const matchFunctions = ['Dopasowanie stringów',
 
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility}) => {
     const { relationSheet } = useContext(AppContext);
-    const { priorities, setPriorities, matchType, setMatchType, matchFunction, setMatchFunction, progressCount,
-        correlate, correlationStatus, overrideAllRows, setOverrideAllRows, matchThreshold, setMatchThreshold,
+    const { priorities, setPriorities, matchType, setMatchType, progressCount,
+        correlate, correlationStatus, overrideAllRows, setOverrideAllRows,
         avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows } = useContext(ViewContext);
 
     const [loading, setLoading] = useState(false);
@@ -32,23 +32,22 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
     /*
         Priorities:
         [
-            {
-                conditions: [
-                    {
-                        dataSheet: 'name',
-                        relationSheet: 'product_name'
-                    },
-                    {
-                        dataSheet: 'index',
-                        relationSheet: 'inx'
-                    },
-                    {
-                        dataSheet: 'price',
-                        relationSheet: 'price'
-                    }
-                ],
-                logicalOperators: [1, 0]
-            }
+            [
+                {
+                    dataSheet: 'name',
+                    relationSheet: 'product_name',
+                    required: 0,
+                    matchThreshold: 60,
+                    matchFunction: 2
+                },
+                {
+                    dataSheet: 'index',
+                    relationSheet: 'inx',
+                    required: 1,
+                    matchThreshold: 100,
+                    matchFunction: 0
+                }
+            ]
         ]
      */
 
@@ -84,29 +83,29 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
     const addPriority = () => {
         setPriorities(prevState => {
-            return [...prevState, {
-                conditions: [
-                    {
-                        dataSheet: dataSheetColumns[1],
-                        relationSheet: relationSheetColumns[1]
-                    }
-                ],
-                logicalOperators: []
-            }];
+            return [...prevState, [
+                {
+                    dataSheet: dataSheetColumns[1],
+                    relationSheet: relationSheetColumns[1],
+                    matchThreshold: 90,
+                    matchFunction: 0,
+                    required: 1
+                }
+            ]];
         });
     }
 
-    const addCondition = (priorityIndex, logicalOperator) => {
+    const addCondition = (priorityIndex) => {
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(priorityIndex === index) {
-                    return {
-                        conditions: [...item.conditions, {
-                            dataSheet: dataSheetColumns[1],
-                            relationSheet: relationSheetColumns[1]
-                        }],
-                        logicalOperators: [...item.logicalOperators, logicalOperator]
-                    }
+                    return [...item, {
+                        dataSheet: dataSheetColumns[1],
+                        relationSheet: relationSheetColumns[1],
+                        matchThreshold: 90,
+                        matchFunction: 0,
+                        required: 1
+                    }]
                 }
                 else {
                     return item;
@@ -119,20 +118,17 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
-                    return {
-                        ...item,
-                        conditions: item.conditions.map((item, index) => {
-                            if(index === condition) {
-                                return {
-                                    ...item,
-                                    [sheet]: value
-                                }
+                    return item.map((item, index) => {
+                        if(index === condition) {
+                            return {
+                                ...item,
+                                [sheet]: value
                             }
-                            else {
-                                return item;
-                            }
-                        })
-                    }
+                        }
+                        else {
+                            return item;
+                        }
+                    });
                 }
                 else {
                     return item;
@@ -141,26 +137,26 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
         })
     }
 
-    const updateLogicalOperator = (priority, condition, value) => {
-       setPriorities(prevState => {
+    const updateConditionProperty = (priority, condition, name, val) => {
+        setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
-                    return {
-                        ...item,
-                        logicalOperators: item.logicalOperators.map((item, index) => {
-                            if(index === condition) {
-                                return value;
+                    return item.map((item, index) => {
+                        if(index === condition) {
+                            return {
+                                ...item,
+                                [name]: val
                             }
-                            else {
-                                return item;
-                            }
-                        })
-                    }
+                        }
+                        else {
+                            return item;
+                        }
+                    })
                 }
                 else {
                     return item;
                 }
-            })
+            });
         });
     }
 
@@ -174,30 +170,15 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
-                    return {
-                        logicalOperators: item.logicalOperators.filter((item, index) => {
-                            return index !== condition;
-                        }),
-                        conditions: item.conditions.filter((item, index) => {
-                            return index !== condition;
-                        })
-                    }
+                    return item.filter((item, index) => {
+                        return index !== condition;
+                    });
                 }
                 else {
                     return item;
                 }
             });
         })
-    }
-
-    const handleMatchThresholdChange = (val) => {
-        if((parseInt(val) >= 0 && parseInt(val) <= 100)) {
-            setMatchThreshold(parseInt(val));
-        }
-
-        if(!val) {
-            setMatchThreshold('');
-        }
     }
 
     useEffect(() => {
@@ -260,40 +241,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                     })}
 
                     <h3 className="modal__header">
-                        Funkcja dopasowania
-                    </h3>
-                    {matchFunctions.map((item, index) => {
-                        return <label className="modal__label"
-                                      key={index}>
-                            <button className={matchFunction === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { setMatchFunction(index); }}>
-
-                            </button>
-                            {item}
-                        </label>
-                    })}
-
-                    <h3 className="modal__header">
-                        Przypisuj, jeśli dopasowanie procentowe jest większe niż
-                    </h3>
-
-                    <div className="modal__slider">
-                        <ReactSlider className="horizontal-slider"
-                                     thumbClassName="thumb"
-                                     trackClassName="track"
-                                     value={!isNaN(matchThreshold) ? matchThreshold : 0}
-                                     onChange={setMatchThreshold} />
-
-                        <div className="modal__slider__value">
-                            <input className="input--matchThreshold"
-                                   type="number"
-                                   value={matchThreshold}
-                                   onChange={(e) => { handleMatchThresholdChange(e.target.value); }} /> %
-                        </div>
-                    </div>
-
-                    <h3 className="modal__header">
-                        Priorytety dopasowania
+                        Kroki dopasowania
                     </h3>
 
                     <div className="priorities">
@@ -309,10 +257,14 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                 </button>
 
                                 <h3 className="priorities__item__header">
-                                    Priorytet {index+1}
+                                    Krok {index+1}
                                 </h3>
 
-                                {item.conditions.map((item, index) => {
+                                {item.map((item, index) => {
+                                    const conditionIndex = index;
+                                    const conditionMatchFunction = item.matchFunction;
+                                    const conditionMatchThreshold = item.matchThreshold;
+
                                     return <div className="priorities__item__condition"
                                                 key={index}>
                                         <h4 className="priorities__item__condition__header">
@@ -322,6 +274,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                                 Usuń
                                             </button>
                                         </h4>
+
                                         <p className="priorities__item__condition__text">
                                             Szukaj dopasowania w kolumnie arkusza 1:
                                         </p>
@@ -331,6 +284,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                                    onChange={(e) => { updateDataSheetSearch(priorityIndex, index, e.target.value); }}
                                                    placeholder="Szukaj..." />
                                         </label>
+
                                         {dataSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
                                                                                     value={item.dataSheet}
                                                                                     onChange={(e) => { updateCondition(priorityIndex, index, 'dataSheet', e.target.value); }}>
@@ -352,6 +306,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                                    onChange={(e) => { updateRelationSheetSearch(priorityIndex, index, e.target.value); }}
                                                    placeholder="Szukaj..." />
                                         </label>
+
                                         {relationSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
                                                                                         value={item.relationSheet}
                                                                                         onChange={(e) => { updateCondition(priorityIndex, index, 'relationSheet', e.target.value); }}>
@@ -364,19 +319,57 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                             Nie znaleziono żadnych kolumn
                                         </p>}
 
-                                        {priority?.logicalOperators?.length > index ? <div className="priorities__item__condition__operator">
-                                            spójnik logiczny:
-                                            <select className="select--logicalOperator" value={priority.logicalOperators[index]}
-                                                    onChange={(e) => { updateLogicalOperator(priorityIndex, index, e.target.value); }}>
-                                                <option value={0}>i</option>
-                                                <option value={1}>lub</option>
+                                        <h3 className="priorities__item__condition__text regular">
+                                            Funkcja dopasowania
+                                        </h3>
+
+                                        <select className="select--logicalOperator select--matchFunction"
+                                                value={priority[index].matchFunction}
+                                                onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchFunction', e.target.value); }}>
+                                            {matchFunctions.map((item, index) => {
+                                                return <option key={index} value={index}>
+                                                    {item}
+                                                </option>
+                                            })}
+                                        </select>
+
+
+
+                                        <h3 className="priorities__item__condition__text regular">
+                                            Przypisuj, jeśli dopasowanie procentowe jest większe niż
+                                        </h3>
+
+                                        <div className="modal__slider">
+                                            <ReactSlider className="horizontal-slider"
+                                                         thumbClassName="thumb"
+                                                         trackClassName="track"
+                                                         value={!isNaN(conditionMatchThreshold) ? conditionMatchThreshold : 0}
+                                                         onChange={(val) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', val); }} />
+
+                                            <div className="modal__slider__value">
+                                                <input className="input--matchThreshold"
+                                                       type="number"
+                                                       value={conditionMatchThreshold}
+                                                       onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', e.target.value); }} />
+                                                <span className="modal__slider__value__percent">
+                                                    %
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {priority.length > 1 ? <div className="priorities__item__condition__operator">
+                                            warunek jest:
+                                            <select className="select--logicalOperator" value={priority[index].required}
+                                                    onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'required', e.target.value); }}>
+                                                <option value={0}>wymagany</option>
+                                                <option value={1}>opcjonalny</option>
                                             </select>
                                         </div> : ''}
                                     </div>
                                 })}
 
                                 <button className="btn btn--addCondition"
-                                        onClick={() => { addCondition(priorityIndex, 0); }}>
+                                        onClick={() => { addCondition(priorityIndex); }}>
                                     Dodaj warunek
                                 </button>
                             </div>
@@ -385,7 +378,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
                     <button className="btn btn--addPriority"
                             onClick={addPriority}>
-                        + Dodaj priorytet
+                        + Dodaj krok
                     </button>
 
                     <p className="modal__info">
