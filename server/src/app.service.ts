@@ -85,6 +85,27 @@ export class AppService {
         }
     }
 
+    transposeMatrix(matrix) {
+        if (!matrix || matrix.length === 0) {
+            return [];
+        }
+
+        const numRows = matrix.length;
+        const numCols = matrix[0].length;
+
+        const transposedMatrix = [];
+
+        for (let j = 0; j < numCols; j++) {
+            const newRow = [];
+            for (let i = 0; i < numRows; i++) {
+                newRow.push(matrix[i][j]);
+            }
+            transposedMatrix.push(newRow);
+        }
+
+        return transposedMatrix;
+    }
+
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength, similarityFunctionType: number) {
       if(isCorrelationMatrixEmpty === 'true') {
@@ -98,12 +119,13 @@ export class AppService {
           const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
                                                                     dataSheet, relationSheet,[],
                                                        true, similarityFunctionType);
+          const correlationMatrixForDataSheet = this.transposeMatrix(correlationMatrix);
 
           await this.finishCorrelationJob(jobId, relationSheet.length);
 
           try {
               // Convert correlation matrix to array of arrays of objects
-              return correlationMatrix.map((relationRowItem, relationRowIndex) => {
+              const relationSheetSelectList = correlationMatrix.map((relationRowItem, relationRowIndex) => {
                   const relationRowSimilaritiesArray = relationRowItem.map((dataRowItem, dataRowIndex) => {
                       const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
                           .toFixed(0);
@@ -114,10 +136,32 @@ export class AppService {
                           similarity: isNaN(similarity) ? 0 : similarity
                       }
                   });
+
                   return this.sortBySimilarity(relationRowSimilaritiesArray);
               });
+
+              const dataSheetSelectList = correlationMatrixForDataSheet.map((dataRowItem, dataRowIndex) => {
+                  const relationRowSimilaritiesArray = dataRowItem.map((relationRowItem, relationRowIndex) => {
+                      const similarity = correlationMatrixForDataSheet[dataRowIndex][relationRowIndex]
+                          .toFixed(0);
+
+                      return {
+                          dataRowIndex,
+                          relationRowIndex,
+                          similarity: isNaN(similarity) ? 0 : similarity
+                      }
+                  });
+
+                  return this.sortBySimilarity(relationRowSimilaritiesArray);
+              });
+
+              return {
+                  relationSheetSelectList,
+                  dataSheetSelectList
+              }
           }
           catch(e) {
+              console.log(e);
               throw new HttpException(e, 500);
           }
       }

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, forwardRef} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
 import getScrollParams from "../helpers/getScrollParams";
@@ -10,7 +10,7 @@ import {getSchemaById} from "../api/schemas";
 
 const ROWS_PER_PAGE = 20;
 
-const OutputSheetView = () => {
+const OutputSheetView = forwardRef((props, ref) => {
     const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility } = useContext(ViewContext);
     const { currentSchemaId } = useContext(AppContext);
@@ -147,7 +147,7 @@ const OutputSheetView = () => {
         return cellsHeight !== -1 ? `${cellsHeight}px` : 'unset';
     }
 
-    return <div className="sheetWrapper">
+    return <div className="sheetWrapper" ref={ref}>
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
                                                      setCellsHeight={setCellsHeight}
                                                      closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
@@ -249,6 +249,6 @@ const OutputSheetView = () => {
             })}
         </div>
     </div>
-};
+});
 
 export default OutputSheetView;

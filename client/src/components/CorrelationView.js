@@ -1,5 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
-import DataSheetView from "./DataSheetView";
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import RelationSheetView from "./RelationSheetView";
 import OutputSheetView from "./OutputSheetView";
 import {AppContext} from "../pages/CorrelationPage";
@@ -9,6 +8,7 @@ import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
 import {getSchemaById} from "../api/schemas";
 import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
 import QuickBottomInfo from "./QuickBottomInfo";
+import getMaximumInArray from "../helpers/getMaximumInArray";
 
 const ViewContext = React.createContext(null);
 
@@ -17,10 +17,13 @@ const CorrelationView = ({user}) => {
         dataSheetId, relationSheetId, dataSheetName, relationSheetName,
         dataDelimiter, relationDelimiter } = useContext(AppContext);
 
+    let dataSheetWrapper = useRef(null);
+    let relationSheetWrapper = useRef(null);
+    let outputSheetWrapper = useRef(null);
+
     // 0 - data, 1 - relation, 2 - output
     const [currentSheet, setCurrentSheet] = useState(0);
 
-    const [sheetComponent, setSheetComponent] = useState(<DataSheetView />);
     const [showInSelectMenuColumnsDataSheet, setShowInSelectMenuColumnsDataSheet] = useState([]);
     const [showInSelectMenuColumnsRelationSheet, setShowInSelectMenuColumnsRelationSheet] = useState([]);
     const [outputSheet, setOutputSheet] = useState([]);
@@ -43,9 +46,12 @@ const CorrelationView = ({user}) => {
     const [overrideAllRows, setOverrideAllRows] = useState(false);
     const [avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows] = useState(false);
     const [matchThreshold, setMatchThreshold] = useState(90);
-    const [selectList, setSelectList] = useState([]);
-    const [indexesInSelectListToOverride, setIndexesInSelectListToOverride] = useState([]);
-    const [selectListLoading, setSelectListLoading] = useState(false);
+    const [relationSheetSelectList, setRelationSheetSelectList] = useState([]);
+    const [dataSheetSelectList, setDataSheetSelectList] = useState([]);
+    const [indexesInRelationSheetSelectListToOverride, setIndexesInRelationSheetSelectListToOverride] = useState([]);
+    const [indexesInDataSheetSelectListToOverride, setIndexesInDataSheetSelectListToOverride] = useState([]);
+    const [relationSheetSelectListLoading, setRelationSheetSelectListLoading] = useState(false);
+    const [dataSheetSelectListLoading, setDataSheetSelectListLoading] = useState(false);
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
     const [dataSheetColumnsVisibility, setDataSheetColumnsVisibility] = useState([]);
@@ -61,27 +67,6 @@ const CorrelationView = ({user}) => {
             }, 5500);
         }
     }, [numberOfMatches]);
-
-    useEffect(() => {
-        switch(currentSheet) {
-            case 0:
-                setSheetComponent(<DataSheetView />);
-                break;
-            case 1:
-                setSheetComponent(<RelationSheetView index={1}
-                                                     currentSheet={relationSheet}
-                                                     secondSheet={dataSheet}
-                                                     showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
-                                                     currentSheetColumnsVisibility={relationSheetColumnsVisibility}
-                                                     setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility}
-                                                     showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
-                                                     setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet} />);
-                break;
-            default:
-                setSheetComponent(<OutputSheetView />);
-                break;
-        }
-    }, [currentSheet, dataSheetColumnsVisibility, relationSheetColumnsVisibility]);
 
     useEffect(() => {
         // Change matching and columns settings every time currentSchemaId change
@@ -261,18 +246,8 @@ const CorrelationView = ({user}) => {
             .concat(Object.entries(relationSheet[0]).map(() => (1))));
     }
 
-    const findMax = (arr) => {
-        let maxEl = arr[0];
-        for(let i=0; i< arr.length; i++) {
-            if(arr[i] > maxEl) {
-                maxEl = arr[i];
-            }
-        }
-        return maxEl;
-    }
-
     const getDataSheetCorrelations = (inputArray) => {
-        const maxIndex = findMax(inputArray);
+        const maxIndex = getMaximumInArray(inputArray);
         let outputArray = [];
 
         for(let i=0; i<=maxIndex; i++) {
@@ -338,22 +313,24 @@ const CorrelationView = ({user}) => {
     }, [correlationStatus]);
 
     useEffect(() => {
-        // After correlation - get select list for each relation sheet row
+        // After correlation - get select list for each sheet row
         if(correlationMatrix[0]?.length) {
-            setSelectListLoading(true);
+            setRelationSheetSelectListLoading(true);
+            setDataSheetSelectListLoading(true);
 
-            if(selectList?.length && !afterMatchClean) {
+            if(relationSheetSelectList?.length && !afterMatchClean) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
                     false, showInSelectMenuColumnsDataSheet,
                     dataSheet.length, relationSheet.length, matchFunction)
                     .then((res) => {
                         if(res?.data) {
-                            if(selectList?.length) {
-                                const newSelectList = res.data;
+                            // Select list for relation sheet
+                            if(relationSheetSelectList?.length) {
+                                const newSelectList = res.data.relationSheetSelectList;
 
-                                const selectListToUpdate = selectList.map((item, index) => {
-                                    if(indexesInSelectListToOverride.includes(index) || 1) {
+                                const selectListToUpdate = relationSheetSelectList.map((item, index) => {
+                                    if(indexesInRelationSheetSelectListToOverride.includes(index) || 1) {
                                         return newSelectList[index];
                                     }
                                     else {
@@ -368,10 +345,36 @@ const CorrelationView = ({user}) => {
                                     return false;
                                 });
                                 setNumberOfMatches(matches?.length);
-                                setSelectList(selectListToUpdate);
+                                setRelationSheetSelectList(selectListToUpdate);
                             }
                             else {
-                                setSelectList(res.data);
+                                setRelationSheetSelectList(res.data);
+                            }
+
+                            // Select list for data sheet
+                            if(dataSheetSelectList?.length) {
+                                const newSelectList = res.data.dataSheetSelectList;
+
+                                const selectListToUpdate = dataSheetSelectList.map((item, index) => {
+                                    if(indexesInDataSheetSelectListToOverride.includes(index) || 1) {
+                                        return newSelectList[index];
+                                    }
+                                    else {
+                                        return item;
+                                    }
+                                });
+
+                                const matches = selectListToUpdate.filter((item) => {
+                                    if(item) {
+                                        return parseInt(item[0]?.similarity) >= matchThreshold;
+                                    }
+                                    return false;
+                                });
+                                setNumberOfMatches(matches?.length);
+                                setDataSheetSelectList(selectListToUpdate);
+                            }
+                            else {
+                                setDataSheetSelectList(res.data);
                             }
 
                             setCorrelationStatus(2);
@@ -380,7 +383,7 @@ const CorrelationView = ({user}) => {
             }
             else {
                 setAfterMatchClean(false);
-                setSelectList(relationSheet.map((relationRowItem, relationRowIndex) => {
+                setRelationSheetSelectList(relationSheet.map((relationRowItem, relationRowIndex) => {
                     return dataSheet.map((dataRowItem, dataRowIndex) => {
                         return {
                             dataRowIndex,
@@ -389,14 +392,29 @@ const CorrelationView = ({user}) => {
                         }
                     });
                 }));
+
+                setDataSheetSelectList(dataSheet.map((dataRowItem, dataRowIndex) => {
+                    return relationSheet.map((relationRowItem, relationRowIndex) => {
+                        return {
+                            dataRowIndex,
+                            relationRowIndex,
+                            similarity: -1
+                        }
+                    });
+                }));
+
                 setCorrelationStatus(2);
             }
         }
     }, [correlationMatrix]);
 
     useEffect(() => {
-        setSelectListLoading(false);
-    }, [selectList]);
+        setRelationSheetSelectListLoading(false);
+    }, [relationSheetSelectList]);
+
+    useEffect(() => {
+        setDataSheetSelectListLoading(false);
+    }, [dataSheetSelectList]);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows) {
@@ -441,9 +459,11 @@ const CorrelationView = ({user}) => {
     }
 
     const correlate = () => {
-        setIndexesInSelectListToOverride([]);
+        setIndexesInRelationSheetSelectListToOverride([]);
+        setIndexesInDataSheetSelectListToOverride([]);
         setCorrelationStatus(1);
-        setSelectListLoading(true);
+        setRelationSheetSelectListLoading(true);
+        setDataSheetSelectListLoading(true);
 
         const jobIdTmp = makeId(64);
         setJobId(jobIdTmp);
@@ -476,7 +496,7 @@ const CorrelationView = ({user}) => {
                        setIndexesOfCorrelatedRows(prevState => {
                            return prevState.map((item, index) => {
                                if(item === -1) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+                                   setIndexesInRelationSheetSelectListToOverride(prevState => ([...prevState, index]));
                                    return newIndexesOfCorrelatedRows[index];
                                }
                                else {
@@ -501,7 +521,7 @@ const CorrelationView = ({user}) => {
                        setIndexesOfCorrelatedRows(prevState => {
                            return prevState.map((item, index) => {
                                if(newIndexesOfCorrelatedRows[index] !== -1) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+                                   setIndexesInRelationSheetSelectListToOverride(prevState => ([...prevState, index]));
                                    return newIndexesOfCorrelatedRows[index];
                                }
                                else {
@@ -526,7 +546,7 @@ const CorrelationView = ({user}) => {
                        setIndexesOfCorrelatedRows(prevState => {
                            return prevState.map((item, index) => {
                                if(newIndexesOfCorrelatedRows[index] !== -1 && !manuallyCorrelatedRows.includes(index)) {
-                                   setIndexesInSelectListToOverride(prevState => ([...prevState, index]));
+                                   setIndexesInRelationSheetSelectListToOverride(prevState => ([...prevState, index]));
                                    return newIndexesOfCorrelatedRows[index];
                                }
                                else {
@@ -562,8 +582,6 @@ const CorrelationView = ({user}) => {
                 overrideAllRows, setOverrideAllRows,
                 avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows,
                 matchThreshold, setMatchThreshold,
-                selectList, setSelectList,
-                selectListLoading,
                 currentSheet, setCurrentSheet,
                 correlate, progressCount,
                 setIndexesOfCorrelatedRows, setCorrelationMatrix,
@@ -587,7 +605,31 @@ const CorrelationView = ({user}) => {
                     </ButtonCorrelationViewPicker>
                 </div>
 
-                {sheetComponent}
+                {currentSheet === 0 ? <RelationSheetView sheetIndex={0}
+                                                         ref={dataSheetWrapper}
+                                                         currentSheet={dataSheet}
+                                                         secondSheet={relationSheet}
+                                                         selectList={dataSheetSelectList}
+                                                         selectListLoading={dataSheetSelectListLoading}
+                                                         showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsDataSheet}
+                                                         setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsDataSheet}
+                                                         showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsRelationSheet}
+                                                         currentSheetColumnsVisibility={dataSheetColumnsVisibility}
+                                                         setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility} /> : ''}
+
+                {currentSheet === 1 ? <RelationSheetView sheetIndex={1}
+                                                         ref={relationSheetWrapper}
+                                                         currentSheet={relationSheet}
+                                                         secondSheet={dataSheet}
+                                                         selectList={relationSheetSelectList}
+                                                         selectListLoading={relationSheetSelectListLoading}
+                                                         showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
+                                                         setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet}
+                                                         showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
+                                                         currentSheetColumnsVisibility={relationSheetColumnsVisibility}
+                                                         setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility} /> : ''}
+
+                {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}
             </div>
 
             {numberOfMatches !== -1 ? <QuickBottomInfo time={5000}>

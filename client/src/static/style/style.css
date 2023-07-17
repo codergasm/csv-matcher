@@ -2534,6 +2534,7 @@ input[type=number] {
 }
 
 .sheetWrapper {
+    position: relative;
     width: 100%;
 }
 
