@@ -21,7 +21,7 @@ export class AppController {
         body.dataFilePath ? body.dataFilePath : files[0],
         body.relationFilePath ? body.relationFilePath : files[body.dataFilePath ? 0 : 1],
         body.dataDelimiter, body.relationDelimiter,
-        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumns, body.dataSheetLength,
+        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumnsDataSheet, body.dataSheetLength,
         body.relationSheetLength, parseInt(body.similarityFunctionType));
   }
 

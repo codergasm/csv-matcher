@@ -21,7 +21,8 @@ const CorrelationView = ({user}) => {
     const [currentSheet, setCurrentSheet] = useState(0);
 
     const [sheetComponent, setSheetComponent] = useState(<DataSheetView />);
-    const [showInSelectMenuColumns, setShowInSelectMenuColumns] = useState([]);
+    const [showInSelectMenuColumnsDataSheet, setShowInSelectMenuColumnsDataSheet] = useState([]);
+    const [showInSelectMenuColumnsRelationSheet, setShowInSelectMenuColumnsRelationSheet] = useState([]);
     const [outputSheet, setOutputSheet] = useState([]);
     const [outputSheetExportColumns, setOutputSheetExportColumns] = useState([]);
     const [correlationMatrix, setCorrelationMatrix] = useState([[]]);
@@ -100,9 +101,9 @@ const CorrelationView = ({user}) => {
         }
     }, [currentSchemaId, dataSheetId, relationSheetId]);
 
-    const selectColumnWithMostContentInDataSheet = () => {
-        const dataSheetSample = dataSheet.slice(0, 10);
-        const columnsContent = dataSheetSample.map((item) => {
+    const selectColumnWithMostContentInSheet = (sheet) => {
+        const sheetSample = sheet.slice(0, 10);
+        const columnsContent = sheetSample.map((item) => {
             return Object.entries(item).map((item) => (item[1]));
         });
 
@@ -130,22 +131,46 @@ const CorrelationView = ({user}) => {
                     .then((res) => {
                         if(res?.data) {
                             const columnsSettingsObject = JSON.parse(res.data.columns_settings_object);
-                            const showInSelectMenuColumnsFromDatabase = columnsSettingsObject.showInSelectMenuColumns;
+                            const showInSelectMenuColumnsDataSheetFromDatabase = columnsSettingsObject.showInSelectMenuColumnsDataSheet;
 
-                            if(Object.entries(dataSheet[0]).length === showInSelectMenuColumnsFromDatabase.length) {
-                                setShowInSelectMenuColumns(showInSelectMenuColumnsFromDatabase);
+                            if(Object.entries(dataSheet[0]).length === showInSelectMenuColumnsDataSheetFromDatabase.length) {
+                                setShowInSelectMenuColumnsDataSheet(showInSelectMenuColumnsDataSheetFromDatabase);
                             }
                             else {
-                                setDefaultShowInSelectMenuColumns();
+                                setDefaultShowInSelectMenuColumnsDataSheet();
                             }
                         }
                     });
             }
             else {
-                setDefaultShowInSelectMenuColumns();
+                setDefaultShowInSelectMenuColumnsDataSheet();
             }
         }
     }, [dataSheet, currentSchemaId]);
+
+    useEffect(() => {
+        if(relationSheet?.length) {
+            if(currentSchemaId > 0) {
+                getSchemaById(currentSchemaId)
+                    .then((res) => {
+                        if(res?.data) {
+                            const columnsSettingsObject = JSON.parse(res.data.columns_settings_object);
+                            const showInSelectMenuColumnsRelationSheetFromDatabase = columnsSettingsObject.showInSelectMenuColumnsRelationSheet;
+
+                            if(Object.entries(relationSheet[0]).length === showInSelectMenuColumnsRelationSheetFromDatabase.length) {
+                                setShowInSelectMenuColumnsRelationSheet(showInSelectMenuColumnsRelationSheetFromDatabase);
+                            }
+                            else {
+                                setDefaultShowInSelectMenuColumnsRelationSheet();
+                            }
+                        }
+                    });
+            }
+            else {
+                setDefaultShowInSelectMenuColumnsRelationSheet();
+            }
+        }
+    }, [relationSheet, currentSchemaId]);
 
     useEffect(() => {
         setIndexesOfCorrelatedRows(relationSheet.map(() => (-1)));
@@ -214,9 +239,14 @@ const CorrelationView = ({user}) => {
         return () => clearInterval(intervalId);
     }, [correlationStatus]);
 
-    const setDefaultShowInSelectMenuColumns = () => {
-        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInDataSheet();
-        setShowInSelectMenuColumns(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+    const setDefaultShowInSelectMenuColumnsDataSheet = () => {
+        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(dataSheet);
+        setShowInSelectMenuColumnsDataSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+    }
+
+    const setDefaultShowInSelectMenuColumnsRelationSheet = () => {
+        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(relationSheet);
+        setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
     }
 
     const setDefaultOutputSheetExportColumns = () => {
@@ -308,7 +338,7 @@ const CorrelationView = ({user}) => {
             if(selectList?.length && !afterMatchClean) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
-                    false, showInSelectMenuColumns,
+                    false, showInSelectMenuColumnsDataSheet,
                     dataSheet.length, relationSheet.length, matchFunction)
                     .then((res) => {
                         if(res?.data) {
@@ -506,7 +536,8 @@ const CorrelationView = ({user}) => {
     }
 
     return <ViewContext.Provider value={{
-                showInSelectMenuColumns, setShowInSelectMenuColumns,
+                showInSelectMenuColumnsDataSheet, setShowInSelectMenuColumnsDataSheet,
+                showInSelectMenuColumnsRelationSheet, setShowInSelectMenuColumnsRelationSheet,
                 outputSheetExportColumns, setOutputSheetExportColumns,
                 dataSheetColumnsVisibility, setDataSheetColumnsVisibility,
                 relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,

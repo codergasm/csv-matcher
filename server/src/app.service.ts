@@ -86,7 +86,7 @@ export class AppService {
     }
 
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
-                      isCorrelationMatrixEmpty, showInSelectMenuColumns, dataSheetLength, relationSheetLength, similarityFunctionType: number) {
+                      isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength, similarityFunctionType: number) {
       if(isCorrelationMatrixEmpty === 'true') {
           return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
       }

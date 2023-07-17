@@ -14,7 +14,7 @@ import {getSchemaById} from "../api/schemas";
 
 const DataSheetView = () => {
     const { dataSheet, currentSchemaId } = useContext(AppContext);
-    const { showInSelectMenuColumns, setShowInSelectMenuColumns,
+    const { showInSelectMenuColumnsDataSheet, setShowInSelectMenuColumnsDataSheet,
         outputSheetExportColumns, setOutputSheetExportColumns,
         dataSheetColumnsVisibility, setDataSheetColumnsVisibility } = useContext(ViewContext);
 
@@ -91,13 +91,13 @@ const DataSheetView = () => {
 
     const handleSelectMenuColumnsChange = (i) => {
         if(i === -2) {
-            setShowInSelectMenuColumns(prevState => (prevState.map(() => (0))));
+            setShowInSelectMenuColumnsDataSheet(prevState => (prevState.map(() => (0))));
         }
         else if(i === -1) {
-            setShowInSelectMenuColumns(prevState => (prevState.map(() => (1))));
+            setShowInSelectMenuColumnsDataSheet(prevState => (prevState.map(() => (1))));
         }
         else {
-            setShowInSelectMenuColumns(prevState => (prevState.map((item, index) => {
+            setShowInSelectMenuColumnsDataSheet(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
         }
@@ -155,7 +155,7 @@ const DataSheetView = () => {
 
     const getColumnsForModal = (n) => {
         if(n === 1) {
-            return showInSelectMenuColumns;
+            return showInSelectMenuColumnsDataSheet;
         }
         else if(n === 2) {
             return outputSheetExportColumns.slice(1, columnsNames.length);
@@ -167,7 +167,7 @@ const DataSheetView = () => {
 
     const getSetColumnsForModal = (n) => {
         if(n === 1) {
-            return setShowInSelectMenuColumns;
+            return setShowInSelectMenuColumnsDataSheet;
         }
         else if(n === 2) {
             return setOutputSheetExportColumns;
@@ -272,7 +272,7 @@ const DataSheetView = () => {
             <div className="cell--legend">
                 Pokazuj w podpowiadajce
 
-                {showInSelectMenuColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                {showInSelectMenuColumnsDataSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                        onClick={() => { handleSelectMenuColumnsChange(-1); }}>
                     Zaznacz wszystkie
                 </button> : <button className="btn btn--selectAll"
@@ -289,12 +289,12 @@ const DataSheetView = () => {
 
         <div className="sheet__table">
             <div className="line line--noFlex">
-                {showInSelectMenuColumns.map((item, index) => {
+                {showInSelectMenuColumnsDataSheet.map((item, index) => {
                     if(dataSheetColumnsVisibility[index]) {
                         return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
                                     style={columnWithMinWidth()}
                                     key={index}>
-                            <button className={showInSelectMenuColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                            <button className={showInSelectMenuColumnsDataSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                     onClick={() => { handleSelectMenuColumnsChange(index); }}>
 
                             </button>

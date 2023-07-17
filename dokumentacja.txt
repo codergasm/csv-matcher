@@ -2,7 +2,7 @@
 2. dataSheet i relationSheet są tablicami obiektów, gdzie i-ty element tablicy to i-ty wiersz w arkuszu, poszczególne
 klucze obiektu to nazwy kolumn, a wartości - wartości w tych kolumnach. dataSheet i relationSheet są
 niemutowalne po wczytaniu
-3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumns, natomiast informacje
+3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumnsDataSheet, natomiast informacje
 o eksporcie - w outputSheetExportColumns
 4. Informacja o korelacji między poszczególnymi rekordami dataSheet i relationSheet przechowywana jest w state
 indexesOfCorrelatedRows, gdzie i-ty element tej tablicy o wartości j, wskazuje, że i-ty wiersz z relationSheet

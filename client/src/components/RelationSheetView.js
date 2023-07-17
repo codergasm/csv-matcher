@@ -26,13 +26,15 @@ import DeleteMatchesModal from "./DeleteMatchesModal";
 import MatchTypeSelect from "./MatchTypeSelect";
 import {getSchemaById} from "../api/schemas";
 import MatchFunctionSelect from "./MatchFunctionSelect";
+import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
 
 const RelationSheetView = () => {
     const { dataSheet, relationSheet, currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns,
+        showInSelectMenuColumnsRelationSheet, setShowInSelectMenuColumnsRelationSheet,
         manuallyCorrelatedRows, selectList, priorities, schemaCorrelatedRows,
         relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
-        showInSelectMenuColumns, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
+        showInSelectMenuColumnsDataSheet, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [relationSheetSorted, setRelationSheetSorted] = useState([]);
@@ -61,6 +63,8 @@ const RelationSheetView = () => {
     const [dataRowIndexForManualCorrelation, setDataRowIndexForManualCorrelation] = useState(-1);
     const [relationRowIndexForManualCorrelation, setRelationRowIndexForManualCorrelation] = useState(-1);
     const [deleteMatchesModalVisible, setDeleteMatchesModalVisible] = useState(false);
+
+    useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -96,20 +100,6 @@ const RelationSheetView = () => {
     }, [currentSelectMenuFiltered]);
 
     useEffect(() => {
-        document.addEventListener('click', (e) => {
-            if(!showFullCellValue) {
-                setShowSelectMenu(-1);
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-           if(e.key === 'Escape' && !showFullCellValue) {
-               setShowSelectMenu(-1);
-           }
-        });
-    }, []);
-
-    useEffect(() => {
         setSearchInputValue('');
 
         if(showSelectMenu !== -1) {
@@ -127,7 +117,7 @@ const RelationSheetView = () => {
 
         setCurrentSelectMenuFiltered(currentSelectMenu.filter((item) => {
             const value = Object.entries(dataSheet[item.dataRowIndex])
-                .filter((_, index) => (showInSelectMenuColumns[index]))
+                .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
                 .map((item) => (item[1]))
                 .join(' - ');
             return value.toLowerCase().includes(searchValue);
@@ -180,6 +170,20 @@ const RelationSheetView = () => {
             setMinColumnWidth(125 / (relationSheetColumnsVisibility.filter((item) => (item)).length));
         }
     }, [relationSheetColumnsVisibility]);
+
+    const handleSelectMenuColumnsChange = (i) => {
+        if(i === -2) {
+            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map(() => (0))));
+        }
+        else if(i === -1) {
+            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map(() => (1))));
+        }
+        else {
+            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map((item, index) => {
+                return index === i ? !item : item;
+            })));
+        }
+    }
 
     const setDefaultRelationSheetColumnsVisibility = () => {
         setRelationSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
@@ -369,6 +373,42 @@ const RelationSheetView = () => {
         }
     }
 
+    const getColumnsForModal = (n) => {
+        if(n === 1) {
+            return showInSelectMenuColumnsDataSheet;
+        }
+        else if(n === 2) {
+            return outputSheetExportColumns.slice(dataSheetColumnsNames.length);
+        }
+        else {
+            return relationSheetColumnsVisibility;
+        }
+    }
+
+    const getSetColumnsForModal = (n) => {
+        if(n === 1) {
+            return setShowInSelectMenuColumnsRelationSheet;
+        }
+        else if(n === 2) {
+            return setOutputSheetExportColumns;
+        }
+        else {
+            return setRelationSheetColumnsVisibility;
+        }
+    }
+
+    const getSettingsModalHeader = (n) => {
+        if(n === 1) {
+            return 'Pokazuj w podpowiadajce';
+        }
+        else if(n === 2) {
+            return 'Uwzględnij w eksporcie';
+        }
+        else {
+            return 'Ustaw widoczność';
+        }
+    }
+
     return <div className="sheetWrapper">
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
                                                  columnsVisibility={relationSheetColumnsVisibility}
@@ -377,11 +417,11 @@ const RelationSheetView = () => {
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
-                                                             extraIndex={columnsSettingsModalVisible === 1 ? dataSheetColumnsNames.length : 0}
-                                                             hideFirstColumn={columnsSettingsModalVisible === 1}
-                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetExportColumns.slice(dataSheetColumnsNames.length) : relationSheetColumnsVisibility}
-                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetExportColumns : setRelationSheetColumnsVisibility}
-                                                             header={columnsSettingsModalVisible === 1 ? 'Uwzględnij w eksporcie' : 'Widoczność kolumn'} /> : ''}
+                                                             extraIndex={columnsSettingsModalVisible === 2 ? dataSheetColumnsNames.length : 0}
+                                                             hideFirstColumn={columnsSettingsModalVisible === 2}
+                                                             columns={getColumnsForModal(columnsSettingsModalVisible)}
+                                                             setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
+                                                             header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
 
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
                                                      setCellsHeight={setCellsHeight}
@@ -408,9 +448,9 @@ const RelationSheetView = () => {
             </ButtonAutoMatch>
         </div>
 
-        {showInSelectMenuColumns.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
+        {showInSelectMenuColumnsDataSheet.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
             <span>
-                Uwaga! żadne kolumny nie są wskazane w arkuszu 1 jako mające się wyświetlać w podpowiadajce,
+                Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce,
                 dlatego wiersze poniżej są puste.
             </span>
         </span> : ''}
@@ -422,13 +462,50 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Widoczność
 
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(3); }}>
                         Konfiguruj w okienku
                     </ButtonSimple>
                     <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
                         Formatuj widoczność komórek
                     </ButtonSimple>
                 </div>
+            </div>
+
+            <div className="sheet__table__info sheet__table__info--data1">
+                <div className="cell--legend">
+                    Pokazuj w podpowiadajce
+
+                    {showInSelectMenuColumnsRelationSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                                                                                                        onClick={() => { handleSelectMenuColumnsChange(-1); }}>
+                        Zaznacz wszystkie
+                    </button> : <button className="btn btn--selectAll"
+                                        onClick={() => { handleSelectMenuColumnsChange(-2); }}>
+                        Odznacz wszystkie
+                    </button>}
+
+                    <button className="btn btn--selectAll"
+                            onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                        Konfiguruj w okienku
+                    </button>
+                </div>
+            </div>
+
+            <div className="line line--noFlex">
+                {showInSelectMenuColumnsRelationSheet.map((item, index) => {
+                    if(relationSheetColumnsVisibility[index]) {
+                        return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                    style={columnWithMinWidth()}
+                                    key={index}>
+                            <button className={showInSelectMenuColumnsDataSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleSelectMenuColumnsChange(index); }}>
+
+                            </button>
+                        </div>
+                    }
+                    else {
+                        return '';
+                    }
+                })}
             </div>
 
             <div className="sheet__table__info sheet__table__info--data2">
@@ -441,43 +518,43 @@ const RelationSheetView = () => {
                         Odznacz wszystkie
                     </ButtonSimple>}
 
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(1); }}>
+                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
                         Konfiguruj w okienku
                     </ButtonSimple>
                 </div>
             </div>
 
-            <div className="sheet__table">
-                <div className="line line--noFlex">
-                    {outputSheetExportColumns.map((item, index) => {
-                        if((index >= dataSheetColumnsNames?.length) && relationSheetColumnsVisibility[index-dataSheetColumnsNames?.length]) {
-                            if(index === dataSheetColumnsNames?.length) {
-                                return <div className="check__cell check__cell--first"
-                                            style={columnWithMinWidth()}
-                                            key={index}>
-                                    <button className="btn btn--check btn--notVisible"
-                                            disabled={true}>
+            <div className="line line--noFlex">
+                {outputSheetExportColumns.map((item, index) => {
+                    if((index >= dataSheetColumnsNames?.length) && relationSheetColumnsVisibility[index-dataSheetColumnsNames?.length]) {
+                        if(index === dataSheetColumnsNames?.length) {
+                            return <div className="check__cell check__cell--first"
+                                        style={columnWithMinWidth()}
+                                        key={index}>
+                                <button className="btn btn--check btn--notVisible"
+                                        disabled={true}>
 
-                                    </button>
-                                </div>
-                            }
-                            else {
-                                return <div className="check__cell"
-                                            style={columnWithMinWidth()}
-                                            key={index}>
-                                    <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                            onClick={() => { handleExportColumnsChange(index); }}>
-
-                                    </button>
-                                </div>
-                            }
+                                </button>
+                            </div>
                         }
-                    })}
-                    <div className="check__cell check__cell--relation">
+                        else {
+                            return <div className="check__cell"
+                                        style={columnWithMinWidth()}
+                                        key={index}>
+                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleExportColumnsChange(index); }}>
 
-                    </div>
+                                </button>
+                            </div>
+                        }
+                    }
+                })}
+                <div className="check__cell check__cell--relation">
+
                 </div>
+            </div>
 
+            <div className="sheet__table">
                 <div className="line line--noFlex">
                     <TableViewHeaderRow columnsNames={columnsNames}
                                         columnsVisibility={relationSheetColumnsVisibility}
@@ -513,7 +590,7 @@ const RelationSheetView = () => {
                         || (manuallyCorrelatedRows.includes(indexesInRender[index])));
 
                     correlatedRowValue = Object.entries(dataSheet[correlatedRow.dataRowIndex])
-                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
                         .map((item) => (item[1]))
                         .join(' - ');
 
@@ -524,7 +601,7 @@ const RelationSheetView = () => {
                 if(markLettersRows.includes(index)) {
                     const columnsNamesInConditions = priorities.map((item) => (item.conditions.map((item) => (item.dataSheet)))).flat();
                     const columnsNamesInSelectMenu = Object.entries(dataSheet[0])
-                        .filter((_, index) => (showInSelectMenuColumns[index]))
+                        .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
                         .map((item) => (item[0]));
 
                     joinStringOfColumnsFromRelationSheet = priorities.map((item) => {
@@ -625,7 +702,7 @@ const RelationSheetView = () => {
                                                                           onScroll={checkListScrollToBottom}>
                             {currentSelectMenuToDisplay?.map((item, index) => {
                                 const value = Object.entries(dataSheet[item.dataRowIndex])
-                                    .filter((_, index) => (showInSelectMenuColumns[index]))
+                                    .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
                                     .map((item) => (item[1]))
                                     .join(' - ');
 

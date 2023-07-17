@@ -11,7 +11,7 @@ import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 
 const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) => {
     const { dataSheet, relationSheet } = useContext(AppContext);
-    const { showInSelectMenuColumns, priorities, matchThreshold } = useContext(ViewContext);
+    const { showInSelectMenuColumnsDataSheet, priorities, matchThreshold } = useContext(ViewContext);
 
     const [relationSheetRowNumber, setRelationSheetRowNumber] = useState(1);
     const [relationSheetColumnsNames, setRelationSheetColumnsNames] = useState([]);
@@ -217,7 +217,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                             <div className="container--scrollX scroll">
                                 <div className="line line--noFlex">
                                     {dataSheetColumnsNames.map((item, index) => {
-                                        if(showInSelectMenuColumns[index]) {
+                                        if(showInSelectMenuColumnsDataSheet[index]) {
                                             return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                                                         style={{
                                                             minWidth: `300px`
@@ -245,7 +245,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                             substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
                                         }
 
-                                        if(showInSelectMenuColumns[index]) {
+                                        if(showInSelectMenuColumnsDataSheet[index]) {
                                             return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                                         style={{
                                                             minWidth: `300px`
@@ -277,7 +277,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                             <div className="container--scrollX scroll">
                                 <div className="line line--noFlex">
                                     {dataSheetColumnsNames.map((item, index) => {
-                                        if(showInSelectMenuColumns[index]) {
+                                        if(showInSelectMenuColumnsDataSheet[index]) {
                                             return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                                                         style={{
                                                             minWidth: `300px`
@@ -308,7 +308,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                                 substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
                                             }
 
-                                            if(showInSelectMenuColumns[index]) {
+                                            if(showInSelectMenuColumnsDataSheet[index]) {
                                                 return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                                             style={{
                                                                 minWidth: `300px`
@@ -342,7 +342,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                             <div className="container--scrollX scroll">
                                 <div className="line line--noFlex">
                                     {dataSheetColumnsNames.map((item, index) => {
-                                        if(showInSelectMenuColumns[index]) {
+                                        if(showInSelectMenuColumnsDataSheet[index]) {
                                             return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                                                         style={{
                                                             minWidth: `300px`
@@ -373,7 +373,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                                 substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
                                             }
 
-                                            if(showInSelectMenuColumns[index]) {
+                                            if(showInSelectMenuColumnsDataSheet[index]) {
                                                 return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                                             style={{
                                                                 minWidth: `300px`

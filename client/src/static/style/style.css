@@ -254,6 +254,34 @@ div.check__cell {
     align-items: center;
 }
 
+.check__cell--relation::before {
+    content: "";
+    background: var(--primary);
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 101%;
+    height: 162px;
+    transform: translateY(-100%);
+    z-index: 100;
+}
+
+.sheet__header__cell--relation {
+    transform: translateY(-100px);
+}
+
+.sheet__header__cell--relation::after {
+    content: "";
+    background: var(--primary);
+    position: absolute;
+    bottom: -60px;
+    left: -1px;
+    width: 101%;
+    height: 42px;
+    transform: translateY(100%);
+    z-index: 100;
+}
+
 .line > .sheet__header__cell {
     overflow: hidden;
 }
@@ -337,8 +365,8 @@ div.check__cell:first-of-type {
     content: "";
     position: absolute;
     bottom: -10px;
-    left: 0;
-    width: 100%;
+    left: -1px;
+    width: 101%;
     height: 10px;
     border-left: 1px solid var(--primary);
     background: var(--primary);
@@ -921,9 +949,9 @@ option {
     justify-content: center;
     align-items: center;
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 5%;
+    top: 150%;
+    transform: translate(-50%, -50%);
+    left: 50%;
 }
 
 .sheet__header__cell--relation {
@@ -1815,7 +1843,7 @@ input[type=number] {
 
 .sheet__header__cell--relation__bigText {
     font-size: 14px;
-    text-align: left;
+    text-align: center;
     width: 100%;
     padding-left: 10px;
 }
@@ -2606,7 +2634,7 @@ input[type=number] {
 }
 
 .sheet__table__info--data2 {
-    top: 40px;
+    top: 0;
 }
 
 .fileLoader {

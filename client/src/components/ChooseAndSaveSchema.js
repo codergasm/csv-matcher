@@ -9,7 +9,7 @@ import {errorText} from "../static/content";
 const ChooseAndSaveSchema = ({user}) => {
     const { schemas, availableForUserSchemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
         dataSheetId, relationSheetId } = useContext(AppContext);
-    const { priorities, matchSchemaArray, showInSelectMenuColumns, outputSheetExportColumns, dataSheetColumnsVisibility,
+    const { priorities, matchSchemaArray, showInSelectMenuColumnsDataSheet, outputSheetExportColumns, dataSheetColumnsVisibility,
         relationSheetColumnsVisibility, outputSheetColumnsVisibility, matchType, matchFunction } = useContext(ViewContext);
 
     const [name, setName] = useState('');
@@ -41,7 +41,7 @@ const ChooseAndSaveSchema = ({user}) => {
 
     const getColumnsSettingsObject = () => {
         return {
-            showInSelectMenuColumns,
+            showInSelectMenuColumnsDataSheet,
             outputSheetExportColumns,
             dataSheetColumnsVisibility, relationSheetColumnsVisibility, outputSheetColumnsVisibility
         }
