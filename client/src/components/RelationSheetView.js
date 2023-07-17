@@ -28,18 +28,19 @@ import {getSchemaById} from "../api/schemas";
 import MatchFunctionSelect from "./MatchFunctionSelect";
 import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
 
-const RelationSheetView = () => {
-    const { dataSheet, relationSheet, currentSchemaId } = useContext(AppContext);
+const RelationSheetView = ({sheetIndex, currentSheet, secondSheet,
+                               showInSelectMenuColumnsSecondSheet,
+                               currentSheetColumnsVisibility, setCurrentSheetColumnsVisibility,
+                               showInSelectMenuColumnsCurrentSheet, setShowInSelectMenuColumnsCurrentSheet}) => {
+    const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns,
-        showInSelectMenuColumnsRelationSheet, setShowInSelectMenuColumnsRelationSheet,
         manuallyCorrelatedRows, selectList, priorities, schemaCorrelatedRows,
-        relationSheetColumnsVisibility, setRelationSheetColumnsVisibility,
-        showInSelectMenuColumnsDataSheet, addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
+        addManualCorrelation, indexesOfCorrelatedRows, selectListLoading } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
-    const [relationSheetSorted, setRelationSheetSorted] = useState([]);
+    const [currentSheetSorted, setCurrentSheetSorted] = useState([]);
     const [rowsToRender, setRowsToRender] = useState([]);
-    const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
+    const [secondSheetColumnsNames, setSecondSheetColumnsNames] = useState([]);
     const [columnsNames, setColumnsNames] = useState([]);
     const [autoMatchModalVisible, setAutoMatchModalVisible] = useState(false);
     const [currentSelectMenu, setCurrentSelectMenu] = useState([]);
@@ -76,19 +77,19 @@ const RelationSheetView = () => {
     }, [indexesOfCorrelatedRows]);
 
     useEffect(() => {
-        setRelationSheetSorted(relationSheet);
-    }, [relationSheet]);
+        setCurrentSheetSorted(currentSheet);
+    }, [currentSheet]);
 
     useEffect(() => {
-        if(relationSheetSorted?.length) {
-            setRowsToRender(relationSheetSorted.slice(0, ROWS_PER_PAGE));
+        if(currentSheetSorted?.length) {
+            setRowsToRender(currentSheetSorted.slice(0, ROWS_PER_PAGE));
 
             // Change map
-            setIndexesInRender(relationSheetSorted.map((item, index) => {
-                return relationSheet.indexOf(item);
+            setIndexesInRender(currentSheetSorted.map((item, index) => {
+                return currentSheet.indexOf(item);
             }));
         }
-    }, [relationSheetSorted]);
+    }, [currentSheetSorted]);
 
     useEffect(() => {
         if(currentSelectMenuFiltered?.length) {
@@ -116,8 +117,8 @@ const RelationSheetView = () => {
         const searchValue = searchInputValue.toLowerCase();
 
         setCurrentSelectMenuFiltered(currentSelectMenu.filter((item) => {
-            const value = Object.entries(dataSheet[item.dataRowIndex])
-                .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
+            const value = Object.entries(secondSheet[item.dataRowIndex])
+                .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
                 .map((item) => (item[1]))
                 .join(' - ');
             return value.toLowerCase().includes(searchValue);
@@ -125,38 +126,38 @@ const RelationSheetView = () => {
     }, [searchInputValue]);
 
     useEffect(() => {
-        if(relationSheet && dataSheet) {
-            setColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
-            setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0])));
+        if(currentSheet && secondSheet) {
+            setColumnsNames(Object.entries(currentSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
+            setSecondSheetColumnsNames(Object.entries(secondSheet[0]).map((item) => (item[0])));
         }
-    }, [relationSheet, dataSheet]);
+    }, [currentSheet, secondSheet]);
 
     useEffect(() => {
         if(columnsNames?.length) {
-            if(!relationSheetColumnsVisibility?.length) {
+            if(!currentSheetColumnsVisibility?.length) {
                 if(currentSchemaId > 0) {
                     getSchemaById(currentSchemaId)
                         .then((res) => {
                             if(res?.data) {
-                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).relationSheetColumnsVisibility;
+                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).columnsVisibility[sheetIndex];
 
                                 if(columnsNames.length === columnsVisibilityFromDatabase.length) {
-                                    setRelationSheetColumnsVisibility(columnsVisibilityFromDatabase);
+                                    setCurrentSheetColumnsVisibility(columnsVisibilityFromDatabase);
                                 }
                                 else {
-                                    setDefaultRelationSheetColumnsVisibility();
+                                    setDefaultColumnsVisibility();
                                 }
                             }
                             else {
-                                setDefaultRelationSheetColumnsVisibility();
+                                setDefaultColumnsVisibility();
                             }
                         })
                         .catch(() => {
-                            setDefaultRelationSheetColumnsVisibility();
+                            setDefaultColumnsVisibility();
                         });
                 }
                 else {
-                    setDefaultRelationSheetColumnsVisibility();
+                    setDefaultColumnsVisibility();
                 }
             }
             if(!columnsSorting?.length) {
@@ -166,38 +167,47 @@ const RelationSheetView = () => {
     }, [columnsNames, currentSchemaId]);
 
     useEffect(() => {
-        if(relationSheetColumnsVisibility) {
-            setMinColumnWidth(125 / (relationSheetColumnsVisibility.filter((item) => (item)).length));
+        if(currentSheetColumnsVisibility) {
+            setMinColumnWidth(125 / (currentSheetColumnsVisibility.filter((item) => (item)).length));
         }
-    }, [relationSheetColumnsVisibility]);
+    }, [currentSheetColumnsVisibility]);
 
     const handleSelectMenuColumnsChange = (i) => {
         if(i === -2) {
-            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map(() => (0))));
+            setShowInSelectMenuColumnsCurrentSheet(prevState => (prevState.map(() => (0))));
         }
         else if(i === -1) {
-            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map(() => (1))));
+            setShowInSelectMenuColumnsCurrentSheet(prevState => (prevState.map(() => (1))));
         }
         else {
-            setShowInSelectMenuColumnsRelationSheet(prevState => (prevState.map((item, index) => {
+            setShowInSelectMenuColumnsCurrentSheet(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
         }
     }
 
-    const setDefaultRelationSheetColumnsVisibility = () => {
-        setRelationSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+    const setDefaultColumnsVisibility = () => {
+        setCurrentSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
     }
 
     const handleExportColumnsChange = (i) => {
+        const getCondition = (i) => {
+            if(sheetIndex === 0) {
+                return i < columnsNames?.length;
+            }
+            else {
+                return i >= secondSheetColumnsNames?.length;
+            }
+        }
+
         if(i === -2) {
             setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
-                return index >= dataSheetColumnsNames?.length ? 0 : item;
+                return getCondition(index) ? 0 : item;
             })));
         }
         else if(i === -1) {
             setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
-                return index >= dataSheetColumnsNames?.length ? 1 : item;
+                return getCondition(index) ? 1 : item;
             })));
         }
         else {
@@ -222,14 +232,14 @@ const RelationSheetView = () => {
     useEffect(() => {
         // Sorting changed - fetch next rows from start
         if(sortingClicked) {
-            setRowsToRender([...relationSheetSorted.slice(0, 20)]);
+            setRowsToRender([...currentSheetSorted.slice(0, 20)]);
             setPage(1);
         }
-    }, [relationSheetSorted]);
+    }, [currentSheetSorted]);
 
     const fetchNextRows = () => {
         setRowsToRender(prevState => {
-            return [...prevState, ...relationSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
+            return [...prevState, ...currentSheetSorted.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
         });
         setPage(prevState => (prevState+1));
     }
@@ -245,7 +255,7 @@ const RelationSheetView = () => {
         const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight + 3 >= scrollHeight) {
-            if((page) * ROWS_PER_PAGE < relationSheetSorted.length) {
+            if((page) * ROWS_PER_PAGE < currentSheetSorted.length) {
                 fetchNextRows();
             }
         }
@@ -279,7 +289,7 @@ const RelationSheetView = () => {
         col = convertColumnToNumber(col);
 
         setColumnsSorting(newSorting);
-        setRelationSheetSorted(sortByColumn(relationSheet, col, sortType));
+        setCurrentSheetSorted(sortByColumn(currentSheet, col, sortType));
     }
 
     const removeSorting = (i) => {
@@ -292,18 +302,18 @@ const RelationSheetView = () => {
             }
         })));
 
-        setRelationSheetSorted(relationSheet);
+        setCurrentSheetSorted(currentSheet);
     }
 
     const sortRelationColumnByMatch = (type) => {
         setSortingClicked(true);
         setColumnsSorting(prevState => (prevState.map(() => (0))));
-        setRelationSheetSorted(relationSheet);
+        setCurrentSheetSorted(currentSheet);
         setRelationColumnSort(prevState => (prevState === type ? 0 : type));
     }
 
     useEffect(() => {
-        setRelationSheetSorted(sortRelationColumn(relationSheet, indexesOfCorrelatedRows, relationColumnSort));
+        setCurrentSheetSorted(sortRelationColumn(currentSheet, indexesOfCorrelatedRows, relationColumnSort));
     }, [relationColumnSort]);
 
     const markLetters = (relationRowIndex) => {
@@ -375,25 +385,30 @@ const RelationSheetView = () => {
 
     const getColumnsForModal = (n) => {
         if(n === 1) {
-            return showInSelectMenuColumnsDataSheet;
+            return showInSelectMenuColumnsCurrentSheet;
         }
         else if(n === 2) {
-            return outputSheetExportColumns.slice(dataSheetColumnsNames.length);
+            if(sheetIndex === 0) {
+                return outputSheetExportColumns.slice(1, columnsNames.length);
+            }
+            else {
+                return outputSheetExportColumns.slice(secondSheetColumnsNames.length);
+            }
         }
         else {
-            return relationSheetColumnsVisibility;
+            return currentSheetColumnsVisibility;
         }
     }
 
     const getSetColumnsForModal = (n) => {
         if(n === 1) {
-            return setShowInSelectMenuColumnsRelationSheet;
+            return setShowInSelectMenuColumnsCurrentSheet;
         }
         else if(n === 2) {
             return setOutputSheetExportColumns;
         }
         else {
-            return setRelationSheetColumnsVisibility;
+            return setCurrentSheetColumnsVisibility;
         }
     }
 
@@ -409,15 +424,37 @@ const RelationSheetView = () => {
         }
     }
 
+    const isShowInSelectMenuFromSecondSheetEmpty = () => {
+        return showInSelectMenuColumnsSecondSheet.findIndex((item) => (item)) === -1;
+    }
+
+    const outputSheetExportColumnsVisibilityFirstColumnCondition = (i) => {
+        if(sheetIndex === 0) {
+            return i === 0;
+        }
+        else {
+            return i === secondSheetColumnsNames?.length;
+        }
+    }
+
+    const outputSheetExportColumnsVisibilityCondition = (i) => {
+        if(sheetIndex === 0) {
+            return (i < columnsNames?.length) && (currentSheetColumnsVisibility[i]);
+        }
+        else {
+            return (i >= secondSheetColumnsNames?.length) && (currentSheetColumnsVisibility[i-secondSheetColumnsNames?.length]);
+        }
+    }
+
     return <div className="sheetWrapper">
-        {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={dataSheetColumnsNames}
-                                                 columnsVisibility={relationSheetColumnsVisibility}
-                                                 closeModal={() => { setAutoMatchModalVisible(false); }}
-                                                 relationSheetColumns={columnsNames} /> : ''}
+        {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
+                                                 relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
+                                                 columnsVisibility={currentSheetColumnsVisibility}
+                                                 closeModal={() => { setAutoMatchModalVisible(false); }} /> : ''}
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
-                                                             extraIndex={columnsSettingsModalVisible === 2 ? dataSheetColumnsNames.length : 0}
+                                                             extraIndex={columnsSettingsModalVisible === 2 ? secondSheetColumnsNames.length : 0}
                                                              hideFirstColumn={columnsSettingsModalVisible === 2}
                                                              columns={getColumnsForModal(columnsSettingsModalVisible)}
                                                              setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
@@ -448,7 +485,7 @@ const RelationSheetView = () => {
             </ButtonAutoMatch>
         </div>
 
-        {showInSelectMenuColumnsDataSheet.findIndex((item) => (item)) === -1 ? <span className="disclaimer">
+        {isShowInSelectMenuFromSecondSheetEmpty() ? <span className="disclaimer">
             <span>
                 Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce,
                 dlatego wiersze poniżej są puste.
@@ -475,7 +512,7 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Pokazuj w podpowiadajce
 
-                    {showInSelectMenuColumnsRelationSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
+                    {showInSelectMenuColumnsCurrentSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                                         onClick={() => { handleSelectMenuColumnsChange(-1); }}>
                         Zaznacz wszystkie
                     </button> : <button className="btn btn--selectAll"
@@ -491,12 +528,12 @@ const RelationSheetView = () => {
             </div>
 
             <div className="line line--noFlex">
-                {showInSelectMenuColumnsRelationSheet.map((item, index) => {
-                    if(relationSheetColumnsVisibility[index]) {
+                {showInSelectMenuColumnsCurrentSheet.map((item, index) => {
+                    if(currentSheetColumnsVisibility[index]) {
                         return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
                                     style={columnWithMinWidth()}
                                     key={index}>
-                            <button className={showInSelectMenuColumnsDataSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                            <button className={showInSelectMenuColumnsSecondSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                     onClick={() => { handleSelectMenuColumnsChange(index); }}>
 
                             </button>
@@ -512,7 +549,14 @@ const RelationSheetView = () => {
                 <div className="cell--legend">
                     Uwzględnij w eksporcie
 
-                    {outputSheetExportColumns.filter((_, index) => (index > dataSheetColumnsNames.length)).findIndex((item) => (!item)) !== -1 ? <ButtonSimple onClick={() => { handleExportColumnsChange(-1); }}>
+                    {outputSheetExportColumns.filter((_, i) => {
+                        if(sheetIndex === 0) {
+                            return i <= secondSheetColumnsNames.length;
+                        }
+                        else {
+                            return i > secondSheetColumnsNames.length;
+                        }
+                    }).findIndex((item) => (!item)) !== -1 ? <ButtonSimple onClick={() => { handleExportColumnsChange(-1); }}>
                         Zaznacz wszystkie
                     </ButtonSimple> : <ButtonSimple onClick={() => { handleExportColumnsChange(-2); }}>
                         Odznacz wszystkie
@@ -526,8 +570,8 @@ const RelationSheetView = () => {
 
             <div className="line line--noFlex">
                 {outputSheetExportColumns.map((item, index) => {
-                    if((index >= dataSheetColumnsNames?.length) && relationSheetColumnsVisibility[index-dataSheetColumnsNames?.length]) {
-                        if(index === dataSheetColumnsNames?.length) {
+                    if(outputSheetExportColumnsVisibilityCondition(index)) {
+                        if(outputSheetExportColumnsVisibilityFirstColumnCondition(index)) {
                             return <div className="check__cell check__cell--first"
                                         style={columnWithMinWidth()}
                                         key={index}>
@@ -557,7 +601,7 @@ const RelationSheetView = () => {
             <div className="sheet__table">
                 <div className="line line--noFlex">
                     <TableViewHeaderRow columnsNames={columnsNames}
-                                        columnsVisibility={relationSheetColumnsVisibility}
+                                        columnsVisibility={currentSheetColumnsVisibility}
                                         columnsSorting={columnsSorting}
                                         getColumnMinWidth={getColumnMinWidth}
                                         sortSheet={sortSheet}
@@ -589,8 +633,8 @@ const RelationSheetView = () => {
                     isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
                         || (manuallyCorrelatedRows.includes(indexesInRender[index])));
 
-                    correlatedRowValue = Object.entries(dataSheet[correlatedRow.dataRowIndex])
-                        .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
+                    correlatedRowValue = Object.entries(secondSheet[correlatedRow.dataRowIndex])
+                        .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
                         .map((item) => (item[1]))
                         .join(' - ');
 
@@ -600,8 +644,8 @@ const RelationSheetView = () => {
 
                 if(markLettersRows.includes(index)) {
                     const columnsNamesInConditions = priorities.map((item) => (item.conditions.map((item) => (item.dataSheet)))).flat();
-                    const columnsNamesInSelectMenu = Object.entries(dataSheet[0])
-                        .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
+                    const columnsNamesInSelectMenu = Object.entries(secondSheet[0])
+                        .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
                         .map((item) => (item[0]));
 
                     joinStringOfColumnsFromRelationSheet = priorities.map((item) => {
@@ -611,7 +655,7 @@ const RelationSheetView = () => {
                     })
                         .flat()
                         .map((item, i) => {
-                            return relationSheet[index][item];
+                            return currentSheet[index][item];
                         })
                         .join(' ');
 
@@ -627,7 +671,7 @@ const RelationSheetView = () => {
                     {Object.entries(item).map((item, index) => {
                         const cellValue = item[1];
 
-                        if(relationSheetColumnsVisibility[index]) {
+                        if(currentSheetColumnsVisibility[index]) {
                             return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                         style={{
                                             minWidth: getColumnMinWidth(),
@@ -701,8 +745,8 @@ const RelationSheetView = () => {
                         {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll"
                                                                           onScroll={checkListScrollToBottom}>
                             {currentSelectMenuToDisplay?.map((item, index) => {
-                                const value = Object.entries(dataSheet[item.dataRowIndex])
-                                    .filter((_, index) => (showInSelectMenuColumnsDataSheet[index]))
+                                const value = Object.entries(secondSheet[item.dataRowIndex])
+                                    .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
                                     .map((item) => (item[1]))
                                     .join(' - ');
 

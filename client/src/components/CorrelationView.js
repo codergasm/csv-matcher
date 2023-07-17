@@ -68,13 +68,20 @@ const CorrelationView = ({user}) => {
                 setSheetComponent(<DataSheetView />);
                 break;
             case 1:
-                setSheetComponent(<RelationSheetView />);
+                setSheetComponent(<RelationSheetView index={1}
+                                                     currentSheet={relationSheet}
+                                                     secondSheet={dataSheet}
+                                                     showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
+                                                     currentSheetColumnsVisibility={relationSheetColumnsVisibility}
+                                                     setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility}
+                                                     showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
+                                                     setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet} />);
                 break;
             default:
                 setSheetComponent(<OutputSheetView />);
                 break;
         }
-    }, [currentSheet]);
+    }, [currentSheet, dataSheetColumnsVisibility, relationSheetColumnsVisibility]);
 
     useEffect(() => {
         // Change matching and columns settings every time currentSchemaId change
