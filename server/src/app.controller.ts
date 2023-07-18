@@ -17,12 +17,17 @@ export class AppController {
   @UseInterceptors(FilesInterceptor('files'))
   async getSelectList(@UploadedFiles() files: Array<Express.Multer.File>,
                       @Body() body) {
-    return this.appService.getSelectList(body.jobId, body.priorities,
-        body.dataFilePath ? body.dataFilePath : files[0],
-        body.relationFilePath ? body.relationFilePath : files[body.dataFilePath ? 0 : 1],
-        body.dataDelimiter, body.relationDelimiter,
-        body.isCorrelationMatrixEmpty, body.showInSelectMenuColumnsDataSheet, body.dataSheetLength,
-        body.relationSheetLength, parseInt(body.similarityFunctionType));
+    const { jobId, priorities, dataFilePath, relationFilePath, dataDelimiter, relationDelimiter,
+      isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength } = body;
+
+    const dataFile = dataFilePath ? dataFilePath : files[0];
+    const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
+
+    return this.appService.getSelectList(jobId, priorities,
+        dataFile, relationFile,
+        dataDelimiter, relationDelimiter,
+        isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
+        dataSheetLength, relationSheetLength);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -33,14 +38,15 @@ export class AppController {
     const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-      manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType } = body;
+      manuallyCorrelatedRows, userId } = body;
 
-    return this.appService.correlate(jobId,
-        dataFilePath ? dataFilePath : files[0],
-        relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1],
+    const dataFile = dataFilePath ? dataFilePath : files[0];
+    const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
+
+    return this.appService.correlate(jobId, dataFile, relationFile,
         dataFileDelimiter, relationFileDelimiter,
         priorities, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        manuallyCorrelatedRows, matchThreshold, userId, parseInt(similarityFunctionType));
+        manuallyCorrelatedRows, userId);
   }
 }

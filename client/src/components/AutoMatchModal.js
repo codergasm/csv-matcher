@@ -205,232 +205,230 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
         setRelationSheetSearch(val);
     }
 
-    return <>
+    return <div className="modal modal--autoMatch">
         {testConfigurationModalVisible ? <TestConfigurationModal relationSheetColumnsVisibility={columnsVisibility}
                                                                  closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
 
-        <div className="modal">
-            <button className="btn btn--closeModal"
-                    onClick={closeModal}>
-                &times;
-            </button>
+        <button className="btn btn--closeModal"
+                onClick={closeModal}>
+            &times;
+        </button>
 
-            <div className="modal__inner scroll">
-                {!loading ? <>
-                    <div className="modal__top">
-                        <h3 className="modal__header">
-                            Typ dopasowania
-                        </h3>
-
-                        <button className="btn btn--openTestConfigurationModal"
-                                onClick={() => { setTestConfigurationModalVisible(true); }}>
-                            Przetestuj konfigurację
-                        </button>
-                    </div>
-
-                    {matchTypes.map((item, index) => {
-                        return <label className={index > 0 ? "modal__label modal__label--disabled" : "modal__label"}
-                                      key={index}>
-                            <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    disabled={index > 0} // tmp: only first option works
-                                    onClick={() => { setMatchType(index); }}>
-
-                            </button>
-                            {item}
-                        </label>
-                    })}
-
+        <div className="modal__inner scroll">
+            {!loading ? <>
+                <div className="modal__top">
                     <h3 className="modal__header">
-                        Kroki dopasowania
+                        Typ dopasowania
                     </h3>
 
-                    <div className="priorities">
-                        {priorities.map((item, index) => {
-                            const priority = item;
-                            const priorityIndex = index;
+                    <button className="btn btn--openTestConfigurationModal"
+                            onClick={() => { setTestConfigurationModalVisible(true); }}>
+                        Przetestuj konfigurację
+                    </button>
+                </div>
 
-                            return <div className="priorities__item"
-                                        key={index}>
-                                <button className="btn btn--deletePriority"
-                                        onClick={() => { deletePriority(index); }}>
-                                    &times;
-                                </button>
+                {matchTypes.map((item, index) => {
+                    return <label className={index > 0 ? "modal__label modal__label--disabled" : "modal__label"}
+                                  key={index}>
+                        <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                disabled={index > 0} // tmp: only first option works
+                                onClick={() => { setMatchType(index); }}>
 
-                                <h3 className="priorities__item__header">
-                                    Krok {index+1}
-                                </h3>
+                        </button>
+                        {item}
+                    </label>
+                })}
 
-                                {item.map((item, index) => {
-                                    const conditionIndex = index;
-                                    const conditionMatchFunction = item.matchFunction;
-                                    const conditionMatchThreshold = item.matchThreshold;
+                <h3 className="modal__header">
+                    Kroki dopasowania
+                </h3>
 
-                                    return <div className="priorities__item__condition"
-                                                key={index}>
-                                        <h4 className="priorities__item__condition__header">
-                                            Warunek {index+1}
-                                            <button className="btn btn--deleteCondition"
-                                                    onClick={() => { deleteCondition(priorityIndex, index); }}>
-                                                Usuń
-                                            </button>
-                                        </h4>
+                <div className="priorities">
+                    {priorities.map((item, index) => {
+                        const priority = item;
+                        const priorityIndex = index;
 
-                                        <p className="priorities__item__condition__text">
-                                            Szukaj dopasowania w kolumnie arkusza 1:
-                                        </p>
-                                        <label className="priorities__item__condition__search">
-                                            <input className="input input--search"
-                                                   value={dataSheetSearch}
-                                                   onChange={(e) => { updateDataSheetSearch(priorityIndex, index, e.target.value); }}
-                                                   placeholder="Szukaj..." />
-                                        </label>
+                        return <div className="priorities__item"
+                                    key={index}>
+                            <button className="btn btn--deletePriority"
+                                    onClick={() => { deletePriority(index); }}>
+                                &times;
+                            </button>
 
-                                        {dataSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
-                                                                                    value={item.dataSheet}
-                                                                                    onChange={(e) => { updateCondition(priorityIndex, index, 'dataSheet', e.target.value); }}>
-                                            {dataSheetColumnsFiltered.map((item, index) => {
-                                                return <option key={index} value={item}>
-                                                    {item}
-                                                </option>
-                                            })}
-                                        </select> : <p className="noOptions">
-                                            Nie znaleziono żadnych kolumn
-                                        </p>}
+                            <h3 className="priorities__item__header">
+                                Krok {index+1}
+                            </h3>
 
-                                        <p className="priorities__item__condition__text">
-                                            Szukaj dopasowania w kolumnie arkusza 2:
-                                        </p>
-                                        <label className="priorities__item__condition__search">
-                                            <input className="input input--search"
-                                                   value={relationSheetSearch}
-                                                   onChange={(e) => { updateRelationSheetSearch(priorityIndex, index, e.target.value); }}
-                                                   placeholder="Szukaj..." />
-                                        </label>
+                            {item.map((item, index) => {
+                                const conditionIndex = index;
+                                const conditionMatchFunction = item.matchFunction;
+                                const conditionMatchThreshold = item.matchThreshold;
 
-                                        {relationSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
-                                                                                        value={item.relationSheet}
-                                                                                        onChange={(e) => { updateCondition(priorityIndex, index, 'relationSheet', e.target.value); }}>
-                                            {relationSheetColumnsFiltered.map((item, index) => {
-                                                return <option key={index} value={item}>
-                                                    {item}
-                                                </option>
-                                            })}
-                                        </select> : <p className="noOptions">
-                                            Nie znaleziono żadnych kolumn
-                                        </p>}
+                                return <div className="priorities__item__condition"
+                                            key={index}>
+                                    <h4 className="priorities__item__condition__header">
+                                        Warunek {index+1}
+                                        <button className="btn btn--deleteCondition"
+                                                onClick={() => { deleteCondition(priorityIndex, index); }}>
+                                            Usuń
+                                        </button>
+                                    </h4>
 
-                                        <h3 className="priorities__item__condition__text regular">
-                                            Funkcja dopasowania
-                                        </h3>
+                                    <p className="priorities__item__condition__text">
+                                        Szukaj dopasowania w kolumnie arkusza 1:
+                                    </p>
+                                    <label className="priorities__item__condition__search">
+                                        <input className="input input--search"
+                                               value={dataSheetSearch}
+                                               onChange={(e) => { updateDataSheetSearch(priorityIndex, index, e.target.value); }}
+                                               placeholder="Szukaj..." />
+                                    </label>
 
-                                        <select className="select--logicalOperator select--matchFunction"
-                                                value={priority[index].matchFunction}
-                                                onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchFunction', e.target.value); }}>
-                                            {matchFunctions.map((item, index) => {
-                                                return <option key={index} value={index}>
-                                                    {item}
-                                                </option>
-                                            })}
-                                        </select>
+                                    {dataSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
+                                                                                value={item.dataSheet}
+                                                                                onChange={(e) => { updateCondition(priorityIndex, index, 'dataSheet', e.target.value); }}>
+                                        {dataSheetColumnsFiltered.map((item, index) => {
+                                            return <option key={index} value={item}>
+                                                {item}
+                                            </option>
+                                        })}
+                                    </select> : <p className="noOptions">
+                                        Nie znaleziono żadnych kolumn
+                                    </p>}
+
+                                    <p className="priorities__item__condition__text">
+                                        Szukaj dopasowania w kolumnie arkusza 2:
+                                    </p>
+                                    <label className="priorities__item__condition__search">
+                                        <input className="input input--search"
+                                               value={relationSheetSearch}
+                                               onChange={(e) => { updateRelationSheetSearch(priorityIndex, index, e.target.value); }}
+                                               placeholder="Szukaj..." />
+                                    </label>
+
+                                    {relationSheetColumnsFiltered?.length ? <select className="priorities__item__condition__select"
+                                                                                    value={item.relationSheet}
+                                                                                    onChange={(e) => { updateCondition(priorityIndex, index, 'relationSheet', e.target.value); }}>
+                                        {relationSheetColumnsFiltered.map((item, index) => {
+                                            return <option key={index} value={item}>
+                                                {item}
+                                            </option>
+                                        })}
+                                    </select> : <p className="noOptions">
+                                        Nie znaleziono żadnych kolumn
+                                    </p>}
+
+                                    <h3 className="priorities__item__condition__text regular">
+                                        Funkcja dopasowania
+                                    </h3>
+
+                                    <select className="select--logicalOperator select--matchFunction"
+                                            value={priority[index].matchFunction}
+                                            onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchFunction', e.target.value); }}>
+                                        {matchFunctions.map((item, index) => {
+                                            return <option key={index} value={index}>
+                                                {item}
+                                            </option>
+                                        })}
+                                    </select>
 
 
 
-                                        <h3 className="priorities__item__condition__text regular">
-                                            Przypisuj, jeśli dopasowanie procentowe jest większe niż
-                                        </h3>
+                                    <h3 className="priorities__item__condition__text regular">
+                                        Przypisuj, jeśli dopasowanie procentowe jest większe niż
+                                    </h3>
 
-                                        <div className="modal__slider">
-                                            <ReactSlider className="horizontal-slider"
-                                                         thumbClassName="thumb"
-                                                         trackClassName="track"
-                                                         value={!isNaN(conditionMatchThreshold) ? conditionMatchThreshold : 0}
-                                                         onChange={(val) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', val); }} />
+                                    <div className="modal__slider">
+                                        <ReactSlider className="horizontal-slider"
+                                                     thumbClassName="thumb"
+                                                     trackClassName="track"
+                                                     value={!isNaN(conditionMatchThreshold) ? conditionMatchThreshold : 0}
+                                                     onChange={(val) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', val); }} />
 
-                                            <div className="modal__slider__value">
-                                                <input className="input--matchThreshold"
-                                                       type="number"
-                                                       value={conditionMatchThreshold}
-                                                       onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', e.target.value); }} />
-                                                <span className="modal__slider__value__percent">
+                                        <div className="modal__slider__value">
+                                            <input className="input--matchThreshold"
+                                                   type="number"
+                                                   value={conditionMatchThreshold}
+                                                   onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchThreshold', e.target.value); }} />
+                                            <span className="modal__slider__value__percent">
                                                     %
                                                 </span>
-                                            </div>
                                         </div>
-
-                                        {priority.length > 1 ? <div className="priorities__item__condition__operator">
-                                            warunek jest:
-                                            <select className="select--logicalOperator" value={priority[index].required}
-                                                    onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'required', e.target.value); }}>
-                                                <option value={0}>wymagany</option>
-                                                <option value={1}>opcjonalny</option>
-                                            </select>
-                                        </div> : ''}
                                     </div>
-                                })}
 
-                                <button className="btn btn--addCondition"
-                                        onClick={() => { addCondition(priorityIndex); }}>
-                                    Dodaj warunek
-                                </button>
-                            </div>
-                        })}
-                    </div>
+                                    {priority.length > 1 ? <div className="priorities__item__condition__operator">
+                                        warunek jest:
+                                        <select className="select--logicalOperator" value={priority[index].required}
+                                                onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'required', e.target.value); }}>
+                                            <option value={0}>wymagany</option>
+                                            <option value={1}>opcjonalny</option>
+                                        </select>
+                                    </div> : ''}
+                                </div>
+                            })}
 
-                    <button className="btn btn--addPriority"
-                            onClick={addPriority}>
-                        + Dodaj krok
-                    </button>
-
-                    <p className="modal__info">
-                        Po wykonaniu automatycznego dopasowania - wciąż będziesz mógł samodzielnie zmienić dopasowanie. Dodatkowo system oznaczy kolorami dokładność dopasowania.
-                    </p>
-
-                    <div className="modal__additionalOptions">
-                        <label className="label">
-                            <button className={!overrideAllRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { setOverrideAllRows(p => !p); }}>
-
+                            <button className="btn btn--addCondition"
+                                    onClick={() => { addCondition(priorityIndex); }}>
+                                Dodaj warunek
                             </button>
-                            dopasuj tylko te rekordy, które jeszcze nie mają żadnego dopasowania
-                        </label>
-                        <label className="label">
-                            <button className={overrideAllRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { setOverrideAllRows(p => !p); }}>
+                        </div>
+                    })}
+                </div>
 
-                            </button>
-                            nadpisz wszystkie rekordy, jeśli znajdziesz nowe dopasowanie
-                        </label>
+                <button className="btn btn--addPriority"
+                        onClick={addPriority}>
+                    + Dodaj krok
+                </button>
 
-                        {overrideAllRows ? <label className="label--marginLeft">
-                            <button className={avoidOverrideForManuallyCorrelatedRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { setAvoidOverrideForManuallyCorrelatedRows(p => !p); }}>
+                <p className="modal__info">
+                    Po wykonaniu automatycznego dopasowania - wciąż będziesz mógł samodzielnie zmienić dopasowanie. Dodatkowo system oznaczy kolorami dokładność dopasowania.
+                </p>
 
-                            </button>
-                            pomiń (nie nadpisuj) skorelowania przypisane ręcznie
-                        </label> : ''}
-                    </div>
+                <div className="modal__additionalOptions">
+                    <label className="label">
+                        <button className={!overrideAllRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                onClick={() => { setOverrideAllRows(p => !p); }}>
 
-                    <button className="btn btn--startAutoMatch"
-                            disabled={!priorities.length}
-                            onClick={() => { setLoading(true); setTimeout(() => {
-                                correlate();
-                            }, 1000); }}>
-                        Uruchom automatyczne dopasowanie
-                    </button>
-                </> : <div className="center">
-                    <ProgressBar progress={progressCount / relationSheet?.length} />
+                        </button>
+                        dopasuj tylko te rekordy, które jeszcze nie mają żadnego dopasowania
+                    </label>
+                    <label className="label">
+                        <button className={overrideAllRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                onClick={() => { setOverrideAllRows(p => !p); }}>
 
-                    {progressCount === 0 ? <h5 className="center__header">
-                        Trwa przesyłanie plików na serwer...
-                    </h5> : (progressCount < relationSheet?.length ? <h5 className="center__header">
-                        Trwa korelowanie rekordów ({progressCount} / {relationSheet?.length})
-                    </h5> : <h5 className="center__header">
-                        Trwa przesyłanie wyników...
-                    </h5>)}
-                </div>}
-            </div>
+                        </button>
+                        nadpisz wszystkie rekordy, jeśli znajdziesz nowe dopasowanie
+                    </label>
+
+                    {overrideAllRows ? <label className="label--marginLeft">
+                        <button className={avoidOverrideForManuallyCorrelatedRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                onClick={() => { setAvoidOverrideForManuallyCorrelatedRows(p => !p); }}>
+
+                        </button>
+                        pomiń (nie nadpisuj) skorelowania przypisane ręcznie
+                    </label> : ''}
+                </div>
+
+                <button className="btn btn--startAutoMatch"
+                        disabled={!priorities.length}
+                        onClick={() => { setLoading(true); setTimeout(() => {
+                            correlate();
+                        }, 1000); }}>
+                    Uruchom automatyczne dopasowanie
+                </button>
+            </> : <div className="center">
+                <ProgressBar progress={progressCount / relationSheet?.length} />
+
+                {progressCount === 0 ? <h5 className="center__header">
+                    Trwa przesyłanie plików na serwer...
+                </h5> : (progressCount < relationSheet?.length ? <h5 className="center__header">
+                    Trwa korelowanie rekordów ({progressCount} / {relationSheet?.length})
+                </h5> : <h5 className="center__header">
+                    Trwa przesyłanie wyników...
+                </h5>)}
+            </div>}
         </div>
-    </>
+    </div>
 };
 
 export default AutoMatchModal;

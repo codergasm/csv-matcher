@@ -555,6 +555,10 @@ table, table * {
     transition: .2s all;
 }
 
+.modal__line {
+    width: 100%;
+}
+
 .modal__inner {
     width: 490px;
     height: 80vh;
@@ -567,6 +571,10 @@ table, table * {
     justify-content: flex-start;
     align-items: flex-start;
     min-height: 400px;
+}
+
+.modal__inner--testConfiguration {
+    width: 800px;
 }
 
 .modal__header {
@@ -1342,6 +1350,13 @@ input[type=number] {
     font-weight: 700;
 }
 
+.modal--autoMatch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
 .modal--testConfiguration .modal__inner {
     width: 1000px;
 }
@@ -1367,6 +1382,24 @@ input[type=number] {
 
 .container--scrollX.scroll {
     overflow-y: visible !important;
+}
+
+.modal__inner--testConfiguration .container--scrollX {
+    max-width: 100%;
+    margin: 30px 0;
+}
+
+.modal__inner--testConfiguration .container--scrollX > .flex {
+    border-left: 1px solid var(--primary);
+}
+
+.modal__inner--testConfiguration .container--scrollX > .flex > .sheet__header__cell {
+    border-right: 1px solid var(--primary);
+    border-top: 1px solid var(--primary);
+}
+
+.modal__inner--testConfiguration .container--scrollX > .flex > .sheet__header__cell:last-child {
+    border-right: none;
 }
 
 .container--scrollX.scroll::-webkit-scrollbar {
