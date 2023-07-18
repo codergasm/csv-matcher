@@ -42,10 +42,11 @@ export class AppController {
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
     const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
+    const prioritiesObject = JSON.parse(priorities);
 
     return this.appService.correlate(jobId, dataFile, relationFile,
         dataFileDelimiter, relationFileDelimiter,
-        priorities, correlationMatrix, indexesOfCorrelatedRows,
+        prioritiesObject, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
         manuallyCorrelatedRows, userId);
   }

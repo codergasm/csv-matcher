@@ -35,6 +35,10 @@
     align-items: center;
 }
 
+.flex--start {
+    justify-content: flex-start;
+}
+
 .container--loadFiles {
     padding: 40px 0;
     display: flex;
@@ -2716,4 +2720,30 @@ input[type=number] {
     font-size: 13px;
     display: block;
     margin-bottom: 4px;
+}
+
+.numberOfRequiredConditionsLabel {
+    margin: 20px 0 0;
+}
+
+.btn--numberOfRequiredConditions {
+    background: transparent;
+    color: #313131;
+    font-weight: 700;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #AAA;
+}
+
+.btn--numberOfRequiredConditions:hover {
+    background: #efefef;
+}
+
+.input--numberOfRequiredConditions {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 1px solid var(--primary);
 }

@@ -47,5 +47,8 @@ id aktualnego schematu dopasowania
 13. schemaCorrelatedRows to tablica indeksów wierszy z relationSheet, które zostały skorelowane na podstawie
 schematu dopasowania
 
-TODO:
-- priorytety
+RELACJE X DO WIELU
+14. Dla relacji jeden do wielu, wiele do jednego i wiele do wielu correlationMatrix oraz selectList pozostają takie same,
+ponieważ przetrzymują tylko podobieństwa między rekordami
+15. Wszystko rozchodzi się o dodanie relacji między przypisanymi rekordami, zatem konieczna jest wymiana indexesOfCorrelatedRows.
+Zamiast tej zmiennej użyte będzie

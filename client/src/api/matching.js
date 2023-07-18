@@ -8,8 +8,7 @@ const getProgressByJobId = (jobId) => {
 }
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
-                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength,
-                       similarityFunctionType) => {
+                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -26,7 +25,6 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     formData.append('showInSelectMenuColumnsDataSheet', JSON.stringify(showInSelectMenuColumnsDataSheet));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
-    formData.append('similarityFunctionType', similarityFunctionType);
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, ''));
@@ -49,7 +47,7 @@ const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, matchThreshold, userId, similarityFunctionType) => {
+                  manuallyCorrelatedRows, userId) => {
 
     const formData = new FormData();
     const config = {
@@ -68,9 +66,7 @@ const matching = (jobId, priorities, correlationMatrix,
     formData.append('overrideAllRows', overrideAllRows);
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
-    formData.append('matchThreshold', matchThreshold);
     formData.append('userId', userId);
-    formData.append('similarityFunctionType', similarityFunctionType);
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));

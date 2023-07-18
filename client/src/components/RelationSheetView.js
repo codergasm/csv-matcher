@@ -25,7 +25,6 @@ import OverrideMatchModal from "./OverrideMatchModal";
 import DeleteMatchesModal from "./DeleteMatchesModal";
 import MatchTypeSelect from "./MatchTypeSelect";
 import {getSchemaById} from "../api/schemas";
-import MatchFunctionSelect from "./MatchFunctionSelect";
 import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
