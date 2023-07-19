@@ -558,6 +558,7 @@ const CorrelationView = ({user}) => {
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[0]))}
                                                          schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[0]))}
                                                          indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[0]))}
+                                                         indexesOfCorrelatedRowsSecondSheetIndexes={indexesOfCorrelatedRows.map((item) => (item[1]))}
                                                          selectList={dataSheetSelectList}
                                                          selectListIndicators={transposeMatrix(selectListIndicators)}
                                                          selectListLoading={dataSheetSelectListLoading}
@@ -574,6 +575,7 @@ const CorrelationView = ({user}) => {
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[1]))}
                                                          schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[1]))}
                                                          indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[1]))}
+                                                         indexesOfCorrelatedRowsSecondSheetIndexes={indexesOfCorrelatedRows.map((item) => (item[0]))}
                                                          selectList={relationSheetSelectList}
                                                          selectListIndicators={selectListIndicators}
                                                          selectListLoading={relationSheetSelectListLoading}

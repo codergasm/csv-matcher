@@ -32,7 +32,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                currentSheetColumnsVisibility, setCurrentSheetColumnsVisibility,
                                showInSelectMenuColumnsCurrentSheet, setShowInSelectMenuColumnsCurrentSheet,
                                selectList, selectListLoading, selectListIndicators,
-                               manuallyCorrelatedRowsIndexes, schemaCorrelatedRowsIndexes, indexesOfCorrelatedRowsIndexes}, ref) => {
+                               manuallyCorrelatedRowsIndexes, schemaCorrelatedRowsIndexes,
+                               indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes}, ref) => {
     const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
         addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
@@ -54,7 +55,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [relationColumnSort, setRelationColumnSort] = useState(0);
     const [indexesInRender, setIndexesInRender] = useState([]);
     const [sortingClicked, setSortingClicked] = useState(false);
-    const [currentListPage, setCurrentListPage] = useState(0);
+    const [currentListPage, setCurrentListPage] = useState(1);
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
     const [fullCellValueSubstringsIndexes, setFullCellValueSubstringsIndexes] = useState([]);
@@ -372,7 +373,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const addManualCorrelationWrapper = (e, item) => {
-        let condition = sheetIndex === 0 ? indexesOfCorrelatedRowsIndexes.includes(item.relationRowIndex) : indexesOfCorrelatedRowsIndexes.includes(item.dataRowIndex);
+        let condition = sheetIndex === 0 ? indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex) :
+            indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.dataRowIndex);
 
         if(condition) {
             e.stopPropagation();
@@ -722,10 +724,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
-                                        background: getSimilarityColorForRelationSheet(correlatedRow.similarity, correlatedRow.relationRowIndex),
-                                        color: manuallyCorrelatedRowsIndexes.includes(correlatedRow.relationRowIndex) || schemaCorrelatedRowsIndexes.includes(correlatedRow.relationRowIndex) ? '#fff' : '#000'
+                                        background: getSimilarityColorForRelationSheet(correlatedRow.similarity, sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex),
+                                        color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) || schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
-                                        {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(correlatedRow.relationRowIndex) ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
+                                        {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
                                                                                           followCursor={true}
                                                                                           size="small"
                                                                                           position="top">
@@ -734,7 +736,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                             </span>
                                         </Tooltip> : ''}
 
-                                        {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (schemaCorrelatedRowsIndexes.includes(correlatedRow.relationRowIndex) ? 'S' : '-')}
+                                        {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? 'S' : '-')}
                                     </span>
                                 </> : <RelationSelectionEmptyRow />}
                             </span> : <input className="select__input"
@@ -773,7 +775,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, valueToDisplay);
                                 }
 
-                                return <button className={(sheetIndex === 0 ? (indexesOfCorrelatedRowsIndexes.includes(item.relationRowIndex)) : (indexesOfCorrelatedRowsIndexes.includes(item.dataRowIndex))) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
+                                return <button className={(sheetIndex === 0 ? (indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex)) : (indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.dataRowIndex))) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
                                                onClick={(e) => {addManualCorrelationWrapper(e, item); }}
                                                key={index}>
                                     <span className="select__menu__item__value">

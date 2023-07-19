@@ -148,7 +148,8 @@ export class AppService {
               const dataSheetSelectList = correlationMatrixForDataSheet.map((dataRowItem, dataRowIndex) => {
                   return this.sortBySimilarity(dataRowItem.map((relationRowItem, relationRowIndex) => {
                       const [priority, condition] = selectListIndicatorsForDataSheet[dataRowIndex][relationRowIndex];
-                      const similarity = parseInt(correlationMatrix[dataRowIndex][relationRowIndex][priority][condition].toFixed());
+
+                      const similarity = parseInt(correlationMatrixForDataSheet[dataRowIndex][relationRowIndex][priority][condition].toFixed());
 
                       return {
                           dataRowIndex,
@@ -401,11 +402,9 @@ export class AppService {
 
                   if(this.isPriorityFulfilled(currentPrioritySimilarities, currentPriorityMatchThresholds,
                       currentPriorityRequired, currentPriorityNumberOfRequiredConditions)) {
-                      console.log('priorityFulfilled');
 
                       if(this.areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows)) {
                           // Update indexesOfCorrelatedRows
-                          console.log('rowsAvailable');
                           newIndexesOfCorrelatedRows.push([dataRowIndex, relationRowIndex]);
 
                           const maxValueOfAllConditions = getMaxValueFromArray(currentPrioritySimilarities);
