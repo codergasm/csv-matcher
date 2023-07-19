@@ -446,14 +446,6 @@ const CorrelationView = ({user}) => {
         return dataRowAvailable && relationRowAvailable;
     }
 
-    useEffect(() => {
-        console.log(manuallyCorrelatedRows);
-    }, [manuallyCorrelatedRows]);
-
-    useEffect(() => {
-        console.log(indexesOfCorrelatedRows);
-    }, [indexesOfCorrelatedRows]);
-
     const correlate = () => {
         setIndexesInRelationSheetSelectListToOverride([]);
         setIndexesInDataSheetSelectListToOverride([]);

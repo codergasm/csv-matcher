@@ -25,7 +25,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
     useActionOnEscapePress(closeModal);
 
     useEffect(() => {
-        setColumnsNamesInConditions(priorities.map((item) => (item.map((item) => (item.dataSheet)))).flat());
+        setColumnsNamesInConditions(priorities.map((item) => (item.conditions.map((item) => (item.dataSheet)))).flat());
     }, [priorities]);
 
     useEffect(() => {

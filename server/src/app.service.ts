@@ -193,7 +193,7 @@ export class AppService {
                         const matchFunction = condition.matchFunction;
 
                         if(dataSheetPart && relationSheetPart) {
-                            const similarity = this.getSimilarityFunction(matchFunction,
+                            const similarity = this.getSimilarityFunction(parseInt(matchFunction),
                                 dataSheetPart.toString(), relationSheetPart.toString());
                             similarities.push(similarity);
                         }
@@ -309,6 +309,8 @@ export class AppService {
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId) {
       const dataSheet = await this.convertFileToArrayOfObjects(dataFile);
       const relationSheet = await this.convertFileToArrayOfObjects(relationFile);
+
+      console.log(JSON.stringify(priorities));
 
       await this.addNewCorrelationJob(jobId, userId, relationSheet.length);
 
