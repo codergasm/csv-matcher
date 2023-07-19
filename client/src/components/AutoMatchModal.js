@@ -201,9 +201,12 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
         setPriorities(prevState => {
             return prevState.map((item, index) => {
                 if(index === priority) {
-                    return item.conditions.filter((item, index) => {
-                        return index !== condition;
-                    });
+                    return {
+                        ...item,
+                        conditions: item.conditions.filter((item, index) => {
+                            return index !== condition;
+                        })
+                    }
                 }
                 else {
                     return item;

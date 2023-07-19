@@ -8,7 +8,8 @@ const getProgressByJobId = (jobId) => {
 }
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
-                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength) => {
+                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
+                       dataSheetLength, relationSheetLength, selectListIndicators) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -25,6 +26,7 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     formData.append('showInSelectMenuColumnsDataSheet', JSON.stringify(showInSelectMenuColumnsDataSheet));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
+    formData.append('selectListIndicators', JSON.stringify(selectListIndicators));
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, ''));

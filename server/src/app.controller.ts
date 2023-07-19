@@ -17,17 +17,18 @@ export class AppController {
   @UseInterceptors(FilesInterceptor('files'))
   async getSelectList(@UploadedFiles() files: Array<Express.Multer.File>,
                       @Body() body) {
-    const { jobId, priorities, dataFilePath, relationFilePath, dataDelimiter, relationDelimiter,
+    const { jobId, priorities, dataFilePath, relationFilePath, dataDelimiter, relationDelimiter, selectListIndicators,
       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
     const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
+    const selectListIndicatorsObject = JSON.parse(selectListIndicators);
 
     return this.appService.getSelectList(jobId, priorities,
         dataFile, relationFile,
         dataDelimiter, relationDelimiter,
         isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-        dataSheetLength, relationSheetLength);
+        dataSheetLength, relationSheetLength, selectListIndicatorsObject);
   }
 
   @UseGuards(JwtAuthGuard)

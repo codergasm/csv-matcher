@@ -7,6 +7,7 @@ import {CorrelationJobsEntity} from "./entities/correlation_jobs.entity";
 import {InjectRepository} from "@nestjs/typeorm";
 import * as path from 'path';
 import getMaxValueFromArray from "./common/getMaxValueFromArray";
+import getMinValueFromArray from "./common/getMinValueFromArray";
 
 @Injectable()
 export class AppService {
@@ -106,8 +107,13 @@ export class AppService {
         return transposedMatrix;
     }
 
+    sortBySimilarity(arr) {
+        return arr.sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
+    }
+
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
-                      isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength) {
+                      isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
+                      dataSheetLength, relationSheetLength, selectListIndicators) {
       if(isCorrelationMatrixEmpty === 'true') {
           return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
       }
@@ -120,42 +126,36 @@ export class AppService {
                                                                     dataSheet, relationSheet,[], true);
           const correlationMatrixForDataSheet = this.transposeMatrix(correlationMatrix);
 
+          const selectListIndicatorsForDataSheet = this.transposeMatrix(selectListIndicators);
+
           await this.finishCorrelationJob(jobId, relationSheet.length);
 
           try {
               // Convert correlation matrix to array of arrays of objects
               const relationSheetSelectList = correlationMatrix.map((relationRowItem, relationRowIndex) => {
-                  const relationRowSimilaritiesArray = relationRowItem.map((dataRowItem, dataRowIndex) => {
-                      const similarity = correlationMatrix[relationRowIndex][dataRowIndex]
-                          .map((item) => {
-                              return item.map((item) => (item.toFixed(0)));
-                          });
+                  return this.sortBySimilarity(relationRowItem.map((dataRowItem, dataRowIndex) => {
+                      const [priority, condition] = selectListIndicators[relationRowIndex][dataRowIndex];
+                      const similarity = parseInt(correlationMatrix[relationRowIndex][dataRowIndex][priority][condition].toFixed());
 
                       return {
                           dataRowIndex,
                           relationRowIndex,
                           similarity
                       }
-                  });
-
-                  return this.sortBySimilarity(relationRowSimilaritiesArray);
+                  }));
               });
 
               const dataSheetSelectList = correlationMatrixForDataSheet.map((dataRowItem, dataRowIndex) => {
-                  const relationRowSimilaritiesArray = dataRowItem.map((relationRowItem, relationRowIndex) => {
-                      const similarity = correlationMatrixForDataSheet[dataRowIndex][relationRowIndex]
-                          .map((item) => {
-                              return item.map((item) => (item.toFixed(0)));
-                          });
+                  return this.sortBySimilarity(dataRowItem.map((relationRowItem, relationRowIndex) => {
+                      const [priority, condition] = selectListIndicatorsForDataSheet[dataRowIndex][relationRowIndex];
+                      const similarity = parseInt(correlationMatrix[dataRowIndex][relationRowIndex][priority][condition].toFixed());
 
                       return {
                           dataRowIndex,
                           relationRowIndex,
                           similarity
                       }
-                  });
-
-                  return this.sortBySimilarity(relationRowSimilaritiesArray);
+                  }));
               });
 
               return {
@@ -190,7 +190,6 @@ export class AppService {
                         const dataSheetPart = dataRow[condition.dataSheet];
                         const relationSheetPart = relationRow[condition.relationSheet];
                         const matchFunction = condition.matchFunction;
-                        const required = condition.required;
 
                         if(dataSheetPart && relationSheetPart) {
                             const similarity = this.getSimilarityFunction(matchFunction,
@@ -201,8 +200,6 @@ export class AppService {
                             similarities.push(0);
                         }
                     }
-
-                    // tutaj mamy tablicę z similarities dla wszystkich warunków i informacją czy warunek required
 
                     relationRowSimilarities.push(similarities.map((item) => {
                         return Math.max(item * 100, 0);
@@ -216,10 +213,6 @@ export class AppService {
         }
 
         return allSimilarities;
-    }
-
-    sortBySimilarity(arr) {
-        return arr.sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
     }
 
     alreadyHaveMatchAndNoOverrideOptionSelected(indexesOfCorrelatedRowsItem, overrideAllRows, correlationMatrix) {
@@ -295,7 +288,7 @@ export class AppService {
         let numberOfFulfilledConditions = 0;
 
         for(let i=0; i<similarities.length; i++) {
-            const conditionFulfilled = similarities[i] >= matchThresholds[i];
+            const conditionFulfilled = parseInt(similarities[i]) >= parseInt(matchThresholds[i]);
 
             if(conditionFulfilled) {
                 numberOfFulfilledConditions++;
@@ -324,7 +317,9 @@ export class AppService {
                                                                  indexesOfCorrelatedRows, overrideAllRows);
       let i = 0;
       let newIndexesOfCorrelatedRows = JSON.parse(indexesOfCorrelatedRows);
-      // [[priority, condition]] - tablica wskazujaca, ktory selectList wyswietlic dla danych rekordow
+
+      // [[priority, condition, isConstant]] - tablica wskazujaca, ktory selectList wyswietlic dla danych rekordow
+      // wypelniamy nullami zeby moc potem zmieniac wartosci na pozycji [i][j]
       let selectListIndicators = relationSheet.map(() => {
           return dataSheet.map(() => {
               return null;
@@ -344,18 +339,60 @@ export class AppService {
       //     });
       // }
 
+      const setSelectListIndicatorForNotMatchedRow = (relationRowIndex, dataRowIndex, sumOfRequiredConditions,
+                                                      currentPriorityRequired, currentPrioritySimilarities) => {
+          if(sumOfRequiredConditions > 0) {
+              const requiredConditionsSimilarities = currentPrioritySimilarities.filter((item, index) => {
+                  return currentPriorityRequired[index];
+              })
+              const minValueFromRequiredConditions = getMinValueFromArray(requiredConditionsSimilarities);
+              const indexOfMinValueFromRequiredConditions = currentPrioritySimilarities.indexOf(minValueFromRequiredConditions);
+
+              if(!selectListIndicators[relationRowIndex][dataRowIndex]) {
+                  selectListIndicators[relationRowIndex][dataRowIndex] =
+                      [i, indexOfMinValueFromRequiredConditions, minValueFromRequiredConditions, 0]
+              }
+              else if(minValueFromRequiredConditions < selectListIndicators[relationRowIndex][dataRowIndex][2]) {
+                  if(!selectListIndicators[relationRowIndex][dataRowIndex][3]) {
+                      selectListIndicators[relationRowIndex][dataRowIndex] =
+                          [i, indexOfMinValueFromRequiredConditions, minValueFromRequiredConditions, 0]
+                  }
+              }
+          }
+          else {
+              const optionalConditionsSimilarities = currentPrioritySimilarities.filter((item, index) => {
+                  return !currentPriorityRequired[index];
+              });
+              const maxValueFromOptionalConditions = getMaxValueFromArray(optionalConditionsSimilarities);
+              const indexOfMaxValueFromOptionalConditions = currentPrioritySimilarities.indexOf(maxValueFromOptionalConditions);
+
+              if(!selectListIndicators[relationRowIndex][dataRowIndex]) {
+                  selectListIndicators[relationRowIndex][dataRowIndex] =
+                      [i, indexOfMaxValueFromOptionalConditions, maxValueFromOptionalConditions, 0]
+              }
+              else if(maxValueFromOptionalConditions > selectListIndicators[relationRowIndex][dataRowIndex][2]) {
+                  if(!selectListIndicators[relationRowIndex][dataRowIndex][3]) {
+                      selectListIndicators[relationRowIndex][dataRowIndex] =
+                          [i, indexOfMaxValueFromOptionalConditions, maxValueFromOptionalConditions, 0]
+                  }
+              }
+          }
+
+          return selectListIndicators;
+      }
+
       // Update indexesOfCorrelatedRows based on availability
       // Decide which rows meet all given conditions (priorities)
       // (record already matched can't be matched to another record - one-to-one relation)
       for(let i=0; i<priorities.length; i++) {
           const currentPriority = priorities[i];
           const currentPriorityNumberOfRequiredConditions = currentPriority.requiredConditions;
-          const currentPriorityMatchThresholds = parseInt(currentPriority.conditions.map((item) => (item.matchThreshold)));
+          const currentPriorityMatchThresholds = currentPriority.conditions.map((item) => (item.matchThreshold));
           const currentPriorityRequired = currentPriority.conditions.map((item) => (item.required));
+          const sumOfRequiredConditions = currentPriority.conditions.filter((item) => (item.required)).length;
 
           let relationRowIndex = 0;
 
-          // TODO: co zrobić z selectListIndicators?
           for(const relationRowSimilarities of newCorrelationMatrix) {
               let dataRowIndex = 0;
 
@@ -364,23 +401,28 @@ export class AppService {
 
                   if(this.isPriorityFulfilled(currentPrioritySimilarities, currentPriorityMatchThresholds,
                       currentPriorityRequired, currentPriorityNumberOfRequiredConditions)) {
+                      console.log('priorityFulfilled');
 
                       if(this.areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows)) {
+                          // Update indexesOfCorrelatedRows
+                          console.log('rowsAvailable');
                           newIndexesOfCorrelatedRows.push([dataRowIndex, relationRowIndex]);
 
-                          if(!selectListIndicators[relationRowIndex][dataRowIndex]) {
-                              selectListIndicators[relationRowIndex][dataRowIndex] =
-                                  [i, getMaxValueFromArray((currentPrioritySimilarities))];
-                          }
+                          const maxValueOfAllConditions = getMaxValueFromArray(currentPrioritySimilarities);
+                          const indexOfMaxValueFromAllConditions = currentPrioritySimilarities.indexOf(maxValueOfAllConditions);
+
+                          // Match between dataRow and relationRow - set select list indicator for maximum condition
+                          selectListIndicators[relationRowIndex][dataRowIndex] =
+                              [i, indexOfMaxValueFromAllConditions, maxValueOfAllConditions, 1];
                       }
                       else {
-                          if(!selectListIndicators[relationRowIndex][dataRowIndex]) {
-                              // to samo
-                          }
+                          selectListIndicators = setSelectListIndicatorForNotMatchedRow(relationRowIndex, dataRowIndex,
+                              sumOfRequiredConditions, currentPriorityRequired, currentPrioritySimilarities);
                       }
                   }
                   else {
-                      // to samo
+                      selectListIndicators = setSelectListIndicatorForNotMatchedRow(relationRowIndex, dataRowIndex,
+                          sumOfRequiredConditions, currentPriorityRequired, currentPrioritySimilarities);
                   }
 
                   dataRowIndex++;
@@ -390,9 +432,15 @@ export class AppService {
           }
       }
 
+      const newSelectListIndicators = selectListIndicators.map((item) => {
+          return item.map((item) => {
+              return item.slice(0, 2);
+          });
+      });
+
       return {
           newIndexesOfCorrelatedRows,
-          selectListIndicators,
+          newSelectListIndicators,
           newCorrelationMatrix
       }
   }

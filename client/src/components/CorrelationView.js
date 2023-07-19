@@ -9,6 +9,7 @@ import {getSchemaById} from "../api/schemas";
 import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
 import QuickBottomInfo from "./QuickBottomInfo";
 import getMaximumInArray from "../helpers/getMaximumInArray";
+import transposeMatrix from "../helpers/transposeMatrix";
 
 const ViewContext = React.createContext(null);
 
@@ -58,6 +59,7 @@ const CorrelationView = ({user}) => {
     const [outputSheetColumnsVisibility, setOutputSheetColumnsVisibility] = useState([]);
     const [numberOfMatches, setNumberOfMatches] = useState(-1);
     const [afterMatchClean, setAfterMatchClean] = useState(false);
+    const [selectListIndicators, setSelectListIndicators] = useState([]);
 
     useEffect(() => {
         if(numberOfMatches !== -1) {
@@ -322,14 +324,14 @@ const CorrelationView = ({user}) => {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
                     false, showInSelectMenuColumnsDataSheet,
-                    dataSheet.length, relationSheet.length)
+                    dataSheet.length, relationSheet.length, selectListIndicators)
                     .then((res) => {
                         if(res?.data) {
                             // Select list for relation sheet
                             if(relationSheetSelectList?.length) {
-                                const newSelectList = res.data.relationSheetSelectList;
+                                console.log(res.data.relationSheetSelectList);
 
-                                console.log(newSelectList);
+                                const newSelectList = res.data.relationSheetSelectList;
 
                                 const selectListToUpdate = relationSheetSelectList.map((item, index) => {
                                     if(indexesInRelationSheetSelectListToOverride.includes(index) || 1) {
@@ -406,17 +408,12 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(indexesOfCorrelatedRows) {
-            setMatchSchemaArray(indexesOfCorrelatedRows.map((item, index) => {
-                if(item !== -1) {
-                    return [
-                        createRowShortcut(dataSheet[item]),
-                        createRowShortcut(relationSheet[index])
-                    ]
-                }
-                else {
-                    return null;
-                }
-            }).filter((item) => (item !== null)));
+            setMatchSchemaArray(indexesOfCorrelatedRows.map((item) => {
+                return [
+                    createRowShortcut(dataSheet[item[0]]),
+                    createRowShortcut(relationSheet[item[1]])
+                ]
+            }));
         }
     }, [indexesOfCorrelatedRows]);
 
@@ -429,21 +426,15 @@ const CorrelationView = ({user}) => {
     }, [manuallyCorrelatedRows]);
 
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
-        setManuallyCorrelatedRows(prevState => ([...prevState, relationRowIndex]));
-
         setIndexesOfCorrelatedRows(prevState => {
-           const dataRowAvailable = !prevState.map((item) => (item[0]))
-               .includes(dataRowIndex);
-           const relationRowAvailable = !prevState.map((item) => (item[1]))
-               .includes(relationRowIndex);
-
-           if(dataRowAvailable && relationRowAvailable) {
-               return [...prevState, [dataRowIndex, relationRowIndex]];
-           }
-           else {
-               return prevState;
-           }
+            return [...prevState.filter((item) => {
+                return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
+            }), [dataRowIndex, relationRowIndex]];
         });
+
+        setManuallyCorrelatedRows(prevState => ([...prevState.filter((item) => {
+            return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
+        }), [dataRowIndex, relationRowIndex]]));
     }
 
     const areRowsAvailable = (dataRow, relationRow, indexesOfCorrelatedRows) => {
@@ -454,6 +445,14 @@ const CorrelationView = ({user}) => {
 
         return dataRowAvailable && relationRowAvailable;
     }
+
+    useEffect(() => {
+        console.log(manuallyCorrelatedRows);
+    }, [manuallyCorrelatedRows]);
+
+    useEffect(() => {
+        console.log(indexesOfCorrelatedRows);
+    }, [indexesOfCorrelatedRows]);
 
     const correlate = () => {
         setIndexesInRelationSheetSelectListToOverride([]);
@@ -473,12 +472,12 @@ const CorrelationView = ({user}) => {
             manuallyCorrelatedRows, user.id)
             .then((res) => {
                if(res?.data) {
-                   const newIndexesOfCorrelatedRows = res.data.newIndexesOfCorrelatedRows;
-                   const newCorrelationMatrix = res.data.newCorrelationMatrix;
+                   const { newIndexesOfCorrelatedRows, newCorrelationMatrix, newSelectListIndicators }
+                    = res.data;
+
                    const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
 
-                   console.log(newIndexesOfCorrelatedRows);
-                   console.log(newCorrelationMatrix);
+                   setSelectListIndicators(newSelectListIndicators);
 
                    if(!overrideAllRows) {
                        // dopasuj tylko te, które jeszcze nie mają dopasowania
@@ -556,7 +555,11 @@ const CorrelationView = ({user}) => {
                                                          ref={dataSheetWrapper}
                                                          currentSheet={dataSheet}
                                                          secondSheet={relationSheet}
+                                                         manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[0]))}
+                                                         schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[0]))}
+                                                         indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[0]))}
                                                          selectList={dataSheetSelectList}
+                                                         selectListIndicators={transposeMatrix(selectListIndicators)}
                                                          selectListLoading={dataSheetSelectListLoading}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsDataSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsDataSheet}
@@ -568,7 +571,11 @@ const CorrelationView = ({user}) => {
                                                          ref={relationSheetWrapper}
                                                          currentSheet={relationSheet}
                                                          secondSheet={dataSheet}
+                                                         manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[1]))}
+                                                         schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[1]))}
+                                                         indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[1]))}
                                                          selectList={relationSheetSelectList}
+                                                         selectListIndicators={selectListIndicators}
                                                          selectListLoading={relationSheetSelectListLoading}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet}
