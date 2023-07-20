@@ -278,7 +278,7 @@ export class AppService {
         return outputCorrelationMatrix;
     }
 
-    areRowsAvailable(dataRow, relationRow, indexesOfCorrelatedRows) {
+    areRowsAvailableOneToOneRelation(dataRow, relationRow, indexesOfCorrelatedRows) {
         const dataRowAvailable = !indexesOfCorrelatedRows
             .map((item) => (item[0]))
             .includes(dataRow);
@@ -287,6 +287,21 @@ export class AppService {
             .includes(relationRow);
 
         return dataRowAvailable && relationRowAvailable;
+    }
+    areRowsAvailableOneToManyRelation(dataRow, relationRow, indexesOfCorrelatedRows) {
+        return !indexesOfCorrelatedRows
+            .map((item) => (item[1]))
+            .includes(relationRow);
+    }
+
+    areRowsAvailableManyToOneRelation(dataRow, relationRow, indexesOfCorrelatedRows) {
+        return !indexesOfCorrelatedRows
+            .map((item) => (item[0]))
+            .includes(dataRow);
+    }
+
+    areRowsAvailableManyToManyRelation(_, __, ___) {
+        return true;
     }
 
     isPriorityFulfilled(similarities, matchThresholds, conditionsRequired, numberOfRequiredConditions) {
@@ -310,7 +325,7 @@ export class AppService {
 
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                   priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId, relationTestRow = -1) {
+            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId, matchType, relationTestRow) {
       let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
       let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
 
@@ -334,19 +349,6 @@ export class AppService {
               return null;
           });
       });
-
-      // Update indexesOfCorrelatedRows based on overriding settings
-      // TODO
-      // if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
-      //     newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.map((item, index) => {
-      //         if(manuallyCorrelatedRows.includes(index)) {
-      //             return item;
-      //         }
-      //         else {
-      //             return -1;
-      //         }
-      //     });
-      // }
 
       const setSelectListIndicatorForNotMatchedRow = (relationRowIndex, dataRowIndex, sumOfRequiredConditions,
                                                       currentPriorityRequired, currentPrioritySimilarities) => {
@@ -392,7 +394,21 @@ export class AppService {
 
       // Update indexesOfCorrelatedRows based on availability
       // Decide which rows meet all given conditions (priorities)
-      // (record already matched can't be matched to another record - one-to-one relation)
+      let areRowsAvailable;
+
+      if(matchType === 0) {
+          areRowsAvailable = this.areRowsAvailableOneToOneRelation;
+      }
+      else if(matchType === 1) {
+          areRowsAvailable = this.areRowsAvailableOneToManyRelation;
+      }
+      else if(matchType === 2) {
+          areRowsAvailable = this.areRowsAvailableManyToOneRelation;
+      }
+      else {
+          areRowsAvailable = this.areRowsAvailableManyToManyRelation;
+      }
+
       for(let i=0; i<priorities.length; i++) {
           const currentPriority = priorities[i];
           const currentPriorityNumberOfRequiredConditions = currentPriority.requiredConditions;
@@ -411,7 +427,7 @@ export class AppService {
                   if(this.isPriorityFulfilled(currentPrioritySimilarities, currentPriorityMatchThresholds,
                       currentPriorityRequired, currentPriorityNumberOfRequiredConditions)) {
 
-                      if(this.areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows)) {
+                      if(areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows)) {
                           // Update indexesOfCorrelatedRows
                           newIndexesOfCorrelatedRows.push([dataRowIndex, relationRowIndex]);
 

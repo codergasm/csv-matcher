@@ -40,7 +40,7 @@ export class AppController {
     const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-      manuallyCorrelatedRows, userId, relationTestRow } = body;
+      manuallyCorrelatedRows, userId, relationTestRow, matchType } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
     const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
@@ -51,6 +51,6 @@ export class AppController {
         dataFileDelimiter, relationFileDelimiter,
         prioritiesObject, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        manuallyCorrelatedRows, userId, relationTestRowToSend);
+        manuallyCorrelatedRows, userId, parseInt(matchType), relationTestRowToSend);
   }
 }

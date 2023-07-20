@@ -10,7 +10,7 @@ import TestConfigurationMatchesList from "./TestConfigurationMatchesList";
 const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, user}) => {
     const { dataSheet, relationSheet, dataFile, relationFile, dataDelimiter, relationDelimiter } = useContext(AppContext);
     const { showInSelectMenuColumnsDataSheet, priorities, indexesOfCorrelatedRows,
-        overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
+        overrideAllRows, avoidOverrideForManuallyCorrelatedRows, matchType,
         manuallyCorrelatedRows} = useContext(ViewContext);
 
     const [relationSheetRowNumber, setRelationSheetRowNumber] = useState(1);
@@ -78,7 +78,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, user.id, relationSheetRowNumber-1)
+            manuallyCorrelatedRows, user.id, matchType, relationSheetRowNumber-1)
             .then((res) => {
                 if(res?.data) {
                     const { newIndexesOfCorrelatedRows, newSelectListIndicators }

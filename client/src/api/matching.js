@@ -50,7 +50,7 @@ const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, userId, relationTestRow = -1) => {
+                  manuallyCorrelatedRows, userId, matchType, relationTestRow = -1) => {
 
     const formData = new FormData();
     const config = {
@@ -70,6 +70,7 @@ const matching = (jobId, priorities, correlationMatrix,
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
     formData.append('userId', userId);
+    formData.append('matchType', matchType);
     formData.append('relationTestRow', relationTestRow.toString());
 
     if(typeof dataFile === 'string') {

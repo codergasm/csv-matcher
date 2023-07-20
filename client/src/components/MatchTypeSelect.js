@@ -9,18 +9,15 @@ const matchTypes = [
     },
     {
         label: 'Jeden (arkusz 1) do wielu (arkusz 2)',
-        value: 1,
-        isDisabled: true
+        value: 1
     },
     {
         label: 'Wiele (arkusz 1) do jednego (arkusz 2)',
-        value: 2,
-        isDisabled: true
+        value: 2
     },
     {
         label: 'Wiele do wielu',
-        value: 3,
-        isDisabled: true
+        value: 3
     }
 ]
 

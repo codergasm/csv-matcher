@@ -184,6 +184,7 @@
 }
 
 .sheet {
+    position: relative;
     width: 90%;
     height: 80vh;
     margin: 20px auto;
@@ -2773,4 +2774,15 @@ input[type=number] {
 
 .testConfiguration__selectList .line--tableRow:last-child {
     border-bottom: 1px solid var(--primary);
+}
+
+.matchTypeSelectLabel--relationColumn {
+    position: absolute;
+    top: 15px;
+    right: 145px;
+    z-index: 100;
+}
+
+.matchTypeSelectLabel--relationColumn > span {
+    color: #fff;
 }

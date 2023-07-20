@@ -459,11 +459,13 @@ const CorrelationView = ({user}) => {
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, user.id)
+            manuallyCorrelatedRows, user.id, matchType)
             .then((res) => {
                if(res?.data) {
                    const { newIndexesOfCorrelatedRows, newCorrelationMatrix, newSelectListIndicators }
                     = res.data;
+
+                   console.log(newIndexesOfCorrelatedRows);
 
                    const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
 

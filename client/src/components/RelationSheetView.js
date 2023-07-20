@@ -26,6 +26,8 @@ import DeleteMatchesModal from "./DeleteMatchesModal";
 import MatchTypeSelect from "./MatchTypeSelect";
 import {getSchemaById} from "../api/schemas";
 import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
+import getLevelsOfRelationColumn from "../helpers/getLevelsOfRelationColumn";
+import RelationColumnSelect from "./RelationColumnSelect";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsSecondSheet,
@@ -36,7 +38,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes, user}, ref) => {
     const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
-        addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
+        addManualCorrelation, indexesOfCorrelatedRows, matchType } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [currentSheetSorted, setCurrentSheetSorted] = useState([]);
@@ -65,8 +67,16 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [dataRowIndexForManualCorrelation, setDataRowIndexForManualCorrelation] = useState(-1);
     const [relationRowIndexForManualCorrelation, setRelationRowIndexForManualCorrelation] = useState(-1);
     const [deleteMatchesModalVisible, setDeleteMatchesModalVisible] = useState(false);
+    const [indexesOfCorrelatedRowsLevels, setIndexesOfCorrelatedRowsLevels] = useState([[]]);
+    const [currentRelationColumnVisible, setCurrentRelationColumnVisible] = useState(0);
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
+
+    useEffect(() => {
+        if(indexesOfCorrelatedRows?.length) {
+            setIndexesOfCorrelatedRowsLevels(getLevelsOfRelationColumn(indexesOfCorrelatedRows, sheetIndex));
+        }
+    }, [indexesOfCorrelatedRows]);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -450,6 +460,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }
 
+    useEffect(() => {
+        console.log(indexesOfCorrelatedRowsLevels);
+    }, [indexesOfCorrelatedRowsLevels]);
+
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
@@ -498,6 +512,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
         {selectList?.length && !selectListLoading ? <div className="sheet scroll"
                                    onScroll={checkScrollToBottom}>
+
+            {matchType !== 0 ? <RelationColumnSelect n={indexesOfCorrelatedRowsLevels?.length}
+                                                     selectOption={currentRelationColumnVisible}
+                                                     setSelectOption={setCurrentRelationColumnVisible} /> : ''}
 
             <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
@@ -622,17 +640,18 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                 let correlatedRow = null;
                 let substringIndexes = [];
                 const currentSelectList = selectList[indexesInRender[index]];
+                const currentIndexesOfCorrelatedRows = indexesOfCorrelatedRowsLevels[currentRelationColumnVisible];
 
                 if(currentSelectList?.length) {
                     if(sheetIndex === 0) {
-                        const pair = indexesOfCorrelatedRows.find((item) => (item[0] === index));
+                        const pair = currentIndexesOfCorrelatedRows.find((item) => (item[0] === index));
 
                         if(pair) {
                             correlatedRow = currentSelectList.find((item) => (item.relationRowIndex === pair[1]));
                         }
                     }
                     else {
-                        const pair = indexesOfCorrelatedRows.find((item) => (item[1] === index));
+                        const pair = currentIndexesOfCorrelatedRows.find((item) => (item[1] === index));
 
                         if(pair) {
                             correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === pair[0]));
