@@ -1,25 +1,27 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ViewContext} from "./CorrelationView";
 import {AppContext} from "../pages/CorrelationPage";
-import { stringSimilarity } from "string-similarity-js";
-import getSimilarityColor from "../helpers/getSimilarityColor";
-import {findSubstrings} from "../helpers/others";
-import ColorMarkedText from "./ColorMarkedText";
+import {makeId} from "../helpers/others";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import {getSelectList, matching} from "../api/matching";
+import TestConfigurationMatchesList from "./TestConfigurationMatchesList";
 
-const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) => {
-    let matchThreshold = 50; // TODO
-
-    const { dataSheet, relationSheet } = useContext(AppContext);
-    const { showInSelectMenuColumnsDataSheet, priorities } = useContext(ViewContext);
+const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, user}) => {
+    const { dataSheet, relationSheet, dataFile, relationFile, dataDelimiter, relationDelimiter } = useContext(AppContext);
+    const { showInSelectMenuColumnsDataSheet, priorities, indexesOfCorrelatedRows,
+        overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
+        manuallyCorrelatedRows} = useContext(ViewContext);
 
     const [relationSheetRowNumber, setRelationSheetRowNumber] = useState(1);
     const [relationSheetColumnsNames, setRelationSheetColumnsNames] = useState([]);
     const [dataSheetColumnsNames, setDataSheetColumnsNames] = useState([]);
-    const [selectList, setSelectList] = useState([]);
+    const [testSelectList, setTestSelectList] = useState([]);
+    const [testIndexesOfCorrelatedRows, setTestIndexesOfCorrelatedRows] = useState([]);
     const [joinStringOfColumnsFromRelationSheet, setJoinStringOfColumnsFromRelationSheet] = useState('');
     const [columnsNamesInConditions, setColumnsNamesInConditions] = useState([]);
+    const [columnToSearch, setColumnToSearch] = useState(0);
+    const [valueToSearch, setValueToSearch] = useState('');
 
     useCloseModalOnOutsideClick(closeModal);
     useActionOnEscapePress(closeModal);
@@ -38,97 +40,17 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
         setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])))
     }, [dataSheet]);
 
-    const getSimilarityFunction = (type, a, b) => {
-        if(type === 0) {
-            return stringSimilarity(a, b);
-        }
-        else if(type === 1) {
-            const res = this.findLongestSubstring(a, b);
-            return res / a.length;
-        }
-        else {
-            return this.findLongestSubstring(a, b) / b.length;
-        }
-    }
+    useEffect(() => {
+        if(relationSheetColumnsNames?.length) {
+            if(valueToSearch) {
+                const indexFound = relationSheet.findIndex((item) => {
+                    return item[relationSheetColumnsNames[columnToSearch]]?.toLowerCase()?.includes(valueToSearch?.toLowerCase());
+                });
 
-    const getSimilarityScores = (conditions, relationRow) => {
-        let relationRowSimilarities = [];
-
-        for(const dataRow of dataSheet) {
-            // Calculate similarities
-            let similarities = [];
-
-            for(const condition of conditions) {
-                const dataSheetPart = dataRow[condition.dataSheet];
-                const relationSheetPart = relationRow[condition.relationSheet];
-                const matchFunction = condition.matchFunction;
-                const required = condition.required;
-
-                if(dataSheetPart && relationSheetPart) {
-                    const similarity = getSimilarityFunction(matchFunction,
-                        dataSheetPart.toString(), relationSheetPart.toString());
-                    similarities.push({
-                        similarity,
-                        required
-                    });
-                }
-                else {
-                    similarities.push({
-                        similarity: 0,
-                        required
-                    });
-                }
+                setRelationSheetRowNumber(indexFound === -1 ? -1 : indexFound+1);
             }
-
-            // Calculate final similarity based on conditions - default first similarity
-            // (if no conditions, loop will be omitted)
-            let finalSimilarity = similarities[0];
-
-            // TODO
-            // if(similarities.length > 1) {
-            //     for(let i=0; i<similarities.length-1; i++) {
-            //         if(logicalOperators[i] === 1) { // or
-            //             let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
-            //             let secondNumber = similarities[i+1];
-            //
-            //             finalSimilarity = Math.max(firstNumber, secondNumber);
-            //         }
-            //         else { // and
-            //             let firstNumber = finalSimilarity === -1 ? similarities[i] : finalSimilarity;
-            //             let secondNumber = similarities[i+1];
-            //
-            //             finalSimilarity = Math.min(firstNumber, secondNumber);
-            //         }
-            //     }
-            // }
-
-            relationRowSimilarities.push(Math.max(finalSimilarity * 100, 0));
         }
-
-        return relationRowSimilarities;
-    }
-
-    const getCorrelationMatrix = () => {
-        let correlationMatrixTmp = [];
-        let priorityIndex = 0;
-
-        for(const priority of priorities) {
-            // Get similarities for all rows for current priority
-            // [[relation row 1 similarities], [relation row 2 similarities] ...]
-            const similarityScores = getSimilarityScores(priority, relationSheet[relationSheetRowNumber-1]);
-
-            let relationRowIndex = 0;
-            for(const relationRowSimilarities of similarityScores) {
-                correlationMatrixTmp.push(relationRowSimilarities);
-
-                relationRowIndex++;
-            }
-
-            priorityIndex++;
-        }
-
-        return correlationMatrixTmp;
-    }
+    }, [valueToSearch, columnToSearch]);
 
     useEffect(() => {
         setJoinStringOfColumnsFromRelationSheet(priorities.map((item) => {
@@ -144,34 +66,52 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
     }, [relationSheetRowNumber]);
 
     const startTestCorrelation = () => {
-        // Get array of correlation value by dataSheet row index
-        let correlationMatrixTmp = getCorrelationMatrix();
-
-        const selectListTmp = correlationMatrixTmp.map((similarity, dataRowIndex) => {
-           return {
-               dataRowIndex,
-               similarity
-           }
-        }).sort((a, b) => {
-            if(parseInt(a.similarity) < parseInt(b.similarity)) {
-                return 1;
-            }
-            else if(parseInt(a.similarity) > parseInt(b.similarity)) {
+        const jobIdTmp = makeId(64);
+        const correlationMatrix = relationSheet.map(() => {
+            return dataSheet.map(() => {
                 return -1;
-            }
-            else {
-                return a.dataRowIndex > b.dataRowIndex ? 1 : -1;
-            }
+            });
         });
 
-        setSelectList(selectListTmp);
+        matching(jobIdTmp, priorities, correlationMatrix,
+            dataFile, relationFile,
+            dataDelimiter, relationDelimiter,
+            indexesOfCorrelatedRows,
+            overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
+            manuallyCorrelatedRows, user.id, relationSheetRowNumber-1)
+            .then((res) => {
+                if(res?.data) {
+                    const { newIndexesOfCorrelatedRows, newSelectListIndicators }
+                        = res.data;
+
+                    setTestIndexesOfCorrelatedRows(newIndexesOfCorrelatedRows);
+
+                    getSelectList(jobIdTmp, priorities, dataFile, relationFile,
+                        dataDelimiter, relationDelimiter,
+                        false, showInSelectMenuColumnsDataSheet,
+                        dataSheet.length, relationSheet.length, newSelectListIndicators, relationSheetRowNumber-1)
+                        .then((res) => {
+                            if(res?.data) {
+                                setTestSelectList(res?.data?.relationSheetSelectList[0]);
+                            }
+                        });
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
+
+    const handleRelationSheetRowNumberInput = (e) => {
+        setValueToSearch('');
+        setRelationSheetRowNumber(isNaN(parseInt(e.target.value)) ? '' : parseInt(e.target.value));
     }
 
     return <div className="modal__inner modal__inner--testConfiguration scroll">
         <div className="modal__top">
             <button className="btn btn--openTestConfigurationModal"
                     onClick={closeModal}>
-                Powrót
+                Zamknij testowanie
             </button>
 
             <h3 className="modal__header">
@@ -180,16 +120,40 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
         </div>
 
         <div className="modal__line">
-                <span>
+                <span className="flex flex--start">
                     Arkusz 2 - numer wiersza: <input className="input input--number"
-                                                     value={relationSheetRowNumber}
-                                                     onChange={(e) => { setRelationSheetRowNumber(isNaN(parseInt(e.target.value)) ? '' : parseInt(e.target.value)); }} />
+                                                     value={relationSheetRowNumber !== -1 ? relationSheetRowNumber : ''}
+                                                     onChange={handleRelationSheetRowNumberInput} />
                 </span>
-            {relationSheetRowNumber > relationSheet?.length ? <span className="red">
-                    Nie ma takiego wiersza. Liczba wierszy w arkuszu 2 to: {relationSheet?.length}
-                </span> : ''}
 
-            <div className="marginTop">
+            <span className="flex flex--start">
+                Wskaż rekord wg wartości w kolumnie:
+                <select className="priorities__item__condition__select"
+                        value={columnToSearch}
+                        onChange={(e) => { setColumnToSearch(e.target.value); }}>
+                    {relationSheetColumnsNames.map((item, index) => {
+                        return <option key={index}
+                                       value={index}>
+                            {item}
+                        </option>
+                    })}
+                </select>
+            </span>
+
+            <span>
+                <label className="priorities__item__condition__search">
+                    <input className="input input--search input--valueToSearch"
+                           value={valueToSearch}
+                           onChange={(e) => { setValueToSearch(e.target.value); }}
+                           placeholder="Wartość w kolumnie" />
+                </label>
+            </span>
+
+            {(relationSheetRowNumber > relationSheet?.length) || relationSheetRowNumber === -1 ? <span className="red">
+                    {relationSheetRowNumber === -1 ? 'Nie znaleziono żadnego wiersza' : <>
+                        Nie ma takiego wiersza. Liczba wierszy w arkuszu 2 to: {relationSheet?.length}
+                    </>}
+                </span> : <div className="marginTop">
                 <div className="container--scrollX scroll">
                     <div className="flex">
                         {relationSheetColumnsNames.map((item, index) => {
@@ -221,17 +185,17 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                         }) : ''}
                     </div>
                 </div>
-            </div>
+            </div>}
 
             <button className="btn btn--startAutoMatch btn--startAutoMatchTest"
-                    onClick={() => { startTestCorrelation(); }}>
+                    onClick={startTestCorrelation}>
                 Uruchom automatyczne dopasowanie testowo tylko dla wiersza powyżej
             </button>
 
-            {selectList?.length ? <div className="testConfiguration__selectList">
-                {selectList[0].similarity > matchThreshold ? <>
+            {testSelectList?.length ? <div className="testConfiguration__selectList">
+                {testIndexesOfCorrelatedRows?.length ? <>
                     <p className="text-center">
-                        Znaleziono dopasowanie do wiersza <b>nr {selectList[0].dataRowIndex}</b> z arkusza 1.
+                        Znaleziono dopasowanie do wiersza <b>nr {testSelectList[0].dataRowIndex}</b> z arkusza 1.
                     </p>
 
                     <div className="center">
@@ -257,36 +221,12 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                     Dopasowanie
                                 </div>
                             </div>
-                            <div className="line line--tableRow">
-                                {Object.entries(dataSheet[selectList[0].dataRowIndex]).map((item, index) => {
-                                    const cellValue = item[1];
-                                    let substringIndexes = [];
 
-                                    if(columnsNamesInConditions.includes(item[0])) {
-                                        substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
-                                    }
-
-                                    if(showInSelectMenuColumnsDataSheet[index]) {
-                                        return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
-                                                    style={{
-                                                        minWidth: `300px`
-                                                    }}
-                                                    key={index}>
-                                            <ColorMarkedText string={cellValue}
-                                                             indexes={substringIndexes} />
-                                        </div>
-                                    }
-                                    else {
-                                        return '';
-                                    }
-                                })}
-
-                                <div className="sheet__body__row__cell sheet__body__row__cell--center" style={{
-                                    background: getSimilarityColor(selectList[0].similarity)
-                                }}>
-                                    {selectList[0].similarity}%
-                                </div>
-                            </div>
+                            <TestConfigurationMatchesList from={0}
+                                                          to={1}
+                                                          joinStringOfColumnsFromRelationSheet={joinStringOfColumnsFromRelationSheet}
+                                                          testSelectList={testSelectList}
+                                                          columnsNamesInConditions={columnsNamesInConditions} />
                         </div>
                     </div>
 
@@ -317,45 +257,17 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                     Dopasowanie
                                 </div>
                             </div>
-                            {selectList.slice(1, 11).map((item, index) => {
-                                const similarity = item.similarity?.toFixed();
 
-                                return <div className="line line--tableRow" key={index}>
-                                    {Object.entries(dataSheet[item.dataRowIndex]).map((item, index) => {
-                                        const cellValue = item[1];
-                                        let substringIndexes = [];
-
-                                        if(columnsNamesInConditions.includes(item[0])) {
-                                            substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
-                                        }
-
-                                        if(showInSelectMenuColumnsDataSheet[index]) {
-                                            return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
-                                                        style={{
-                                                            minWidth: `300px`
-                                                        }}
-                                                        key={index}>
-                                                <ColorMarkedText string={cellValue}
-                                                                 indexes={substringIndexes} />
-                                            </div>
-                                        }
-                                        else {
-                                            return '';
-                                        }
-                                    })}
-
-                                    <div className="sheet__body__row__cell sheet__body__row__cell--center" style={{
-                                        background: getSimilarityColor(similarity)
-                                    }}>
-                                        {similarity}%
-                                    </div>
-                                </div>
-                            })}
+                            <TestConfigurationMatchesList from={1}
+                                                          to={11}
+                                                          joinStringOfColumnsFromRelationSheet={joinStringOfColumnsFromRelationSheet}
+                                                          testSelectList={testSelectList}
+                                                          columnsNamesInConditions={columnsNamesInConditions} />
                         </div>
                     </div>
                 </> : <>
                     <p className="text-center">
-                        Nie znaleziono dopasowania powyżej wyznaczonego progu ({matchThreshold}%).
+                        Nie znaleziono dopasowania powyżej wyznaczonego progu.
                         Poniżej znajduje się lista dziesięciu najwyżej dopasowanych rekordów.
                     </p>
 
@@ -382,40 +294,11 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility}) =>
                                     Dopasowanie
                                 </div>
                             </div>
-                            {selectList.slice(0, 10).map((item, index) => {
-                                const similarity = item.similarity.toFixed();
-
-                                return <div className="line line--tableRow" key={index}>
-                                    {Object.entries(dataSheet[item.dataRowIndex]).map((item, index) => {
-                                        const cellValue = item[1];
-                                        let substringIndexes = [];
-
-                                        if(columnsNamesInConditions.includes(item[0])) {
-                                            substringIndexes = findSubstrings(joinStringOfColumnsFromRelationSheet, cellValue);
-                                        }
-
-                                        if(showInSelectMenuColumnsDataSheet[index]) {
-                                            return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
-                                                        style={{
-                                                            minWidth: `300px`
-                                                        }}
-                                                        key={index}>
-                                                <ColorMarkedText string={cellValue}
-                                                                 indexes={substringIndexes} />
-                                            </div>
-                                        }
-                                        else {
-                                            return '';
-                                        }
-                                    })}
-
-                                    <div className="sheet__body__row__cell sheet__body__row__cell--center" style={{
-                                        background: getSimilarityColor(similarity)
-                                    }}>
-                                        {similarity}%
-                                    </div>
-                                </div>
-                            })}
+                            <TestConfigurationMatchesList from={0}
+                                                          to={10}
+                                                          joinStringOfColumnsFromRelationSheet={joinStringOfColumnsFromRelationSheet}
+                                                          testSelectList={testSelectList}
+                                                          columnsNamesInConditions={columnsNamesInConditions} />
                         </div>
                     </div>
                 </>}

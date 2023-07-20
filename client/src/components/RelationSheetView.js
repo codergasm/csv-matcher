@@ -33,7 +33,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsCurrentSheet, setShowInSelectMenuColumnsCurrentSheet,
                                selectList, selectListLoading, selectListIndicators,
                                manuallyCorrelatedRowsIndexes, schemaCorrelatedRowsIndexes,
-                               indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes}, ref) => {
+                               indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes, user}, ref) => {
     const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
         addManualCorrelation, indexesOfCorrelatedRows } = useContext(ViewContext);
@@ -454,6 +454,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
                                                  columnsVisibility={currentSheetColumnsVisibility}
+                                                 user={user}
                                                  closeModal={() => { setAutoMatchModalVisible(false); }} /> : ''}
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}

@@ -9,7 +9,7 @@ const getProgressByJobId = (jobId) => {
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
                        isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-                       dataSheetLength, relationSheetLength, selectListIndicators) => {
+                       dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -27,6 +27,7 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
     formData.append('selectListIndicators', JSON.stringify(selectListIndicators));
+    formData.append('relationTestRow', relationTestRow.toString());
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, ''));
@@ -49,7 +50,7 @@ const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, userId) => {
+                  manuallyCorrelatedRows, userId, relationTestRow = -1) => {
 
     const formData = new FormData();
     const config = {
@@ -69,6 +70,7 @@ const matching = (jobId, priorities, correlationMatrix,
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
     formData.append('userId', userId);
+    formData.append('relationTestRow', relationTestRow.toString());
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));

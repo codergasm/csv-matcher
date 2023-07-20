@@ -113,13 +113,17 @@ export class AppService {
 
   async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-                      dataSheetLength, relationSheetLength, selectListIndicators) {
+                      dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) {
       if(isCorrelationMatrixEmpty === 'true') {
           return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
       }
       else {
-          const dataSheet = await this.convertFileToArrayOfObjects(dataFile);
-          const relationSheet = await this.convertFileToArrayOfObjects(relationFile);
+          let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
+          let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
+
+          if(relationTestRow !== -1) {
+             relationSheet = [relationSheet[relationTestRow]];
+          }
 
           // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
           const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
@@ -306,11 +310,13 @@ export class AppService {
 
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                   priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId) {
-      const dataSheet = await this.convertFileToArrayOfObjects(dataFile);
-      const relationSheet = await this.convertFileToArrayOfObjects(relationFile);
+            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId, relationTestRow = -1) {
+      let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
+      let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
 
-      console.log(JSON.stringify(priorities));
+      if(relationTestRow !== -1) {
+         relationSheet = [relationSheet[relationTestRow]];
+      }
 
       await this.addNewCorrelationJob(jobId, userId, relationSheet.length);
 

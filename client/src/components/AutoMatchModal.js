@@ -12,7 +12,7 @@ const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
 const matchFunctions = ['Dopasowanie stringów',
     'Pokrycie wartości z ark. 1 w ark. 2', 'Pokrycie wartości z ark. 2 w ark. 1'];
 
-const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility}) => {
+const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility, user}) => {
     const { relationSheet } = useContext(AppContext);
     const { priorities, setPriorities, matchType, setMatchType, progressCount,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows,
@@ -241,6 +241,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
     return <div className="modal modal--autoMatch">
         {testConfigurationModalVisible ? <TestConfigurationModal relationSheetColumnsVisibility={columnsVisibility}
+                                                                 user={user}
                                                                  closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
 
         <button className="btn btn--closeModal"

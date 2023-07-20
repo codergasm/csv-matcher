@@ -329,8 +329,6 @@ const CorrelationView = ({user}) => {
                         if(res?.data) {
                             // Select list for relation sheet
                             if(relationSheetSelectList?.length) {
-                                console.log(res.data.relationSheetSelectList);
-
                                 const newSelectList = res.data.relationSheetSelectList;
 
                                 const selectListToUpdate = relationSheetSelectList.map((item, index) => {
@@ -558,6 +556,7 @@ const CorrelationView = ({user}) => {
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsDataSheet}
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsRelationSheet}
                                                          currentSheetColumnsVisibility={dataSheetColumnsVisibility}
+                                                         user={user}
                                                          setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility} /> : ''}
 
                 {currentSheet === 1 ? <RelationSheetView sheetIndex={1}
@@ -575,6 +574,7 @@ const CorrelationView = ({user}) => {
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet}
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
                                                          currentSheetColumnsVisibility={relationSheetColumnsVisibility}
+                                                         user={user}
                                                          setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility} /> : ''}
 
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}
