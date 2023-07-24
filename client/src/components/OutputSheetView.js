@@ -13,7 +13,7 @@ import settingsIcon from '../static/img/settings.svg';
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = forwardRef((props, ref) => {
-    const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns,
+    const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns, exportFormat,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility, setColumnsToSum } = useContext(ViewContext);
     const { currentSchemaId, dataSheet } = useContext(AppContext);
 
@@ -36,7 +36,9 @@ const OutputSheetView = forwardRef((props, ref) => {
 
     useEffect(() => {
         if(columnsNames?.length) {
+            console.log('yes 1');
             if(!outputSheetColumnsVisibility?.length) {
+                console.log('yes 2');
                 if(currentSchemaId > 0) {
                     getSchemaById(currentSchemaId)
                         .then((res) => {
@@ -62,6 +64,10 @@ const OutputSheetView = forwardRef((props, ref) => {
                     setDefaultOutputSheetColumnsVisibility();
                 }
             }
+            else {
+                console.log('no');
+                setDefaultOutputSheetColumnsVisibility();
+            }
         }
     }, [columnsNames, currentSchemaId]);
 
@@ -70,8 +76,7 @@ const OutputSheetView = forwardRef((props, ref) => {
             setRowsToRender(outputSheet.slice(0, ROWS_PER_PAGE));
 
             const dataSheetLength = Object.entries(dataSheet[0])?.length || 0;
-            setColumnsNames(Object.entries(outputSheet[0])
-                .map((item) => (item[0]))
+            setColumnsNames(Object.keys(outputSheet[0])
                 .map((item, index) => {
                     if(index === 0) {
                         return 'l.p. arkusza 1';
@@ -109,24 +114,32 @@ const OutputSheetView = forwardRef((props, ref) => {
     }
 
     const exportOutputSheet = () => {
-        const data = outputSheet.map((item) => {
-            return Object.fromEntries(Object.entries(item)
-                .filter((item, index) => (finalExportColumns[index])));
-        });
+        if(exportFormat < 2) {
+            // CSV file
+            const data = outputSheet.map((item) => {
+                return Object.fromEntries(Object.entries(item)
+                    .filter((item, index) => (finalExportColumns[index])));
+            });
 
-        const csvData = Papa.unparse({
-            fields: Object.keys(data[0]),
-            data: data
-        });
+            const csvData = Papa.unparse({
+                fields: Object.keys(data[0]),
+                data: data,
+                delimiter: exportFormat === 0 ? ',' : ';'
+            });
 
-        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
+            const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
 
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", "data.csv");
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", "data.csv");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+        else {
+            // JSON file
+            // TODO
+        }
     }
 
     const fetchNextRows = () => {
@@ -140,7 +153,7 @@ const OutputSheetView = forwardRef((props, ref) => {
         const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
         if(scrolled + visibleHeight >= scrollHeight) {
-            if((page + 1) * ROWS_PER_PAGE < outputSheet.length) {
+            if((page) * ROWS_PER_PAGE < outputSheet.length) {
                 fetchNextRows();
             }
         }
@@ -196,7 +209,7 @@ const OutputSheetView = forwardRef((props, ref) => {
         </div>
 
         <div className="sheet scroll"
-             onScroll={(e) => { checkScrollToBottom(e); }}>
+             onScroll={checkScrollToBottom}>
             <div className="sheet__table__info">
                 <div className="cell--legend">
                     Widoczność

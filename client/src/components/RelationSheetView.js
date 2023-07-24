@@ -152,7 +152,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     useEffect(() => {
         if(currentSheet && secondSheet) {
-            setColumnsNames(Object.entries(currentSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
+            setColumnsNames(Object.entries(currentSheet[0]).map((item, index) => (index === 0 ? 'l.p.' : item[0])));
             setSecondSheetColumnsNames(Object.entries(secondSheet[0]).map((item) => (item[0])));
         }
     }, [currentSheet, secondSheet]);

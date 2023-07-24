@@ -1,9 +1,9 @@
 import {addMissingKeys} from "./others";
 
-const convertResponseToObject = (data) => {
+const convertResponseToObject = (data, relation = false) => {
     const obj = data.map((item, index) => {
         return {
-            '0': index+1,
+            [relation ? 'rel_0' : '0']: index+1,
             ...item
         }
     });

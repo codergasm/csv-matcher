@@ -106,7 +106,7 @@ const LoadFilesView = ({user}) => {
             header: true,
             complete: function(results) {
                 setRelationDelimiter(results.meta.delimiter);
-                setRelationSheet(convertResponseToObject(results.data));
+                setRelationSheet(convertResponseToObject(results.data, true));
                 setRelationFile(file);
             }
         });
