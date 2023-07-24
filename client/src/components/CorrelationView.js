@@ -61,6 +61,13 @@ const CorrelationView = ({user}) => {
     const [afterMatchClean, setAfterMatchClean] = useState(false);
     const [selectListIndicators, setSelectListIndicators] = useState([]);
 
+    // Export settings
+    const [exportFormat, setExportFormat] = useState(0);
+    const [duplicatedRecordsFormat, setDuplicatedRecordsFormat] = useState(0);
+    const [columnsToSum, setColumnsToSum] = useState([]);
+    const [exportBuildSystem, setExportBuildSystem] = useState(0);
+    const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
+
     useEffect(() => {
         if(numberOfMatches !== -1) {
             setTimeout(() => {
@@ -171,21 +178,6 @@ const CorrelationView = ({user}) => {
     }, [relationSheet, currentSchemaId]);
 
     useEffect(() => {
-        const n = Object.entries(dataSheet[0]).length;
-
-        if(outputSheetExportColumns[0] || outputSheetExportColumns[n]) {
-            setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
-                if(index === n || index === 0) {
-                    return false;
-                }
-                else {
-                    return item;
-                }
-            })));
-        }
-    }, [outputSheetExportColumns]);
-
-    useEffect(() => {
         if(dataSheet?.length && relationSheet?.length) {
             setCorrelationMatrix(relationSheet.map(() => {
                 return dataSheet.map(() => {
@@ -248,54 +240,69 @@ const CorrelationView = ({user}) => {
             .concat(Object.entries(relationSheet[0]).map(() => (1))));
     }
 
-    const getDataSheetCorrelations = (inputArray) => {
-        const maxIndex = getMaximumInArray(inputArray);
-        let outputArray = [];
-
-        for(let i=0; i<=maxIndex; i++) {
-            const index = inputArray.findIndex((item) => (item === i));
-            outputArray.push(index);
-        }
-
-        return outputArray;
-    }
-
-    const joinTwoSheets = (arrayA, arrayB, mapping) => {
+    const joinTwoSheets = () => {
         const result = [];
-        const dataSheetMapping = getDataSheetCorrelations(mapping);
 
-        for(let i=0; i<arrayA.length; i++) {
-            const a = arrayA[i];
-            let b = {};
-            let correlationInRelationSheetNotFound = false;
+        if(exportBuildSystem === 0) {
+            for(const pair of indexesOfCorrelatedRows) {
+                const dataRowIndex = pair[0];
+                const relationRowIndex = pair[1];
+                let combined = {...dataSheet[dataRowIndex], ...relationSheet[relationRowIndex]};
 
-            if(dataSheetMapping[i] >= 0) {
-                if(correlationMatrix[dataSheetMapping[i]][i] >= matchThreshold ||
-                    schemaCorrelatedRows.includes(dataSheetMapping[i]) ||
-                    manuallyCorrelatedRows.includes(dataSheetMapping[i])) {
-                    b = arrayB[dataSheetMapping[i]];
+                result.push(combined);
+            }
+        }
+        else if(exportBuildSystem === 1) {
+            dataSheet.forEach((item, index) => {
+               let combined = {...item};
+               const dataRowIndex = index;
+               const relationRowIndexes = indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex));
+
+               if(relationRowIndexes?.length) {
+                   if(duplicatedRecordsFormat === 0) {
+                       // Export duplicates
+                       for(const relationRowIndex of relationRowIndexes) {
+                           combined = {...combined, ...relationSheet[relationRowIndex]};
+                           result.push(combined);
+                       }
+                   }
+                   else if(duplicatedRecordsFormat === 1) {
+                       // Separate with comma
+                   }
+                   else {
+                       // Sum number values
+                   }
+               }
+               else {
+                   result.push(combined);
+               }
+            });
+        }
+        else {
+            relationSheet.forEach((item, index) => {
+                let combined = {...item};
+                const relationRowIndex = index;
+                const dataRowIndexes = indexesOfCorrelatedRows.filter((item) => (item[1] === relationRowIndex));
+
+                if(dataRowIndexes?.length) {
+                    if(duplicatedRecordsFormat === 0) {
+                        // Export duplicates
+                        for(const dataRowIndex of dataRowIndexes) {
+                            combined = {...combined, ...dataSheet[dataRowIndex]};
+                            result.push(combined);
+                        }
+                    }
+                    else if(duplicatedRecordsFormat === 1) {
+                        // Separate with comma
+                    }
+                    else {
+                        // Sum number values
+                    }
                 }
                 else {
-                    b = arrayB[0];
-                    correlationInRelationSheetNotFound = true;
+                    result.push(combined);
                 }
-            }
-            else {
-                b = arrayB[0];
-                correlationInRelationSheetNotFound = true;
-            }
-
-            const combined = { ...a };
-            for(const key in b) {
-                if(combined.hasOwnProperty(key)) {
-                    combined[`rel_${key}`] = correlationInRelationSheetNotFound ? '' : b[key];
-                }
-                else {
-                    combined[key] = correlationInRelationSheetNotFound ? '' : b[key];
-                }
-            }
-
-            result.push(combined);
+            });
         }
 
         return result;
@@ -303,7 +310,7 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(indexesOfCorrelatedRows && dataSheet && relationSheet) {
-            setOutputSheet(joinTwoSheets(dataSheet, relationSheet, indexesOfCorrelatedRows));
+            setOutputSheet(joinTwoSheets());
         }
     }, [indexesOfCorrelatedRows, dataSheet, relationSheet]);
 
@@ -424,15 +431,52 @@ const CorrelationView = ({user}) => {
     }, [manuallyCorrelatedRows]);
 
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
-        setIndexesOfCorrelatedRows(prevState => {
-            return [...prevState.filter((item) => {
-                return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
-            }), [dataRowIndex, relationRowIndex]];
-        });
+        if(matchType === 0) {
+            setIndexesOfCorrelatedRows(prevState => {
+                return [...prevState.filter((item) => {
+                    return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
+                }), [dataRowIndex, relationRowIndex]];
+            });
 
-        setManuallyCorrelatedRows(prevState => ([...prevState.filter((item) => {
-            return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
-        }), [dataRowIndex, relationRowIndex]]));
+            setManuallyCorrelatedRows(prevState => ([...prevState.filter((item) => {
+                return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
+            }), [dataRowIndex, relationRowIndex]]));
+        }
+        else if(matchType === 1) {
+            setIndexesOfCorrelatedRows(prevState => {
+                return [...prevState.filter((item) => {
+                    return item[1] !== relationRowIndex;
+                }), [dataRowIndex, relationRowIndex]];
+            });
+
+            setManuallyCorrelatedRows(prevState => {
+                return [...prevState.filter((item) => {
+                    return item[1] !== relationRowIndex;
+                }), [dataRowIndex, relationRowIndex]];
+            });
+        }
+        else if(matchType === 2) {
+            setIndexesOfCorrelatedRows(prevState => {
+                return [...prevState.filter((item) => {
+                    return item[0] !== dataRowIndex;
+                }), [dataRowIndex, relationRowIndex]];
+            });
+
+            setManuallyCorrelatedRows(prevState => {
+                return [...prevState.filter((item) => {
+                    return item[0] !== dataRowIndex;
+                }), [dataRowIndex, relationRowIndex]];
+            });
+        }
+        else {
+            setIndexesOfCorrelatedRows(prevState => {
+                return [...prevState, [dataRowIndex, relationRowIndex]];
+            });
+
+            setManuallyCorrelatedRows(prevState => {
+                return [...prevState, [dataRowIndex, relationRowIndex]];
+            });
+        }
     }
 
     const areRowsAvailable = (dataRow, relationRow, indexesOfCorrelatedRows) => {
@@ -464,8 +508,6 @@ const CorrelationView = ({user}) => {
                if(res?.data) {
                    const { newIndexesOfCorrelatedRows, newCorrelationMatrix, newSelectListIndicators }
                     = res.data;
-
-                   console.log(newIndexesOfCorrelatedRows);
 
                    const prevIndexesOfCorrelatedRows = [...indexesOfCorrelatedRows];
 
@@ -523,7 +565,12 @@ const CorrelationView = ({user}) => {
                 avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows,
                 currentSheet, setCurrentSheet,
                 correlate, progressCount,
-                setManuallyCorrelatedRows, setAfterMatchClean
+                setManuallyCorrelatedRows, setAfterMatchClean,
+                exportFormat, setExportFormat,
+                duplicatedRecordsFormat, setDuplicatedRecordsFormat,
+                columnsToSum, setColumnsToSum,
+                exportBuildSystem, setExportBuildSystem,
+                includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter
             }}>
         <div className="container container--correlation">
             <div className="homepage homepage--correlation">

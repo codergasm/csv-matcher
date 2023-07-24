@@ -1,16 +1,18 @@
 import React, {useState, useEffect, useRef} from 'react';
 import Select from "react-select";
 
-const RelationColumnSelect = ({n, selectOption, setSelectOption}) => {
+const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColumn}) => {
     const [options, setOptions] = useState([]);
 
     useEffect(() => {
-        setOptions(Array.from(Array(n).keys()).map((item) => {
-            return {
-                label: item+1,
-                value: item
-            }
-        }));
+        if(!isNaN(n)) {
+            setOptions(Array.from(Array(n).keys()).map((item) => {
+                return {
+                    label: item+1,
+                    value: item
+                }
+            }));
+        }
     }, [n]);
 
     let selectRef = useRef(null);
@@ -34,14 +36,21 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption}) => {
             Kolumna relacji
         </span>
 
-        <Select ref={selectRef}
-                onMenuClose={menuClose}
-                onMenuOpen={menuOpen}
-                options={options}
-                placeholder="Typ dopasowania"
-                value={options[selectOption]}
-                onChange={handleChoose}
-                isSearchable={false} />
+        <div className="flex">
+            <Select ref={selectRef}
+                    onMenuClose={menuClose}
+                    onMenuOpen={menuOpen}
+                    options={options}
+                    placeholder="Typ dopasowania"
+                    value={options[selectOption]}
+                    onChange={handleChoose}
+                    isSearchable={false} />
+
+            <button className="btn btn--addRelationColumn"
+                    onClick={addRelationColumn}>
+                + Dodaj relację
+            </button>
+        </div>
     </div>
 };
 

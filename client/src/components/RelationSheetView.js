@@ -68,6 +68,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [relationRowIndexForManualCorrelation, setRelationRowIndexForManualCorrelation] = useState(-1);
     const [deleteMatchesModalVisible, setDeleteMatchesModalVisible] = useState(false);
     const [indexesOfCorrelatedRowsLevels, setIndexesOfCorrelatedRowsLevels] = useState([[]]);
+    const [numberOfRelationColumns, setNumberOfRelationColumns] = useState(0);
     const [currentRelationColumnVisible, setCurrentRelationColumnVisible] = useState(0);
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
@@ -77,6 +78,19 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             setIndexesOfCorrelatedRowsLevels(getLevelsOfRelationColumn(indexesOfCorrelatedRows, sheetIndex));
         }
     }, [indexesOfCorrelatedRows]);
+
+    useEffect(() => {
+        if(indexesOfCorrelatedRowsLevels) {
+            setNumberOfRelationColumns(prevState => {
+                if(prevState < indexesOfCorrelatedRowsLevels?.length) {
+                    return indexesOfCorrelatedRowsLevels?.length;
+                }
+                else {
+                    return prevState;
+                }
+            });
+        }
+    }, [indexesOfCorrelatedRowsLevels]);
 
     useEffect(() => {
         if(indexesOfCorrelatedRows?.length) {
@@ -204,10 +218,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const handleExportColumnsChange = (i) => {
         const getCondition = (i) => {
             if(sheetIndex === 0) {
-                return i < columnsNames?.length;
+                return i <= columnsNames?.length;
             }
             else {
-                return i >= secondSheetColumnsNames?.length;
+                return i > secondSheetColumnsNames?.length;
             }
         }
 
@@ -222,6 +236,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             })));
         }
         else {
+
             setOutputSheetExportColumns(prevState => (prevState.map((item, index) => {
                 return index === i ? !item : item;
             })));
@@ -383,8 +398,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const addManualCorrelationWrapper = (e, item) => {
-        let condition = sheetIndex === 0 ? indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex) :
-            indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.dataRowIndex);
+        let condition = sheetIndex === 0 ? ((indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex)) && (matchType !== 3) && (matchType !== 2)) :
+            ((indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.dataRowIndex)) && (matchType !== 3) && (matchType !== 1));
 
         if(condition) {
             e.stopPropagation();
@@ -403,7 +418,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
         else if(n === 2) {
             if(sheetIndex === 0) {
-                return outputSheetExportColumns.slice(1, columnsNames.length);
+                return outputSheetExportColumns.slice(1, columnsNames.length+1);
             }
             else {
                 return outputSheetExportColumns.slice(secondSheetColumnsNames.length);
@@ -460,9 +475,18 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }
 
-    useEffect(() => {
-        console.log(indexesOfCorrelatedRowsLevels);
-    }, [indexesOfCorrelatedRowsLevels]);
+    const isRelationColumnSelectAvailable = () => {
+        return (matchType === 3) || (matchType === 2 && sheetIndex === 1) || (matchType === 1 && sheetIndex === 0);
+    }
+
+    const isDropdownMenuItemDisabled = (dataRowIndex, relationRowIndex) => {
+        if(sheetIndex === 0) {
+            return (indexesOfCorrelatedRowsSecondSheetIndexes.includes(relationRowIndex)) && (matchType !== 3) && (matchType !== 2);
+        }
+        else {
+            return (indexesOfCorrelatedRowsSecondSheetIndexes.includes(dataRowIndex)) && (matchType !== 3) && (matchType !== 1);
+        }
+    }
 
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
@@ -473,8 +497,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
-                                                             extraIndex={columnsSettingsModalVisible === 2 ? secondSheetColumnsNames.length : 0}
-                                                             hideFirstColumn={columnsSettingsModalVisible === 2}
+                                                             extraIndex={columnsSettingsModalVisible === 2 && sheetIndex === 1 ? secondSheetColumnsNames.length : (columnsSettingsModalVisible === 2 ? 1 : 0)}
+                                                             hideFirstColumn={false}
                                                              columns={getColumnsForModal(columnsSettingsModalVisible)}
                                                              setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
                                                              header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
@@ -511,11 +535,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         </span> : ''}
 
         {selectList?.length && !selectListLoading ? <div className="sheet scroll"
-                                   onScroll={checkScrollToBottom}>
+                                                         onScroll={checkScrollToBottom}>
 
-            {matchType !== 0 ? <RelationColumnSelect n={indexesOfCorrelatedRowsLevels?.length}
-                                                     selectOption={currentRelationColumnVisible}
-                                                     setSelectOption={setCurrentRelationColumnVisible} /> : ''}
+            {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
+                                                                       addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}
+                                                                       selectOption={currentRelationColumnVisible}
+                                                                       setSelectOption={setCurrentRelationColumnVisible} /> : ''}
 
             <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
@@ -642,7 +667,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                 const currentSelectList = selectList[indexesInRender[index]];
                 const currentIndexesOfCorrelatedRows = indexesOfCorrelatedRowsLevels[currentRelationColumnVisible];
 
-                if(currentSelectList?.length) {
+                if(currentSelectList?.length && currentIndexesOfCorrelatedRows?.length) {
                     if(sheetIndex === 0) {
                         const pair = currentIndexesOfCorrelatedRows.find((item) => (item[0] === index));
 
@@ -788,6 +813,14 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     .map((item) => (item[1]))
                                     .join(' - ');
 
+                                const currentSelectMenuItemIndex = sheetIndex === 0 ? item.relationRowIndex : item.dataRowIndex;
+
+                                const numberOfMatches = sheetIndex === 0 ? indexesOfCorrelatedRows.filter((item) => {
+                                    return item[1] === currentSelectMenuItemIndex;
+                                }).length : indexesOfCorrelatedRows.filter((item) => {
+                                    return item[0] === currentSelectMenuItemIndex;
+                                }).length;
+
                                 const valueToDisplay = value.length <= 50 ? value : `${value.substring(0, 50)}...`;
                                 let substringIndexes = [];
 
@@ -795,7 +828,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, valueToDisplay);
                                 }
 
-                                return <button className={(sheetIndex === 0 ? (indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex)) : (indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.dataRowIndex))) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
+                                return <button className={isDropdownMenuItemDisabled(item.dataRowIndex, item.relationRowIndex) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
                                                onClick={(e) => {addManualCorrelationWrapper(e, item); }}
                                                key={index}>
                                     <span className="select__menu__item__value">
@@ -813,6 +846,9 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         background: getSimilarityColorForRelationSheet(item.similarity, -1)
                                     }}>
                                         {printSimilarityPercentage(item.similarity)}
+                                    </span>
+                                    <span className="select__menu__item__counter">
+                                        {numberOfMatches}
                                     </span>
                                 </button>
                             })}

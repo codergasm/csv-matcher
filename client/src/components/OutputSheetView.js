@@ -7,13 +7,15 @@ import CellsFormatModal from "./CellsFormatModal";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import {AppContext} from "../pages/CorrelationPage";
 import {getSchemaById} from "../api/schemas";
+import ExportSettingsModal from "./ExportSettingsModal";
+import settingsIcon from '../static/img/settings.svg';
 
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = forwardRef((props, ref) => {
     const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns,
-        outputSheetColumnsVisibility, setOutputSheetColumnsVisibility } = useContext(ViewContext);
-    const { currentSchemaId } = useContext(AppContext);
+        outputSheetColumnsVisibility, setOutputSheetColumnsVisibility, setColumnsToSum } = useContext(ViewContext);
+    const { currentSchemaId, dataSheet } = useContext(AppContext);
 
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
@@ -22,10 +24,14 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [minColumnWidth, setMinColumnWidth] = useState(0);
     const [columnsSettingsModalVisible, setColumnsSettingsModalVisible] = useState(0);
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
+    const [exportSettingsModalVisible, setExportSettingsModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
 
     useEffect(() => {
         setFinalExportColumns(outputSheetExportColumns);
+        setColumnsToSum(outputSheetExportColumns.map((item, index) => {
+            return 0;
+        }));
     }, [outputSheetExportColumns]);
 
     useEffect(() => {
@@ -62,7 +68,21 @@ const OutputSheetView = forwardRef((props, ref) => {
     useEffect(() => {
         if(outputSheet?.length) {
             setRowsToRender(outputSheet.slice(0, ROWS_PER_PAGE));
-            setColumnsNames(Object.entries(outputSheet[0]).map((item) => (item[0])))
+
+            const dataSheetLength = Object.entries(dataSheet[0])?.length || 0;
+            setColumnsNames(Object.entries(outputSheet[0])
+                .map((item) => (item[0]))
+                .map((item, index) => {
+                    if(index === 0) {
+                        return 'l.p. arkusza 1';
+                    }
+                    else if(index === dataSheetLength) {
+                        return 'l.p. arkusza 2';
+                    }
+                    else {
+                        return item;
+                    }
+                }));
         }
     }, [outputSheet]);
 
@@ -148,6 +168,10 @@ const OutputSheetView = forwardRef((props, ref) => {
     }
 
     return <div className="sheetWrapper" ref={ref}>
+        {exportSettingsModalVisible ? <ExportSettingsModal closeModal={() => { setExportSettingsModalVisible(false); }}
+                                                           exportOutputSheet={exportOutputSheet}
+                                                           columnsNames={columnsNames} /> : ''}
+
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
                                                      setCellsHeight={setCellsHeight}
                                                      closeModal={() => { setCellsFormatModalVisible(false); }} /> : ''}
@@ -155,15 +179,21 @@ const OutputSheetView = forwardRef((props, ref) => {
         {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
                                                              extraIndex={0}
-                                                             hideFirstColumn={columnsSettingsModalVisible === 1}
+                                                             hideFirstColumn={false}
                                                              columns={columnsSettingsModalVisible === 1 ? outputSheetColumnsVisibility : outputSheetExportColumns}
                                                              setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setOutputSheetExportColumns}
                                                              header={columnsSettingsModalVisible === 1 ? 'Widoczność kolumn' : 'Uwzględnij w eksporcie'} /> : ''}
 
-        <button className="btn btn--export"
-                onClick={exportOutputSheet}>
-            Eksportuj arkusz wyjściowy
-        </button>
+        <div className="btnExportWrapper center">
+            <button className="btn btn--export"
+                    onClick={exportOutputSheet}>
+                Eksportuj arkusz wyjściowy
+            </button>
+            <button className="btn btn--exportSettings"
+                    onClick={() => { setExportSettingsModalVisible(true); }}>
+                <img className="img" src={settingsIcon} alt="ustawienia-eksportu" />
+            </button>
+        </div>
 
         <div className="sheet scroll"
              onScroll={(e) => { checkScrollToBottom(e); }}>

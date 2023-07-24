@@ -808,8 +808,12 @@ option {
     color: #313131;
 }
 
+.select__menu__item__counter {
+    width: 10%;
+}
+
 .select__menu__item__similarity {
-    width: 19%;
+    width: 15%;
     color: #313131;
     display: flex;
     justify-content: center;
@@ -851,7 +855,7 @@ option {
 }
 
 .btn--export {
-    margin: 0 auto 30px;
+    margin: 0;
 }
 
 .line--exportLegend {
@@ -2779,10 +2783,88 @@ input[type=number] {
 .matchTypeSelectLabel--relationColumn {
     position: absolute;
     top: 15px;
-    right: 145px;
+    right: 112px;
     z-index: 100;
 }
 
 .matchTypeSelectLabel--relationColumn > span {
     color: #fff;
+    font-weight: 700;
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.btn--addRelationColumn {
+    margin-left: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.btn--addRelationColumn:hover {
+    background: transparent !important;
+    opacity: .8;
+}
+
+.btnExportWrapper {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.btn--exportSettings {
+    background: transparent;
+    width: 25px;
+    height: auto;
+    margin-left: 10px;
+}
+
+.btn--exportSettings:hover {
+    background: transparent;
+    opacity: .8;
+}
+
+.btn--exportSettings > .img {
+    width: 100%;
+}
+
+.modal__label--select {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.selectNumberColumns > span,
+.modal__label--select > span {
+    font-size: 13px;
+    padding-bottom: 7px;
+}
+
+.modal--export .modal__inner {
+    height: 80vh;
+    min-height: 500px;
+}
+
+.modal--export .modal__header {
+    margin-bottom: 30px;
+}
+
+.modal__label--toggle > span {
+    padding-bottom: 10px;
+    margin-top: 10px;
+}
+
+.selectNumberColumns > span {
+    margin-top: 15px;
+    display: block;
+    padding-bottom: 5px;
+}
+
+.selectNumberColumns .modal__label .btn--check {
+    margin-left: 0;
+}
+
+.modal--export .btn--export {
+    min-height: 50px;
+    margin: 20px auto 0;
 }

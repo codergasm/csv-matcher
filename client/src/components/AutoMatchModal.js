@@ -263,10 +263,9 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                 </div>
 
                 {matchTypes.map((item, index) => {
-                    return <label className={index > 0 ? "modal__label modal__label--disabled" : "modal__label"}
+                    return <label className="modal__label"
                                   key={index}>
                         <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                disabled={index > 0} // tmp: only first option works
                                 onClick={() => { setMatchType(index); }}>
 
                         </button>
