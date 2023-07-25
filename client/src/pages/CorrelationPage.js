@@ -29,6 +29,8 @@ const CorrelationPage = ({user}) => {
     const [relationSheetId, setRelationSheetId] = useState(0);
     const [dataSheetName, setDataSheetName] = useState('');
     const [relationSheetName, setRelationSheetName] = useState('');
+    const [isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber] = useState([]);
+    const [isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber] = useState([]);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -106,7 +108,7 @@ const CorrelationPage = ({user}) => {
                 if(res?.data) {
                     setRelationSheetName(res.data.filename);
                 }
-            })
+            });
     }
 
     return <AppContext.Provider value={{
@@ -120,7 +122,9 @@ const CorrelationPage = ({user}) => {
         dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName,
         dataFileSize, setDataFileSize, relationFileSize, setRelationFileSize,
         dataFileOwnerUserId, setDataFileOwnerUserId, relationFileOwnerUserId, setRelationFileOwnerUserId,
-        dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId
+        dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId,
+        isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber,
+        isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber
     }}>
         {mainComponent}
     </AppContext.Provider>

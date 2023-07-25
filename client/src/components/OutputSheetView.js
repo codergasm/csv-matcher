@@ -20,6 +20,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     const { currentSchemaId, dataSheet, relationSheet, dataSheetName,
         relationSheetName, dataFile, relationFile, dataFileSize, relationFileSize,
         dataFileOwnerUserId, relationFileOwnerUserId,
+        isDataSheetColumnTypeNumber, isRelationSheetColumnTypeNumber,
         dataFileOwnerTeamId, relationFileOwnerTeamId } = useContext(AppContext);
 
     const [page, setPage] = useState(1);
@@ -31,13 +32,25 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [cellsFormatModalVisible, setCellsFormatModalVisible] = useState(false);
     const [exportSettingsModalVisible, setExportSettingsModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
+    const [isOutputSheetColumnTypeNumber, setIsOutputSheetColumnTypeNumber] = useState([]);
 
     useEffect(() => {
+        console.log(outputSheetExportColumns);
         setFinalExportColumns([...outputSheetExportColumns, false, false]);
         setColumnsToSum(outputSheetExportColumns.map(() => {
             return 0;
         }));
     }, [outputSheetExportColumns]);
+
+    useEffect(() => {
+        if(isDataSheetColumnTypeNumber?.length && isRelationSheetColumnTypeNumber?.length) {
+            setIsOutputSheetColumnTypeNumber(isDataSheetColumnTypeNumber.concat(isRelationSheetColumnTypeNumber));
+        }
+    }, [isDataSheetColumnTypeNumber, isRelationSheetColumnTypeNumber]);
+
+    useEffect(() => {
+        // setColumnsToSum(isOutputSheetColumnTypeNumber);
+    }, [isOutputSheetColumnTypeNumber]);
 
     useEffect(() => {
         if(columnsNames?.length) {
@@ -348,7 +361,7 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                       style={{
                                                           minWidth: '280px'
                                                       }}>
-                        ilość dopasowań ark1 do ark2
+                        ilość dopasowań ark2 do ark1
                     </div> : ''}
                 </div>
             </div>
@@ -376,16 +389,14 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                   style={{
                                                       minWidth: '280px',
                                                       maxHeight: getColumnMaxHeight()
-                                                  }}
-                                                  key={index}>
+                                                  }}>
                         {item['ilość dopasowań ark1 do ark2']}
                     </div> : ''}
                     {hasRelationSheetCounter() ? <div className="sheet__body__row__cell"
                                                   style={{
                                                       minWidth: '280px',
                                                       maxHeight: getColumnMaxHeight()
-                                                  }}
-                                                  key={index}>
+                                                  }}>
                         {item['ilość dopasowań ark2 do ark1']}
                     </div> : ''}
                 </div>

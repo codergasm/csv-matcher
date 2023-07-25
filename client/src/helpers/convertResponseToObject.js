@@ -8,10 +8,6 @@ const convertResponseToObject = (data, relation = false) => {
         }
     });
 
-    if(relation) {
-        console.log(obj);
-    }
-
     // Add missing keys and convert values to string
     return addMissingKeys(obj, Object.keys(obj[0])).map((item) => {
         return Object.fromEntries(Object.entries(item).map((item) => ([item[0], item[1].toString()])));

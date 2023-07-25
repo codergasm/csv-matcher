@@ -16,6 +16,7 @@ const LoadFilesView = ({user}) => {
         relationSheetId, setRelationSheetId,
         setDataFileSize, setRelationFileSize, setDataFileOwnerUserId, setRelationFileOwnerUserId,
         setDataFileOwnerTeamId, setRelationFileOwnerTeamId,
+        setIsDataSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber,
         setDataSheetName, setRelationSheetName } = useContext(AppContext);
 
     const [files, setFiles] = useState([]);
@@ -47,12 +48,28 @@ const LoadFilesView = ({user}) => {
     useEffect(() => {
         if(relationSheet?.length) {
             setRelationSheetLoading(false);
+            setIsRelationSheetColumnTypeNumber(Object.entries(relationSheet[0]).map((item, index) => {
+                if(index === 0) {
+                    return false;
+                }
+                else {
+                    return !isNaN(parseFloat(item[1]));
+                }
+            }));
         }
     }, [relationSheet]);
 
     useEffect(() => {
         if(dataSheet?.length) {
             setDataSheetLoading(false);
+            setIsDataSheetColumnTypeNumber(Object.entries(dataSheet[0]).map((item, index) => {
+                if(index === 0) {
+                    return false;
+                }
+                else {
+                    return !isNaN(parseFloat(item[1]));
+                }
+            }));
         }
     }, [dataSheet]);
 
@@ -97,14 +114,10 @@ const LoadFilesView = ({user}) => {
     }
 
     const handleRelationSheetChoose = (val) => {
-        if(val) {
+        if (val) {
             setRelationSheetId(val.value);
         }
     }
-
-    useEffect(() => {
-        console.log(relationSheet);
-    }, [relationSheet]);
 
     const updateRelationSheet = (file, download = false) => {
         Papa.parse(file, {
@@ -112,8 +125,6 @@ const LoadFilesView = ({user}) => {
             header: true,
             complete: function(results) {
                 setRelationDelimiter(results.meta.delimiter);
-                console.log(results.data);
-                console.log(convertResponseToObject(results.data, true));
                 setRelationSheet(convertResponseToObject(results.data, true));
                 setRelationFile(file);
             }

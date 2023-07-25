@@ -32,7 +32,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
 
     useEffect(() => {
         if(relationSheet) {
-            setRelationSheetColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])));
+            setRelationSheetColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === 'rel_0' ? 'l.p.' : item[0])));
         }
     }, [relationSheet]);
 

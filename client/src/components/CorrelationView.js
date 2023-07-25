@@ -305,6 +305,8 @@ const CorrelationView = ({user}) => {
     const joinTwoSheetsMatchesSystemDuplicatesFormatWithBothCounters = () => {
         let result = [];
 
+        console.log('witam');
+
         for(const pair of indexesOfCorrelatedRows) {
             const dataRowIndex = pair[0];
             const relationRowIndex = pair[1];
@@ -466,8 +468,8 @@ const CorrelationView = ({user}) => {
             if(dataRowIndexes?.length) {
                 for(const dataRowIndex of dataRowIndexes) {
                     result.push({
-                        ...combined,
-                        ...dataSheet[dataRowIndex]
+                        ...dataSheet[dataRowIndex],
+                        ...combined
                     });
                 }
             }
@@ -476,7 +478,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...dataSheetEmptyObject});
+                result.push({...dataSheetEmptyObject, ...combined});
             }
         });
 
@@ -496,8 +498,8 @@ const CorrelationView = ({user}) => {
             if(dataRowIndexes?.length) {
                 for(const dataRowIndex of dataRowIndexes) {
                     result.push({
-                        ...combined,
                         ...dataSheet[dataRowIndex],
+                        ...combined,
                         'ilość dopasowań ark2 do ark1': dataRowIndexes.length
                     });
                 }
@@ -507,7 +509,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...dataSheetEmptyObject});
+                result.push({...dataSheetEmptyObject, ...combined});
             }
         });
 
@@ -529,8 +531,8 @@ const CorrelationView = ({user}) => {
                     const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === dataRowIndex)).length;
 
                     result.push({
-                        ...combined,
                         ...dataSheet[dataRowIndex],
+                        ...combined,
                         'ilość dopasowań ark1 do ark2': numberOfMatches
                     });
                 }
@@ -540,7 +542,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...dataSheetEmptyObject});
+                result.push({...dataSheetEmptyObject, ...combined});
             }
         });
 
@@ -584,6 +586,8 @@ const CorrelationView = ({user}) => {
     const joinTwoSheetsMatchesSystemCommaOrSumFormatWithoutCounter = (sum = false) => {
         let result = [];
 
+        console.log('hi');
+
         dataSheet.forEach((item, index) => {
             let combined = {...item};
             const dataRowIndex = index;
@@ -613,6 +617,53 @@ const CorrelationView = ({user}) => {
 
                         newColumn = newColumn.slice(0, -2);
                         combined = {...combined, ...{ [columnName]: newColumn }}
+                    }
+
+                    columnIndex++;
+                }
+
+                result.push(combined);
+            }
+            else {
+                return null;
+            }
+        });
+
+        return result.filter((item) => (item));
+    }
+
+    const joinTwoSheetsMatchesSystemCommaOrSumFormatWithoutCounterManyToOne = (sum = false) => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                let columnIndex = 0;
+
+                for(const columnName of Object.keys(dataSheet[0])) {
+                    if(sum && columnsToSum[columnIndex]) {
+                        let newColumn = 0;
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
+                        }
+
+                        combined = {...{ [columnName]: newColumn }, ...combined}
+                    }
+                    else {
+                        let newColumn = '';
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += `${relationSheet[relationRowIndex][columnName]}, `;
+                        }
+
+                        newColumn = newColumn.slice(0, -2);
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
 
                     columnIndex++;
@@ -701,7 +752,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
                     else {
                         let newColumn = '';
@@ -711,7 +762,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
 
                     columnIndex++;
@@ -752,7 +803,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
                     else {
                         let newColumn = '';
@@ -762,7 +813,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
 
                     columnIndex++;
@@ -770,7 +821,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': numberOfMatchesRelationSheet
+                    'ilość dopasowań ark1 do ark2': numberOfMatchesRelationSheet
                 });
             }
             else {
@@ -1043,7 +1094,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
                     else {
                         let newColumn = '';
@@ -1053,7 +1104,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
 
                     columnIndex++;
@@ -1066,7 +1117,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...dataSheetEmptyObject});
+                result.push({...dataSheetEmptyObject, ...combined});
             }
         });
 
@@ -1094,7 +1145,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
                     else {
                         let newColumn = '';
@@ -1104,7 +1155,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = {...{ [columnName]: newColumn }, ...combined}
                     }
 
                     columnIndex++;
@@ -1121,8 +1172,8 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
                     ...dataSheetEmptyObject,
+                    ...combined,
                     ...{ 'ilość dopasowań ark2 do ark1': dataRowIndexes.length }
                 });
             }
@@ -1168,8 +1219,8 @@ const CorrelationView = ({user}) => {
                     }
 
                     combined = {
+                        ...{ [columnName]: newColumn },
                         ...combined,
-                        ...{ [columnName]: newColumn }
                     }
 
                     columnIndex++;
@@ -1186,8 +1237,8 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
                     ...dataSheetEmptyObject,
+                    ...combined,
                     ...{ 'ilość dopasowań ark1 do ark2': 0 }
                 });
             }
@@ -1233,8 +1284,8 @@ const CorrelationView = ({user}) => {
                     }
 
                     combined = {
-                        ...combined,
-                        ...{ [columnName]: newColumn }
+                        ...{ [columnName]: newColumn },
+                        ...combined
                     }
 
                     columnIndex++;
@@ -1252,8 +1303,8 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
                     ...dataSheetEmptyObject,
+                    ...combined,
                     ...{ 'ilość dopasowań ark1 do ark2': 0 },
                     ...{ 'ilość dopasowań ark2 do ark1': 0 }
                 });
