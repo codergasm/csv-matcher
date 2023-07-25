@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import {AppContext} from "../pages/CorrelationPage";
 import Loader from "./Loader";
 import Papa from 'papaparse';
-import {getFilesByUser, saveSheet} from "../api/files";
+import {getFileById, getFilesByUser, saveSheet} from "../api/files";
 import SchemaPicker from "./SchemaPicker";
 import {settings} from "../helpers/settings";
 import FilePicker from "./FilePicker";
@@ -14,6 +14,8 @@ const LoadFilesView = ({user}) => {
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
         relationSheet, setRelationSheet, dataSheetId, setDataSheetId,
         relationSheetId, setRelationSheetId,
+        setDataFileSize, setRelationFileSize, setDataFileOwnerUserId, setRelationFileOwnerUserId,
+        setDataFileOwnerTeamId, setRelationFileOwnerTeamId,
         setDataSheetName, setRelationSheetName } = useContext(AppContext);
 
     const [files, setFiles] = useState([]);
@@ -100,12 +102,18 @@ const LoadFilesView = ({user}) => {
         }
     }
 
+    useEffect(() => {
+        console.log(relationSheet);
+    }, [relationSheet]);
+
     const updateRelationSheet = (file, download = false) => {
         Papa.parse(file, {
             download: download,
             header: true,
             complete: function(results) {
                 setRelationDelimiter(results.meta.delimiter);
+                console.log(results.data);
+                console.log(convertResponseToObject(results.data, true));
                 setRelationSheet(convertResponseToObject(results.data, true));
                 setRelationFile(file);
             }
@@ -134,15 +142,48 @@ const LoadFilesView = ({user}) => {
                 if(newDataSheet) {
                     setDataSheetId(newDataSheet.data.id);
                     setDataSheetName(newDataSheet.data.filename);
+                    setDataFileSize(newDataSheet.data.filesize);
+                    setDataFileOwnerUserId(newDataSheet.data.owner_user_id);
+                    setDataFileOwnerTeamId(newDataSheet.data.owner_team_id);
                 }
             }
+            else {
+                getFileById(dataSheetId)
+                    .then((res) => {
+                        if(res?.data) {
+                            const data = res.data;
+
+                            setDataSheetName(data.filename);
+                            setDataFileSize(data.filesize);
+                            setDataFileOwnerUserId(data.owner_user_id);
+                            setDataFileOwnerTeamId(data.owner_team_id);
+                        }
+                    });
+            }
+
             if(!relationSheetId) {
                 const newRelationSheet = await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
 
                 if(newRelationSheet) {
                     setRelationSheetId(newRelationSheet.data.id);
                     setRelationSheetName(newRelationSheet.data.filename);
+                    setRelationFileSize(newRelationSheet.data.filesize);
+                    setRelationFileOwnerUserId(newRelationSheet.data.owner_user_id);
+                    setRelationFileOwnerTeamId(newRelationSheet.data.owner_team_id);
                 }
+            }
+            else {
+                getFileById(relationSheetId)
+                    .then((res) => {
+                        if(res?.data) {
+                            const data = res.data;
+
+                            setRelationSheetName(data.filename);
+                            setRelationFileSize(data.filesize);
+                            setRelationFileOwnerUserId(data.owner_user_id);
+                            setRelationFileOwnerTeamId(data.owner_team_id);
+                        }
+                    })
             }
 
             setLoading(false);

@@ -13,6 +13,12 @@ const CorrelationPage = ({user}) => {
     const [relationSheet, setRelationSheet] = useState({});
     const [dataFile, setDataFile] = useState(null);
     const [relationFile, setRelationFile] = useState(null);
+    const [dataFileSize, setDataFileSize] = useState(0);
+    const [relationFileSize, setRelationFileSize] = useState(0);
+    const [dataFileOwnerUserId, setDataFileOwnerUserId] = useState(null);
+    const [relationFileOwnerUserId, setRelationFileOwnerUserId] = useState(null);
+    const [dataFileOwnerTeamId, setDataFileOwnerTeamId] = useState(null);
+    const [relationFileOwnerTeamId, setRelationFileOwnerTeamId] = useState(null);
     const [dataDelimiter, setDataDelimiter] = useState('');
     const [relationDelimiter, setRelationDelimiter] = useState('');
     const [schemas, setSchemas] = useState([]);
@@ -111,7 +117,10 @@ const CorrelationPage = ({user}) => {
         schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
         availableForUserSchemas, setAvailableForUserSchemas,
         dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId,
-        dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName
+        dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName,
+        dataFileSize, setDataFileSize, relationFileSize, setRelationFileSize,
+        dataFileOwnerUserId, setDataFileOwnerUserId, relationFileOwnerUserId, setRelationFileOwnerUserId,
+        dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId
     }}>
         {mainComponent}
     </AppContext.Provider>

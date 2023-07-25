@@ -9,13 +9,18 @@ import {AppContext} from "../pages/CorrelationPage";
 import {getSchemaById} from "../api/schemas";
 import ExportSettingsModal from "./ExportSettingsModal";
 import settingsIcon from '../static/img/settings.svg';
+import getRelationNameById from "../helpers/getRelationNameById";
 
 const ROWS_PER_PAGE = 20;
 
 const OutputSheetView = forwardRef((props, ref) => {
-    const { outputSheet, outputSheetExportColumns, setOutputSheetExportColumns, exportFormat,
+    const { outputSheet, outputSheetExportColumns,
+        exportFormat, indexesOfCorrelatedRows, matchType,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility, setColumnsToSum } = useContext(ViewContext);
-    const { currentSchemaId, dataSheet } = useContext(AppContext);
+    const { currentSchemaId, dataSheet, relationSheet, dataSheetName,
+        relationSheetName, dataFile, relationFile, dataFileSize, relationFileSize,
+        dataFileOwnerUserId, relationFileOwnerUserId,
+        dataFileOwnerTeamId, relationFileOwnerTeamId } = useContext(AppContext);
 
     const [page, setPage] = useState(1);
     const [rowsToRender, setRowsToRender] = useState([]);
@@ -28,17 +33,15 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [cellsHeight, setCellsHeight] = useState(-1);
 
     useEffect(() => {
-        setFinalExportColumns(outputSheetExportColumns);
-        setColumnsToSum(outputSheetExportColumns.map((item, index) => {
+        setFinalExportColumns([...outputSheetExportColumns, false, false]);
+        setColumnsToSum(outputSheetExportColumns.map(() => {
             return 0;
         }));
     }, [outputSheetExportColumns]);
 
     useEffect(() => {
         if(columnsNames?.length) {
-            console.log('yes 1');
             if(!outputSheetColumnsVisibility?.length) {
-                console.log('yes 2');
                 if(currentSchemaId > 0) {
                     getSchemaById(currentSchemaId)
                         .then((res) => {
@@ -65,7 +68,6 @@ const OutputSheetView = forwardRef((props, ref) => {
                 }
             }
             else {
-                console.log('no');
                 setDefaultOutputSheetColumnsVisibility();
             }
         }
@@ -123,23 +125,61 @@ const OutputSheetView = forwardRef((props, ref) => {
 
             const csvData = Papa.unparse({
                 fields: Object.keys(data[0]),
-                data: data,
+                data: data
+            }, {
                 delimiter: exportFormat === 0 ? ',' : ';'
             });
 
             const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", "data.csv");
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            downloadFile(blob, 'data.csv');
         }
         else {
             // JSON file
-            // TODO
+            const fileContent = createExportJSON();
+            const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8;" });
+            downloadFile(blob, 'data.json');
         }
+    }
+
+    const createExportJSON = () => {
+        const json = {
+            inputSheets: [
+                {
+                    filename: dataSheetName,
+                    filepath: dataFile,
+                    filesize: dataFileSize,
+                    rowCount: dataSheet.length,
+                    ownerUserId: dataFileOwnerUserId,
+                    ownerTeamId: dataFileOwnerTeamId,
+                    fileRows: dataSheet
+                },
+                {
+                    filename: relationSheetName,
+                    filepath: relationFile,
+                    filesize: relationFileSize,
+                    rowCount: relationSheet.length,
+                    ownerUserId: relationFileOwnerUserId,
+                    ownerTeamId: relationFileOwnerTeamId,
+                    fileRows: relationSheet
+                }
+            ],
+            outputMatchedData: {
+                relationType: getRelationNameById(matchType),
+                rows: indexesOfCorrelatedRows
+            }
+        }
+
+        return JSON.stringify(json);
+    }
+
+    const downloadFile = (blob, filename) => {
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     }
 
     const fetchNextRows = () => {
@@ -180,6 +220,14 @@ const OutputSheetView = forwardRef((props, ref) => {
         return cellsHeight !== -1 ? `${cellsHeight}px` : 'unset';
     }
 
+    const hasDataSheetCounter = () => {
+        return Object.keys(outputSheet[0]).includes('ilość dopasowań ark1 do ark2');
+    }
+
+    const hasRelationSheetCounter = () => {
+        return Object.keys(outputSheet[0]).includes('ilość dopasowań ark2 do ark1');
+    }
+
     return <div className="sheetWrapper" ref={ref}>
         {exportSettingsModalVisible ? <ExportSettingsModal closeModal={() => { setExportSettingsModalVisible(false); }}
                                                            exportOutputSheet={exportOutputSheet}
@@ -193,8 +241,8 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                              columnsNames={columnsNames}
                                                              extraIndex={0}
                                                              hideFirstColumn={false}
-                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetColumnsVisibility : outputSheetExportColumns}
-                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setOutputSheetExportColumns}
+                                                             columns={columnsSettingsModalVisible === 1 ? outputSheetColumnsVisibility : finalExportColumns}
+                                                             setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setFinalExportColumns}
                                                              header={columnsSettingsModalVisible === 1 ? 'Widoczność kolumn' : 'Uwzględnij w eksporcie'} /> : ''}
 
         <div className="btnExportWrapper center">
@@ -258,6 +306,25 @@ const OutputSheetView = forwardRef((props, ref) => {
                             return '';
                         }
                     })}
+
+                    {hasDataSheetCounter() ? <div className="check__cell"
+                                                  style={{
+                                                      minWidth: '280px'
+                                                  }}>
+                        <button className={finalExportColumns[finalExportColumns.length-(hasRelationSheetCounter() ? 2 : 1)] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - (hasRelationSheetCounter() ? 2 : 1)); }}>
+
+                        </button>
+                    </div> : ''}
+                    {hasRelationSheetCounter() ? <div className="check__cell"
+                                                  style={{
+                                                      minWidth: '280px'
+                                                  }}>
+                        <button className={finalExportColumns[finalExportColumns.length-1] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - 1); }}>
+
+                        </button>
+                    </div> : ''}
                 </div>
 
                 <div className="line line--noFlex">
@@ -269,12 +336,27 @@ const OutputSheetView = forwardRef((props, ref) => {
                                 {item}
                             </div>
                     })}
+
+                    {hasDataSheetCounter() ? <div className="sheet__header__cell"
+                                                  style={{
+                                                      minWidth: '280px'
+                                                  }}>
+                        ilość dopasowań ark1 do ark2
+                    </div> : ''}
+
+                    {hasRelationSheetCounter() ? <div className="sheet__header__cell"
+                                                      style={{
+                                                          minWidth: '280px'
+                                                      }}>
+                        ilość dopasowań ark1 do ark2
+                    </div> : ''}
                 </div>
             </div>
 
             {rowsToRender.map((item, index) => {
                 return <div className="line line--tableRow"
                            key={index}>
+                    {/* Columns */}
                     {Object.entries(item).filter((_, index) => (outputSheetExportColumns[index] && outputSheetColumnsVisibility[index]))
                         .map((item, index, array) => {
                             const cellValue = item[1];
@@ -288,6 +370,24 @@ const OutputSheetView = forwardRef((props, ref) => {
                                 {cellValue}
                             </div>
                     })}
+
+                    {/* Match counters */}
+                    {hasDataSheetCounter() ? <div className="sheet__body__row__cell"
+                                                  style={{
+                                                      minWidth: '280px',
+                                                      maxHeight: getColumnMaxHeight()
+                                                  }}
+                                                  key={index}>
+                        {item['ilość dopasowań ark1 do ark2']}
+                    </div> : ''}
+                    {hasRelationSheetCounter() ? <div className="sheet__body__row__cell"
+                                                  style={{
+                                                      minWidth: '280px',
+                                                      maxHeight: getColumnMaxHeight()
+                                                  }}
+                                                  key={index}>
+                        {item['ilość dopasowań ark2 do ark1']}
+                    </div> : ''}
                 </div>
             })}
         </div>

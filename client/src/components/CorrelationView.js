@@ -274,7 +274,7 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasować ark1 do ark2': numberOfMatches
+                'ilość dopasowań ark1 do ark2': numberOfMatches
             };
 
             result.push(combined);
@@ -293,7 +293,7 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasować ark2 do ark1': numberOfMatches
+                'ilość dopasowań ark2 do ark1': numberOfMatches
             };
 
             result.push(combined);
@@ -313,8 +313,8 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasować ark1 do ark2': numberOfMatchesDataSheet,
-                'ilość dopasować ark2 do ark1': numberOfMatchesRelationSheet
+                'ilość dopasowań ark1 do ark2': numberOfMatchesDataSheet,
+                'ilość dopasowań ark2 do ark1': numberOfMatchesRelationSheet
             };
 
             result.push(combined);
@@ -451,6 +451,136 @@ const CorrelationView = ({user}) => {
         return result;
     }
 
+    ///
+
+    const joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter = () => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                for(const dataRowIndex of dataRowIndexes) {
+                    result.push({
+                        ...combined,
+                        ...dataSheet[dataRowIndex]
+                    });
+                }
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({...combined, ...dataSheetEmptyObject});
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemDuplicatesFormatWithRelationSheetCounter = () => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                for(const dataRowIndex of dataRowIndexes) {
+                    result.push({
+                        ...combined,
+                        ...dataSheet[dataRowIndex],
+                        'ilość dopasowań ark2 do ark1': dataRowIndexes.length
+                    });
+                }
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({...combined, ...dataSheetEmptyObject});
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemDuplicatesFormatWithDataSheetCounter = () => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                for(const dataRowIndex of dataRowIndexes) {
+                    const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === dataRowIndex)).length;
+
+                    result.push({
+                        ...combined,
+                        ...dataSheet[dataRowIndex],
+                        'ilość dopasowań ark1 do ark2': numberOfMatches
+                    });
+                }
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({...combined, ...dataSheetEmptyObject});
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemDuplicatesFormatWithBothCounters = () => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                for(const dataRowIndex of dataRowIndexes) {
+                    const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === dataRowIndex)).length;
+
+                    result.push({
+                        ...combined,
+                        ...relationSheet[relationRowIndex],
+                        'ilość dopasowań ark2 do ark1': dataRowIndexes.length,
+                        'ilość dopasowań ark1 do ark2': numberOfMatches
+                    });
+                }
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({...combined, ...dataSheetEmptyObject});
+            }
+        });
+
+        return result;
+    }
+
     const joinTwoSheetsMatchesSystemCommaOrSumFormatWithoutCounter = (sum = false) => {
         let result = [];
 
@@ -538,7 +668,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasować ark1 do ark2': numberOfMatches
+                    'ilość dopasowań ark1 do ark2': numberOfMatches
                 });
             }
             else {
@@ -589,7 +719,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasować ark2 do ark1': numberOfMatches
+                    'ilość dopasowań ark2 do ark1': numberOfMatches
                 });
             }
             else {
@@ -640,7 +770,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasować ark2 do ark1': numberOfMatchesRelationSheet
+                    'ilość dopasowań ark2 do ark1': numberOfMatchesRelationSheet
                 });
             }
             else {
@@ -741,7 +871,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasować ark1 do ark2': relationRowIndexes.length
+                    'ilość dopasowań ark1 do ark2': relationRowIndexes.length
                 });
             }
             else {
@@ -752,7 +882,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...combined,
                     ...relationSheetEmptyObject,
-                    ...{ 'ilość dopasować ark1 do ark2': relationRowIndexes.length }
+                    ...{ 'ilość dopasowań ark1 do ark2': relationRowIndexes.length }
                 });
             }
         });
@@ -806,7 +936,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': numberOfMatches.join(', ')
+                    'ilość dopasowań ark2 do ark1': numberOfMatches[0]
                 });
             }
             else {
@@ -872,7 +1002,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...combined,
                     'ilość dopasowań ark1 do ark2': relationRowIndexes.length,
-                    'ilość dopasowań ark2 do ark1': numberOfMatches.join(', ')
+                    'ilość dopasowań ark2 do ark1': numberOfMatches[0]
                 });
             }
             else {
@@ -891,6 +1021,251 @@ const CorrelationView = ({user}) => {
 
         return result;
     }
+
+    const joinTwoSheetsRelationSystemCommaOrSumFormatWithoutCounter = (sum = false) => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                let columnIndex = 0;
+
+                for(const columnName of Object.keys(dataSheet[0])) {
+                    if(sum && columnsToSum[columnIndex]) {
+                        let newColumn = 0;
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
+                        }
+
+                        combined = {...combined, ...{ [columnName]: newColumn }}
+                    }
+                    else {
+                        let newColumn = '';
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += `${dataSheet[dataRowIndex][columnName]}, `;
+                        }
+
+                        newColumn = newColumn.slice(0, -2);
+                        combined = {...combined, ...{ [columnName]: newColumn }}
+                    }
+
+                    columnIndex++;
+                }
+
+                result.push(combined);
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({...combined, ...dataSheetEmptyObject});
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemCommaOrSumFormatWithRelationSheetCounter = (sum = false) => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                let columnIndex = 0;
+
+                for(const columnName of Object.keys(dataSheet[0])) {
+                    if(sum && columnsToSum[columnIndex]) {
+                        let newColumn = 0;
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
+                        }
+
+                        combined = {...combined, ...{ [columnName]: newColumn }}
+                    }
+                    else {
+                        let newColumn = '';
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            newColumn += `${dataSheet[dataRowIndex][columnName]}, `;
+                        }
+
+                        newColumn = newColumn.slice(0, -2);
+                        combined = {...combined, ...{ [columnName]: newColumn }}
+                    }
+
+                    columnIndex++;
+                }
+
+                result.push({
+                    ...combined,
+                    'ilość dopasowań ark2 do ark1': dataRowIndexes.length
+                });
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({
+                    ...combined,
+                    ...dataSheetEmptyObject,
+                    ...{ 'ilość dopasowań ark2 do ark1': dataRowIndexes.length }
+                });
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemCommaOrSumFormatWithDataSheetCounter = (sum = false) => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                let columnIndex = 0;
+                let numberOfMatches = [];
+
+                for(const columnName of Object.keys(dataSheet[0])) {
+                    let newColumn;
+
+                    if(sum && columnsToSum[columnIndex]) {
+                        newColumn = 0;
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            numberOfMatches.push(indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length);
+                            newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
+                        }
+                    }
+                    else {
+                        newColumn = '';
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            numberOfMatches.push(indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length);
+                            newColumn += `${dataSheet[dataRowIndex][columnName]}, `;
+                        }
+
+                        newColumn = newColumn.slice(0, -2);
+                    }
+
+                    combined = {
+                        ...combined,
+                        ...{ [columnName]: newColumn }
+                    }
+
+                    columnIndex++;
+                }
+
+                result.push({
+                    ...combined,
+                    'ilość dopasowań ark1 do ark2': numberOfMatches[0]
+                });
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({
+                    ...combined,
+                    ...dataSheetEmptyObject,
+                    ...{ 'ilość dopasowań ark1 do ark2': 0 }
+                });
+            }
+        });
+
+        return result;
+    }
+
+    const joinTwoSheetsRelationSystemCommaOrSumFormatWithBothCounters = (sum = false) => {
+        let result = [];
+
+        relationSheet.forEach((item, index) => {
+            let combined = {...item};
+            const relationRowIndex = index;
+            const dataRowIndexes = indexesOfCorrelatedRows
+                .filter((item) => (item[1] === relationRowIndex))
+                .map((item) => (item[0]));
+
+            if(dataRowIndexes?.length) {
+                let columnIndex = 0;
+                let numberOfMatches = [];
+
+                for(const columnName of Object.keys(dataSheet[0])) {
+                    let newColumn;
+
+                    if(sum && columnsToSum[columnIndex]) {
+                        newColumn = 0;
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            numberOfMatches.push(indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length);
+                            newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
+                        }
+                    }
+                    else {
+                        newColumn = '';
+
+                        for(const dataRowIndex of dataRowIndexes) {
+                            numberOfMatches.push(indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length);
+                            newColumn += `${dataSheet[dataRowIndex][columnName]}, `;
+                        }
+
+                        newColumn = newColumn.slice(0, -2);
+                    }
+
+                    combined = {
+                        ...combined,
+                        ...{ [columnName]: newColumn }
+                    }
+
+                    columnIndex++;
+                }
+
+                result.push({
+                    ...combined,
+                    'ilość dopasowań ark2 do ark1': dataRowIndexes.length,
+                    'ilość dopasowań ark1 do ark2': numberOfMatches[0]
+                });
+            }
+            else {
+                const dataSheetColumns = Object.keys(dataSheet[0]);
+                const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
+                    return [item, ''];
+                }));
+                result.push({
+                    ...combined,
+                    ...dataSheetEmptyObject,
+                    ...{ 'ilość dopasowań ark1 do ark2': 0 },
+                    ...{ 'ilość dopasowań ark2 do ark1': 0 }
+                });
+            }
+        });
+
+        return result;
+    }
+
+    useEffect(() => {
+        console.log(outputSheet);
+    }, [outputSheet]);
 
     const joinTwoFullSheets = () => {
         let result = [];
@@ -1032,26 +1407,26 @@ const CorrelationView = ({user}) => {
                 }
                 else if(matchType === 1) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithDataSheetCounter();
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter();
                     }
                 }
                 else if(matchType === 2) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithRelationSheetCounter();
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter();
                     }
                 }
                 else if(matchType === 3) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithBothCounters();
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter();
                     }
                 }
             }
@@ -1059,30 +1434,30 @@ const CorrelationView = ({user}) => {
                 const isSum = duplicatedRecordsFormat === 2;
 
                 if(matchType === 0) {
-                    return joinTwoSheetsDataSystemDuplicatesFormatWithoutCounter();
+                    return joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter();
                 }
                 else if(matchType === 1) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithDataSheetCounter(isSum);
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithoutCounter(isSum);
                     }
                 }
                 else if(matchType === 2) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithRelationSheetCounter(isSum);
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithoutCounter(isSum);
                     }
                 }
                 else if(matchType === 3) {
                     if(includeColumnWithMatchCounter) {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithBothCounters(isSum);
                     }
                     else {
-
+                        return joinTwoSheetsRelationSystemCommaOrSumFormatWithoutCounter(isSum);
                     }
                 }
             }
