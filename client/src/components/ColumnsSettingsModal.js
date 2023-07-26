@@ -1,9 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
                                   header, hideFirstColumn, extraIndex}) => {
+    const { content } = useContext(TranslationContext);
+
     useCloseModalOnOutsideClick(closeModal);
     useActionOnEscapePress(closeModal);
 
@@ -24,10 +28,7 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
     }
 
     return <div className="modal">
-        <button className="btn btn--closeModal"
-                onClick={closeModal}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner modal__inner--columnsSettings scroll">
             <h3 className="modal__header modal__header--center">
@@ -37,11 +38,11 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
             <div className="flex modal__inner__selectButtons">
                 <button className="btn btn--selectAll btn--selectAll--modal"
                         onClick={selectAllColumns}>
-                    Zaznacz wszystkie
+                    {content.checkAll}
                 </button>
                 <button className="btn btn--selectAll btn--selectAll--modal"
                         onClick={removeAllColumns}>
-                    Odznacz wszystkie
+                    {content.uncheckAll}
                 </button>
             </div>
 
@@ -60,15 +61,12 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
                             </button>
                         </label>
                     }
-                    else {
-                        return '';
-                    }
                 })}
             </div>
 
             <button className="btn btn--modalConfirm"
                     onClick={closeModal}>
-                Zamknij
+                {content.close}
             </button>
         </div>
     </div>

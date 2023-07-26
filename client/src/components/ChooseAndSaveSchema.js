@@ -4,9 +4,10 @@ import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import {saveSchema, updateSchema} from "../api/schemas";
 import BottomNotification from "./BottomNotification";
-import {errorText} from "../static/content";
+import {TranslationContext} from "../App";
 
 const ChooseAndSaveSchema = ({user}) => {
+    const { content } = useContext(TranslationContext);
     const { schemas, availableForUserSchemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
         dataSheetId, relationSheetId } = useContext(AppContext);
     const { priorities, matchSchemaArray, showInSelectMenuColumnsDataSheet, showInSelectMenuColumnsRelationSheet,
@@ -25,7 +26,7 @@ const ChooseAndSaveSchema = ({user}) => {
 
     useEffect(() => {
         if(currentSchemaId === -1) {
-            setName('nowy schemat');
+            setName(content.newSchema);
         }
         else {
             setName('');
@@ -56,10 +57,10 @@ const ChooseAndSaveSchema = ({user}) => {
                 setUpdateSchemas(p => !p);
                 setCurrentSchemaId(res?.data?.id);
                 setNotificationColor('#508345');
-                setNotificationText('Schemat został dodany');
+                setNotificationText(content.schemaAdded);
             })
             .catch(() => {
-                setNotificationText(errorText);
+                setNotificationText(content.error);
                 setNotificationColor('#ff0000');
             });
     }
@@ -69,10 +70,10 @@ const ChooseAndSaveSchema = ({user}) => {
             getColumnsSettingsObject(), matchType, matchFunction, dataSheetId, relationSheetId)
             .then(() => {
                 setNotificationColor('#508345');
-                setNotificationText('Schemat został zaktualizowany');
+                setNotificationText(content.schemaUpdated);
             })
             .catch(() => {
-                setNotificationText(errorText);
+                setNotificationText(content.error);
                 setNotificationColor('#ff0000');
             });
     }
@@ -92,31 +93,30 @@ const ChooseAndSaveSchema = ({user}) => {
                     ?
 
                     {tooltip ? <span className="tooltip">
-                        Schemat dopasowania pozwala zapisać sposób dopasowania rekordów w arkuszu 1 do arkusza 2 - zarówno dopasowań automatycznych, ręcznych, jak i wyboru użytkownika spośród tych automatycznie wygenerowanych propozycji przez system. Jest to bardzo przydatna funkcja, jeżeli przynajmniej więcej niż raz będziesz dopasowywać podobne arkusze do siebie, a już na wagę złota gdy czynisz to regularnie (np. regularnie wprowadzasz dostawy od danego dostawcy/ porównujesz ceny od danego dostawcy/ czy generalnie korzystasz z tych samych lub zbliżonych plików wejściowych). Co istotne - jeśli pliki będą się różnić bo np. zostały zaktualizowane i doszły lub usunięto jakieś wiersze - nie ma problemu! aplikacja również sobie z tym poradzi!
+                        {content.schemaTooltip}
                     </span> : ''}
                 </span>
 
-            Aktualny schemat dopasowania:
+            {content.currentSchema}:
 
             <div className="selectWrapper">
-                {currentSchemaId !== -1 ? <Select
-                    options={schemas}
-                    placeholder="Wybierz schemat"
-                    value={schemas.find((item) => (item.value === currentSchemaId))}
-                    onChange={handleChange}
-                    isSearchable={true}
+                {currentSchemaId !== -1 ? <Select options={schemas}
+                                                  placeholder={content.chooseSchemaPlaceholder}
+                                                  value={schemas.find((item) => (item.value === currentSchemaId))}
+                                                  onChange={handleChange}
+                                                  isSearchable={true}
                 /> : <input className="input input--schemaName"
-                            placeholder="Nazwa schematu dopasowania"
+                            placeholder={content.schemaNamePlaceholder}
                             value={name}
                             onChange={(e) => { setName(e.target.value); }} />}
             </div>
 
             {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas || currentSchemaId === -1) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
-                                           onClick={() => { createSchemaWrapper(); }}>
-                Utwórz i zapisz schemat
+                                           onClick={createSchemaWrapper}>
+                {content.createAndSaveSchema}
             </button> : <button className="btn btn--saveSchema"
-                                onClick={() => { updateSchemaWrapper(); }}>
-                Zapisz zmiany w schemacie
+                                onClick={updateSchemaWrapper}>
+                {content.updateSchema}
             </button>) : ''}
         </div>
     </div>

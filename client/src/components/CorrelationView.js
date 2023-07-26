@@ -8,12 +8,13 @@ import ChooseAndSaveSchema from "./ChooseAndSaveSchema";
 import {getSchemaById} from "../api/schemas";
 import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
 import QuickBottomInfo from "./QuickBottomInfo";
-import getMaximumInArray from "../helpers/getMaximumInArray";
 import transposeMatrix from "../helpers/transposeMatrix";
+import {TranslationContext} from "../App";
 
 const ViewContext = React.createContext(null);
 
 const CorrelationView = ({user}) => {
+    const { content } = useContext(TranslationContext);
     const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
         dataSheetId, relationSheetId, dataSheetName, relationSheetName,
         dataDelimiter, relationDelimiter } = useContext(AppContext);
@@ -274,7 +275,7 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasowań ark1 do ark2': numberOfMatches
+                [content.matchCounterDataSheetName]: numberOfMatches
             };
 
             result.push(combined);
@@ -293,7 +294,7 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasowań ark2 do ark1': numberOfMatches
+                [content.matchCounterRelationSheetName]: numberOfMatches
             };
 
             result.push(combined);
@@ -315,8 +316,8 @@ const CorrelationView = ({user}) => {
             let combined = {
                 ...dataSheet[dataRowIndex],
                 ...relationSheet[relationRowIndex],
-                'ilość dopasowań ark1 do ark2': numberOfMatchesDataSheet,
-                'ilość dopasowań ark2 do ark1': numberOfMatchesRelationSheet
+                [content.matchCounterDataSheetName]: numberOfMatchesDataSheet,
+                [content.matchCounterRelationSheetName]: numberOfMatchesRelationSheet
             };
 
             result.push(combined);
@@ -370,7 +371,7 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...combined,
                         ...relationSheet[relationRowIndex],
-                        'ilość dopasowań ark1 do ark2': relationRowIndexes.length
+                        [content.matchCounterDataSheetName]: relationRowIndexes.length
                     });
                 }
             }
@@ -403,7 +404,7 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...combined,
                         ...relationSheet[relationRowIndex],
-                        'ilość dopasowań ark2 do ark1': numberOfMatches
+                        [content.matchCounterRelationSheetName]: numberOfMatches
                     });
                 }
             }
@@ -436,8 +437,8 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...combined,
                         ...relationSheet[relationRowIndex],
-                        'ilość dopasowań ark1 do ark2': relationRowIndexes.length,
-                        'ilość dopasowań ark2 do ark1': numberOfMatches
+                        [content.matchCounterDataSheetName]: relationRowIndexes.length,
+                        [content.matchCounterRelationSheetName]: numberOfMatches
                     });
                 }
             }
@@ -500,7 +501,7 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...dataSheet[dataRowIndex],
                         ...combined,
-                        'ilość dopasowań ark2 do ark1': dataRowIndexes.length
+                        [content.matchCounterRelationSheetName]: dataRowIndexes.length
                     });
                 }
             }
@@ -533,7 +534,7 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...dataSheet[dataRowIndex],
                         ...combined,
-                        'ilość dopasowań ark1 do ark2': numberOfMatches
+                        [content.matchCounterDataSheetName]: numberOfMatches
                     });
                 }
             }
@@ -566,8 +567,8 @@ const CorrelationView = ({user}) => {
                     result.push({
                         ...combined,
                         ...relationSheet[relationRowIndex],
-                        'ilość dopasowań ark2 do ark1': dataRowIndexes.length,
-                        'ilość dopasowań ark1 do ark2': numberOfMatches
+                        [content.matchCounterRelationSheetName]: dataRowIndexes.length,
+                        [content.matchCounterDataSheetName]: numberOfMatches
                     });
                 }
             }
@@ -719,7 +720,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark1 do ark2': numberOfMatches
+                    [content.matchCounterDataSheetName]: numberOfMatches
                 });
             }
             else {
@@ -770,7 +771,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': numberOfMatches
+                    [content.matchCounterRelationSheetName]: numberOfMatches
                 });
             }
             else {
@@ -821,7 +822,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark1 do ark2': numberOfMatchesRelationSheet
+                    [content.matchCounterDataSheetName]: numberOfMatchesRelationSheet
                 });
             }
             else {
@@ -922,7 +923,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark1 do ark2': relationRowIndexes.length
+                    [content.matchCounterDataSheetName]: relationRowIndexes.length
                 });
             }
             else {
@@ -933,7 +934,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...combined,
                     ...relationSheetEmptyObject,
-                    ...{ 'ilość dopasowań ark1 do ark2': relationRowIndexes.length }
+                    ...{ [content.matchCounterDataSheetName]: relationRowIndexes.length }
                 });
             }
         });
@@ -987,7 +988,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': numberOfMatches[0]
+                    [content.matchCounterRelationSheetName]: numberOfMatches[0]
                 });
             }
             else {
@@ -998,7 +999,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...combined,
                     ...relationSheetEmptyObject,
-                    ...{ 'ilość dopasowań ark2 do ark1': 0 }
+                    ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
             }
         });
@@ -1052,8 +1053,8 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark1 do ark2': relationRowIndexes.length,
-                    'ilość dopasowań ark2 do ark1': numberOfMatches[0]
+                    [content.matchCounterDataSheetName]: relationRowIndexes.length,
+                    [content.matchCounterRelationSheetName]: numberOfMatches[0]
                 });
             }
             else {
@@ -1064,8 +1065,8 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...combined,
                     ...relationSheetEmptyObject,
-                    ...{ 'ilość dopasowań ark1 do ark2': 0 },
-                    ...{ 'ilość dopasowań ark2 do ark1': 0 }
+                    ...{ [content.matchCounterDataSheetName]: 0 },
+                    ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
             }
         });
@@ -1163,7 +1164,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': dataRowIndexes.length
+                    [content.matchCounterRelationSheetName]: dataRowIndexes.length
                 });
             }
             else {
@@ -1174,7 +1175,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...dataSheetEmptyObject,
                     ...combined,
-                    ...{ 'ilość dopasowań ark2 do ark1': dataRowIndexes.length }
+                    ...{ [content.matchCounterRelationSheetName]: dataRowIndexes.length }
                 });
             }
         });
@@ -1228,7 +1229,7 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark1 do ark2': numberOfMatches[0]
+                    [content.matchCounterDataSheetName]: numberOfMatches[0]
                 });
             }
             else {
@@ -1239,7 +1240,7 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...dataSheetEmptyObject,
                     ...combined,
-                    ...{ 'ilość dopasowań ark1 do ark2': 0 }
+                    ...{ [content.matchCounterDataSheetName]: 0 }
                 });
             }
         });
@@ -1293,8 +1294,8 @@ const CorrelationView = ({user}) => {
 
                 result.push({
                     ...combined,
-                    'ilość dopasowań ark2 do ark1': dataRowIndexes.length,
-                    'ilość dopasowań ark1 do ark2': numberOfMatches[0]
+                    [content.matchCounterRelationSheetName]: dataRowIndexes.length,
+                    [content.matchCounterDataSheetName]: numberOfMatches[0]
                 });
             }
             else {
@@ -1305,8 +1306,8 @@ const CorrelationView = ({user}) => {
                 result.push({
                     ...dataSheetEmptyObject,
                     ...combined,
-                    ...{ 'ilość dopasowań ark1 do ark2': 0 },
-                    ...{ 'ilość dopasowań ark2 do ark1': 0 }
+                    ...{ [content.matchCounterDataSheetName]: 0 },
+                    ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
             }
         });
@@ -1849,7 +1850,7 @@ const CorrelationView = ({user}) => {
             </div>
 
             {numberOfMatches !== -1 ? <QuickBottomInfo time={5000}>
-                Wykonane dopasowania: {numberOfMatches}
+                {content.matchesDone}: {numberOfMatches}
             </QuickBottomInfo> : ''}
         </div>
     </ViewContext.Provider>

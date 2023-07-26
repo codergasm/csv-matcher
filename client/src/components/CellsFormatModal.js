@@ -1,9 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import CloseModalButton from "./CloseModalButton";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
+import {TranslationContext} from "../App";
 
 const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
+    const { content } = useContext(TranslationContext);
+
     const [height, setHeight] = useState(-1);
 
     useCloseModalOnOutsideClick(closeModal);
@@ -25,14 +28,14 @@ const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
                            onClick={() => { setCellsHeight(-1) }}>
 
                    </button>
-                   nie ograniczaj wysokości komórek
+                   {content.notRestrictCellsHeight}
                </label>
                <label className="label">
                    <button className={cellsHeight !== -1 ? "btn btn--check btn--check--selected" : "btn btn--check"}
                            onClick={() => { setCellsHeight(p => (p === -1 ? 50 : p)) }}>
 
                    </button>
-                   ograniczaj wysokość komórek do:
+                   {content.restrictCellsHeight}
                    <span>
                        <input type="number"
                               value={height !== -1 ? height : ''}
@@ -43,7 +46,7 @@ const CellsFormatModal = ({closeModal, cellsHeight, setCellsHeight}) => {
 
             <button className="btn btn--startAutoMatch"
                     onClick={closeModal}>
-                Zatwierdź
+                {content.confirm}
             </button>
         </div>
     </div>

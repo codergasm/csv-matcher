@@ -1,7 +1,9 @@
 import React, {useContext} from 'react';
 import {ViewContext} from "./CorrelationView";
+import {TranslationContext} from "../App";
 
 const ButtonCorrelationViewPicker = ({children, index, fileName}) => {
+    const { content } = useContext(TranslationContext);
     const { currentSheet, setCurrentSheet } = useContext(ViewContext);
 
     return <button className={currentSheet === index ? "btn btn--correlationViewPicker btn--correlationViewPicker--current" : "btn btn--correlationViewPicker"}
@@ -9,7 +11,7 @@ const ButtonCorrelationViewPicker = ({children, index, fileName}) => {
         {children}
 
         {fileName ? <span className="fileNameInfo">
-            Wczytany plik: <span className="bold">{fileName}</span>
+            {content.loadedFile}: <span className="bold">{fileName}</span>
         </span> : ''}
     </button>
 };

@@ -1,14 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Loader from "./Loader";
 import {getFilesByUser} from "../api/files";
 import {assignSheetsToSchema} from "../api/schemas";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import FileUploader from "./FileUploader";
+import {TranslationContext} from "../App";
+import CloseModalButton from "./CloseModalButton";
 
 const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNotification, matchSchema, user}) => {
-    const [loading, setLoading] = useState(false);
+    const { content } = useContext(TranslationContext);
 
+    const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState([]);
     const [dataSheetId, setDataSheetId] = useState(0);
     const [relationSheetId, setRelationSheetId] = useState(0);
@@ -46,15 +49,12 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
     }
 
     return <div className="modal modal--chooseSheets">
-        <button className="btn btn--closeModal"
-                onClick={closeModalWrapper}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner modal__inner--chooseSheets">
             <div className="modal__sheetsList">
                 <h4 className="modal__header">
-                    Arkusz 1
+                    {content.sheet1}
                 </h4>
 
                 <div className="modal__sheetsList__inner scroll">
@@ -73,7 +73,7 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
 
             <div className="modal__sheetsList">
                 <h4 className="modal__header">
-                    Arkusz 2
+                    {content.sheet2}
                 </h4>
 
                 <div className="modal__sheetsList__inner scroll">
@@ -92,8 +92,8 @@ const AssignSheetsToSchemaModal = ({closeModal, setUpdateSchemas, showBottomNoti
 
             {!loading ? <button className="btn btn--submitFormNewTeam btn--assignSheetsToSchemaSubmit"
                                 disabled={dataSheetId === 0 || relationSheetId === 0}
-                                onClick={() => { handleSubmit(); }}>
-                Przypisz arkusze do schematu
+                                onClick={handleSubmit}>
+                {content.assignSheetsToSchema}
             </button> : <Loader width={50} />}
         </div>
     </div>

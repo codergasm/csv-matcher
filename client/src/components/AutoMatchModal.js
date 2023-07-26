@@ -6,13 +6,11 @@ import ProgressBar from "./ProgressBar";
 import {AppContext} from "../pages/CorrelationPage";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
-
-const matchTypes = ['Jeden do jednego', 'Jeden (arkusz 1) do wielu (arkusz 2)',
-    'Wiele (arkusz 1) do jednego (arkusz 2),', 'Wiele do wielu'];
-const matchFunctions = ['Dopasowanie stringów',
-    'Pokrycie wartości z ark. 1 w ark. 2', 'Pokrycie wartości z ark. 2 w ark. 1'];
+import {TranslationContext} from "../App";
+import CloseModalButton from "./CloseModalButton";
 
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility, user}) => {
+    const { content } = useContext(TranslationContext);
     const { relationSheet } = useContext(AppContext);
     const { priorities, setPriorities, matchType, setMatchType, progressCount,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows,
@@ -244,25 +242,22 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                                                  user={user}
                                                                  closeModal={() => { setTestConfigurationModalVisible(false); }} /> : ''}
 
-        <button className="btn btn--closeModal"
-                onClick={closeModal}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner scroll">
             {!loading ? <>
                 <div className="modal__top">
                     <h3 className="modal__header">
-                        Typ dopasowania
+                        {content.relationType}
                     </h3>
 
                     <button className="btn btn--openTestConfigurationModal"
                             onClick={() => { setTestConfigurationModalVisible(true); }}>
-                        Przetestuj konfigurację
+                        {content.testConfiguration}
                     </button>
                 </div>
 
-                {matchTypes.map((item, index) => {
+                {content?.relationTypes?.map((item, index) => {
                     return <label className="modal__label"
                                   key={index}>
                         <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
@@ -274,7 +269,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                 })}
 
                 <h3 className="modal__header">
-                    Kroki dopasowania
+                    {content.matchSteps}
                 </h3>
 
                 <div className="priorities">
@@ -290,12 +285,11 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                             </button>
 
                             <h3 className="priorities__item__header">
-                                Krok {index+1}
+                                {content.step} {index+1}
                             </h3>
 
                             <p className="priorities__item__condition__text">
-                                Minimalna ilość warunków, które muszą spełniać próg procentowy %
-                                aby krok uznać za spełniony:
+                                {content.minimumConditionsRequired}:
                             </p>
                             <div className="center numberOfRequiredConditionsLabel">
                                 <button className="btn btn--numberOfRequiredConditions center"
@@ -321,15 +315,15 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                 return <div className="priorities__item__condition"
                                             key={index}>
                                     <h4 className="priorities__item__condition__header">
-                                        Warunek {index+1}
+                                        {content.condition} {index+1}
                                         <button className="btn btn--deleteCondition"
                                                 onClick={() => { deleteCondition(priorityIndex, index); }}>
-                                            Usuń
+                                            {content.delete}
                                         </button>
                                     </h4>
 
                                     <p className="priorities__item__condition__text">
-                                        Szukaj dopasowania w kolumnie arkusza 1:
+                                        {content.searchInSheet1Label}:
                                     </p>
                                     <label className="priorities__item__condition__search">
                                         <input className="input input--search"
@@ -347,11 +341,11 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                             </option>
                                         })}
                                     </select> : <p className="noOptions">
-                                        Nie znaleziono żadnych kolumn
+                                        {content.columnsNotFound}
                                     </p>}
 
                                     <p className="priorities__item__condition__text">
-                                        Szukaj dopasowania w kolumnie arkusza 2:
+                                        {content.searchInSheet2Label}:
                                     </p>
                                     <label className="priorities__item__condition__search">
                                         <input className="input input--search"
@@ -369,25 +363,26 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                             </option>
                                         })}
                                     </select> : <p className="noOptions">
-                                        Nie znaleziono żadnych kolumn
+                                        {content.columnsNotFound}
                                     </p>}
 
                                     <h3 className="priorities__item__condition__text regular">
-                                        Funkcja dopasowania
+                                        {content.matchFunctionLabel}
                                     </h3>
 
                                     <select className="select--logicalOperator select--matchFunction"
                                             value={conditionMatchFunction}
                                             onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'matchFunction', e.target.value); }}>
-                                        {matchFunctions.map((item, index) => {
-                                            return <option key={index} value={index}>
+                                        {content.matchFunctionOptions.map((item, index) => {
+                                            return <option key={index}
+                                                           value={index}>
                                                 {item}
                                             </option>
                                         })}
                                     </select>
 
                                     <h3 className="priorities__item__condition__text regular">
-                                        Przypisuj, jeśli dopasowanie procentowe jest większe niż
+                                        {content.matchThresholdLabel}
                                     </h3>
 
                                     <div className="modal__slider">
@@ -409,11 +404,15 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                     </div>
 
                                     {priority.conditions.length > 1 ? <div className="priorities__item__condition__operator">
-                                        warunek jest:
+                                        {content.matchConditionRequiredLabel}:
                                         <select className="select--logicalOperator" value={priority.conditions[index].required}
                                                 onChange={(e) => { updateConditionProperty(priorityIndex, conditionIndex, 'required', e.target.value); }}>
-                                            <option value={0}>opcjonalny</option>
-                                            <option value={1}>wymagany</option>
+                                            {content.matchConditionRequiredOptions?.map((item, index) => {
+                                                return <option key={index}
+                                                               value={index}>
+                                                    {item}
+                                                </option>
+                                            })}
                                         </select>
                                     </div> : ''}
                                 </div>
@@ -421,7 +420,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
                             <button className="btn btn--addCondition"
                                     onClick={() => { addCondition(priorityIndex); }}>
-                                Dodaj warunek
+                                {content.addCondition}
                             </button>
                         </div>
                     })}
@@ -429,11 +428,11 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
 
                 <button className="btn btn--addPriority"
                         onClick={addPriority}>
-                    + Dodaj krok
+                    + {content.addStep}
                 </button>
 
                 <p className="modal__info">
-                    Po wykonaniu automatycznego dopasowania - wciąż będziesz mógł samodzielnie zmienić dopasowanie. Dodatkowo system oznaczy kolorami dokładność dopasowania.
+                    {content.autoMatchModalInfo}
                 </p>
 
                 <div className="modal__additionalOptions">
@@ -442,14 +441,14 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                 onClick={() => { setOverrideAllRows(p => !p); }}>
 
                         </button>
-                        dopasuj tylko te rekordy, które jeszcze nie mają żadnego dopasowania
+                        {content.autoMatchModalOptions[0]}
                     </label>
                     <label className="label">
                         <button className={overrideAllRows ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                 onClick={() => { setOverrideAllRows(p => !p); }}>
 
                         </button>
-                        nadpisz wszystkie rekordy, jeśli znajdziesz nowe dopasowanie
+                        {content.autoMatchModalOptions[1]}
                     </label>
 
                     {overrideAllRows ? <label className="label--marginLeft">
@@ -457,7 +456,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                                 onClick={() => { setAvoidOverrideForManuallyCorrelatedRows(p => !p); }}>
 
                         </button>
-                        pomiń (nie nadpisuj) skorelowania przypisane ręcznie
+                        {content.autoMatchModalOptions[2]}
                     </label> : ''}
                 </div>
 
@@ -466,17 +465,17 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                         onClick={() => { setLoading(true); setTimeout(() => {
                             correlate();
                         }, 1000); }}>
-                    Uruchom automatyczne dopasowanie
+                    {content.runAutoMatch}
                 </button>
             </> : <div className="center">
                 <ProgressBar progress={progressCount / relationSheet?.length} />
 
                 {progressCount === 0 ? <h5 className="center__header">
-                    Trwa przesyłanie plików na serwer...
+                    {content.autoMatchProgress[0]}...
                 </h5> : (progressCount < relationSheet?.length ? <h5 className="center__header">
-                    Trwa korelowanie rekordów ({progressCount} / {relationSheet?.length})
+                    {content.autoMatchProgress[1]} ({progressCount} / {relationSheet?.length})
                 </h5> : <h5 className="center__header">
-                    Trwa przesyłanie wyników...
+                    {content.autoMatchProgress[2]}...
                 </h5>)}
             </div>}
         </div>

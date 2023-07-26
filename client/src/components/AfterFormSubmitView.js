@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {TranslationContext} from "../App";
 
 const AfterFormSubmitView = ({children}) => {
+    const { content } = useContext(TranslationContext);
+
     return <div className="afterRegister shadow">
         <h4 className="afterRegister__header">
             {children}
@@ -8,7 +11,7 @@ const AfterFormSubmitView = ({children}) => {
 
         <a className="btn btn--afterRegister"
            href="/home">
-            Strona główna
+            {content.homepage}
         </a>
     </div>
 };
