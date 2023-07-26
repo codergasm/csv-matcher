@@ -1,32 +1,32 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {Tooltip} from "react-tippy";
+import {TranslationContext} from "../App";
 
 const LeaveTeamButton = ({isOwner, isTeamEmpty,
                              setDeleteTeamModalVisible, setLeaveTeamModalVisible}) => {
+    const { content } = useContext(TranslationContext);
+
     if(!isOwner) {
-        // Leave team
         return <button className="btn btn--leaveTeam"
                        onClick={() => { setLeaveTeamModalVisible(true); }}>
-            Opuść zespół
+            {content.leaveTeam}
         </button>
     }
     else if(isOwner && isTeamEmpty) {
-        // Delete team
         return <button className="btn btn--leaveTeam"
                        onClick={() => { setDeleteTeamModalVisible(true); }}>
-            Usuń zespół
+            {content.deleteTeam}
         </button>
     }
     else {
-        // Button disabled
-        return <Tooltip title={'Nie możesz opuścić zespołu, ponieważ jesteś jego właścicielem'}
+        return <Tooltip title={content.youCanNotLeaveTeam}
                         followCursor={true}
                         size="small"
                         position="top">
             <button className="btn btn--leaveTeam"
                     disabled={true}
                     onClick={() => { setLeaveTeamModalVisible(true); }}>
-                Opuść zespół
+                {content.leaveTeam}
             </button>
         </Tooltip>
     }

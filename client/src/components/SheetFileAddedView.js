@@ -1,13 +1,16 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {TranslationContext} from "../App";
 
 const SheetFileAddedView = ({removeFile}) => {
+    const { content } = useContext(TranslationContext);
+
     return <>
         <p className="sheetLoaded__text">
-            Plik został dodany
+            {content.fileAdded}
         </p>
         <button className="btn btn--remove"
                 onClick={removeFile}>
-            Usuń
+            {content.delete}
         </button>
     </>
 };

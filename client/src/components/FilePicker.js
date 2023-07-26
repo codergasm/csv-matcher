@@ -1,10 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Select from "react-select";
 import Loader from "./Loader";
 import SheetFileAddedView from "./SheetFileAddedView";
+import {TranslationContext} from "../App";
 
 const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
                         setSheetId, setSheet, handleChoose, handleChange, assignToTeam, setAssignToTeam}) => {
+    const { content } = useContext(TranslationContext);
+
     const toggleAssignOwnershipToTeam = () => {
         setAssignToTeam(p => !p);
     }
@@ -26,7 +29,7 @@ const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
         <div className="loadFiles__choose">
             <Select ref={selectRef}
                     options={options}
-                    placeholder="Wybierz arkusz"
+                    placeholder={content.chooseSheetPlaceholder}
                     value={options.find((item) => (item.value === sheetId))}
                     onChange={handleChoose}
                     isSearchable={true} />
@@ -38,7 +41,7 @@ const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
             </div> : <SheetFileAddedView removeFile={removeFile} />}
         </div> : <div className="loadFiles__dropzone">
                 <span>
-                    Dodaj plik
+                    {content.addFile}
                 </span>
                 <input className="loadFiles__input"
                        type="file"
@@ -51,7 +54,7 @@ const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
                     onClick={toggleAssignOwnershipToTeam}>
 
             </button>
-            uczyń zespół właścicielem pliku
+            {content.makeTeamFileOwner}
         </label>
     </div>
 };

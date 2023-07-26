@@ -1,12 +1,15 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
 import {leaveTeam} from "../api/users";
-import {errorText} from "../static/content";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const LeaveTeamModal = ({closeModal, setTeam}) => {
+    const { content } = useContext(TranslationContext);
+
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -22,13 +25,13 @@ const LeaveTeamModal = ({closeModal, setTeam}) => {
                     setSuccess(true);
                 }
                 else {
-                    setError(errorText);
+                    setError(content.error);
                 }
                 setLoading(false);
             })
             .catch(() => {
                 setLoading(false);
-                setError(errorText);
+                setError(content.error);
             });
     }
 
@@ -41,38 +44,34 @@ const LeaveTeamModal = ({closeModal, setTeam}) => {
     }
 
     return <div className="modal modal--leaveTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModalWrapper}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner">
             {!success && !error ? <>
-                <img className="img img--modalWarning" src={noIcon} alt="ostrzezenie" />
+                <img className="img img--modalWarning" src={noIcon} alt="warning" />
 
                 <p className="modal__header modal__header--text">
-                    Uwaga! odłączając się od zespołu - wszystkie pliki i schematy,
-                    które utworzyłeś i dodałeś jako dostępne dla zespołu pozostaną w nim i nie będą już dla Ciebie dostępne
+                    {content.leaveTeamModalAlert}
                 </p>
 
                 {!loading ? <div className="flex flex--twoButtons">
                     <button className="btn btn--leaveTeam"
                             onClick={handleSubmit}>
-                        Opuść zespół
+                        {content.leaveTeam}
                     </button>
                     <button className="btn btn--neutral"
                             onClick={closeModalWrapper}>
-                        Anuluj
+                        {content.cancel}
                     </button>
                 </div>: <Loader width={50} />}
             </> :  <>
                 <h4 className="afterRegister__header afterRegister__header--center">
-                    {error ? error : 'Opuściłeś zespół. Możesz teraz dołączyć do innego zespołu lub utworzyć nowy zespół.'}
+                    {error ? error : content.leaveTeamInfo}
                 </h4>
 
                 <a className="btn btn--afterRegister"
                    href="/home">
-                    Wróć na stronę główną
+                    {content.backHomepage}
                 </a>
             </>}
         </div>

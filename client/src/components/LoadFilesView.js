@@ -8,8 +8,10 @@ import {settings} from "../helpers/settings";
 import FilePicker from "./FilePicker";
 import Row from "./Row";
 import convertResponseToObject from "../helpers/convertResponseToObject";
+import {TranslationContext} from "../App";
 
 const LoadFilesView = ({user}) => {
+    const { content } = useContext(TranslationContext);
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
         relationSheet, setRelationSheet, dataSheetId, setDataSheetId,
@@ -202,18 +204,18 @@ const LoadFilesView = ({user}) => {
         }
         catch(e) {
             setLoading(false);
-            alert('Nie udało się dodać plików. Pamiętaj, aby pliki były zapisane w formacie .csv lub .txt');
+            alert(content.loadFileError);
         }
     }
 
     return <div className="container container--loadFiles w">
         <div className="homepage homepage--loadFiles">
             <h1 className="loadFiles__header">
-                Wczytaj arkusze
+                {content.loadSheets}
             </h1>
 
             <Row>
-                <FilePicker label={'Dodaj plik źródłowy, do którego będziesz relacjonować - np. arkusz z towarami.'}
+                <FilePicker label={content.loadSheet1Text}
                             selectRef={selectDataSheetRef}
                             options={filesToChoose}
                             handleChoose={handleDataSheetChoose}
@@ -226,8 +228,7 @@ const LoadFilesView = ({user}) => {
                             assignToTeam={assignDataSheetOwnershipToTeam}
                             setAssignToTeam={setAssignDataSheetOwnershipToTeam} />
 
-                <FilePicker label={`Dodaj plik źródłowy, z którego pobierzesz interesujące Cię kolumny uprzednio relacjonując
-                        do nich rekordy z pliku pierwszego (np. arkusz z cenami/ kodami kreskowymi itd.)`}
+                <FilePicker label={content.loadSheet2Text}
                             selectRef={selectRelationSheetRef}
                             options={filesToChoose}
                             handleChoose={handleRelationSheetChoose}
@@ -246,7 +247,7 @@ const LoadFilesView = ({user}) => {
             {!loading ? <button className="btn btn--loadFiles"
                                 disabled={!dataSheet?.length || !relationSheet?.length}
                                 onClick={saveFiles}>
-                Przejdź do korelacji rekordów
+                {content.runMatchingButton}
             </button> : <Loader width={50} />}
         </div>
     </div>

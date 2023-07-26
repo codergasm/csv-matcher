@@ -1,9 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import noIcon from '../static/img/no.svg';
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const OverrideMatchModal = ({closeModal, doOverride}) => {
+    const { content } = useContext(TranslationContext);
+
     useCloseModalOnOutsideClick(closeModal);
     useActionOnEscapePress(closeModal);
 
@@ -13,26 +17,23 @@ const OverrideMatchModal = ({closeModal, doOverride}) => {
     }
 
     return <div className="modal modal--leaveTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModal}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
-            <img className="img img--modalWarning" src={noIcon} alt="ostrzezenie" />
+            <img className="img img--modalWarning" src={noIcon} alt="warning" />
 
             <p className="modal__header modal__header--text">
-                Rekord jest już przypisany. Czy na pewno chcesz nadpisać przypisanie?
+                {content.overrideMatchAlert}
             </p>
 
             <div className="flex flex--twoButtons">
                 <button className="btn btn--neutral btn--overrideMatch"
                         onClick={handleSubmit}>
-                    Nadpisz przypisanie
+                    {content.overrideMatch}
                 </button>
                 <button className="btn btn--neutral"
                         onClick={closeModal}>
-                    Anuluj
+                    {content.cancel}
                 </button>
             </div>
         </div>

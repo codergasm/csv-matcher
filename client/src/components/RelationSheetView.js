@@ -28,6 +28,7 @@ import {getSchemaById} from "../api/schemas";
 import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
 import getLevelsOfRelationColumn from "../helpers/getLevelsOfRelationColumn";
 import RelationColumnSelect from "./RelationColumnSelect";
+import {TranslationContext} from "../App";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsSecondSheet,
@@ -36,6 +37,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                selectList, selectListLoading, selectListIndicators,
                                manuallyCorrelatedRowsIndexes, schemaCorrelatedRowsIndexes,
                                indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes, user}, ref) => {
+    const { content } = useContext(TranslationContext);
     const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
         addManualCorrelation, indexesOfCorrelatedRows, matchType } = useContext(ViewContext);
@@ -152,7 +154,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     useEffect(() => {
         if(currentSheet && secondSheet) {
-            setColumnsNames(Object.entries(currentSheet[0]).map((item, index) => (index === 0 ? 'l.p.' : item[0])));
+            setColumnsNames(Object.entries(currentSheet[0]).map((item, index) => (index === 0 ? content.index : item[0])));
             setSecondSheetColumnsNames(Object.entries(secondSheet[0]).map((item) => (item[0])));
         }
     }, [currentSheet, secondSheet]);
@@ -443,13 +445,13 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     const getSettingsModalHeader = (n) => {
         if(n === 1) {
-            return 'Pokazuj w podpowiadajce';
+            return content.showInSelectMenu;
         }
         else if(n === 2) {
-            return 'Uwzględnij w eksporcie';
+            return content.includeInExport;
         }
         else {
-            return 'Ustaw widoczność';
+            return content.setVisibility;
         }
     }
 
@@ -523,14 +525,13 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             </div>
 
             <ButtonAutoMatch onClick={() => { setAutoMatchModalVisible(true); }}>
-                Automatycznie dopasuj
+                {content.autoMatchButton}
             </ButtonAutoMatch>
         </div>
 
         {isShowInSelectMenuFromSecondSheetEmpty() ? <span className="disclaimer">
             <span>
-                Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce,
-                dlatego wiersze poniżej są puste.
+                {content.noColumnsInSelectMenuAlert}
             </span>
         </span> : ''}
 
@@ -544,32 +545,32 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
             <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
-                    Widoczność
+                    {content.visibility}
 
                     <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(3); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </ButtonSimple>
                     <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
-                        Formatuj widoczność komórek
+                        {content.formatCellsVisibility}
                     </ButtonSimple>
                 </div>
             </div>
 
             <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
-                    Pokazuj w podpowiadajce
+                    {content.showInSelectMenu}
 
                     {showInSelectMenuColumnsCurrentSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                                         onClick={() => { handleSelectMenuColumnsChange(-1); }}>
-                        Zaznacz wszystkie
+                        {content.checkAll}
                     </button> : <button className="btn btn--selectAll"
                                         onClick={() => { handleSelectMenuColumnsChange(-2); }}>
-                        Odznacz wszystkie
+                        {content.uncheckAll}
                     </button>}
 
                     <button className="btn btn--selectAll"
                             onClick={() => { setColumnsSettingsModalVisible(1); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </button>
                 </div>
             </div>
@@ -594,7 +595,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
             <div className="sheet__table__info sheet__table__info--data2">
                 <div className="cell--legend">
-                    Uwzględnij w eksporcie
+                    {content.includeInExport}
 
                     {outputSheetExportColumns.filter((_, i) => {
                         if(sheetIndex === 0) {
@@ -604,13 +605,13 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                             return i > secondSheetColumnsNames.length;
                         }
                     }).findIndex((item) => (!item)) !== -1 ? <ButtonSimple onClick={() => { handleExportColumnsChange(-1); }}>
-                        Zaznacz wszystkie
+                        {content.checkAll}
                     </ButtonSimple> : <ButtonSimple onClick={() => { handleExportColumnsChange(-2); }}>
-                        Odznacz wszystkie
+                        {content.uncheckAll}
                     </ButtonSimple>}
 
                     <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </ButtonSimple>
                 </div>
             </div>
@@ -655,6 +656,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         removeSorting={removeSorting} />
 
                     <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
+                                                      sheetIndex={sheetIndex}
                                                       setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
                                                       sortRelationColumnByMatch={sortRelationColumnByMatch} />
                 </div>
@@ -764,7 +766,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
                                             <button className="btn btn--showFullValue"
                                                     onClick={(e) => { showFullRow(e, correlatedRowValue, joinStringOfColumnsFromCurrentSheet); }}>
-                                                (zobacz wszystko)
+                                                ({content.showAll})
                                             </button>
                                         </>}
                                     </span>
@@ -772,7 +774,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         background: getSimilarityColorForRelationSheet(correlatedRow.similarity, sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex),
                                         color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) || schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
-                                        {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? <Tooltip title="Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu"
+                                        {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? <Tooltip title={content.rowWithLargerMatchAlert}
                                                                                           followCursor={true}
                                                                                           size="small"
                                                                                           position="top">
@@ -793,7 +795,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                      alt="arrow-down" />
                             </button>
 
-                            <Tooltip title={markLettersRows.includes(index) ? "Wyłącz zaznaczanie dopasowanych fragmentów" : "Włącz zaznaczanie dopasowanych fragmentów"}
+                            <Tooltip title={markLettersRows.includes(index) ? content.turnOffColorOnStrings : content.turnOnColorOnStrings}
                                      followCursor={true}
                                      size="small"
                                      position="top">

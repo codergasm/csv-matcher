@@ -1,11 +1,14 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {sendRequestToJoinTeam} from "../api/users";
 import Loader from "./Loader";
-import {errorText} from "../static/content";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const JoinTeamModal = ({closeModal}) => {
+    const { content } = useContext(TranslationContext);
+
     const [teamId, setTeamId] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -23,47 +26,44 @@ const JoinTeamModal = ({closeModal}) => {
                         setSuccess(true);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError(errorText);
+                    setError(content.error);
                 })
         }
     }
 
     return <div className="modal modal--createNewTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModal}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
             {!success ? <>
                 <h3 className="modal__header">
-                    Dołącz do zespołu
+                    {content.joinTeam}
                 </h3>
                 <input className="input input--teamId"
                        value={teamId}
                        onChange={(e) => { setTeamId(e.target.value); }}
-                       placeholder="id zespołu" />
+                       placeholder={content.teamId} />
 
                 {!loading ? <button className="btn btn--joinTeam"
                                     onClick={joinTeam}>
-                    Dołącz
+                    {content.join}
                 </button> : <Loader width={50} />}
             </> :  <>
                 {success ? <h4 className="afterRegister__header afterRegister__header--center">
-                    Zgłoszenie do zespołu zostało wysłane. Po akceptacji przez właściciela dołączysz do zespołu.
+                    {content.joinTeamRequestSendInfo}
                 </h4> : <h4 className="afterRegister__header afterRegister__header--center">
                     {error}
                 </h4>}
 
                 <a className="btn btn--afterRegister"
                    href="/">
-                    Wróć na stronę główną
+                    {content.backHomepage}
                 </a>
             </>}
         </div>

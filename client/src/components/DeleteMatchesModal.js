@@ -4,8 +4,11 @@ import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import {ViewContext} from "./CorrelationView";
 import {AppContext} from "../pages/CorrelationPage";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const DeleteMatchesModal = ({closeModal}) => {
+    const { content } = useContext(TranslationContext);
     const { relationSheet, dataSheet } = useContext(AppContext);
     const { setIndexesOfCorrelatedRows, setSelectList, setAfterMatchClean,
         setManuallyCorrelatedRows, setCorrelationMatrix } = useContext(ViewContext);
@@ -36,26 +39,23 @@ const DeleteMatchesModal = ({closeModal}) => {
     }
 
     return <div className="modal modal--leaveTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModal}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
             <img className="img img--modalWarning" src={noIcon} alt="ostrzezenie" />
 
             <p className="modal__header modal__header--text">
-                Uwaga! Czy na pewno chcesz usunąć wszystkie dopasowania?
+                {content.deleteAllMatchesModalAlert}
             </p>
 
             <div className="flex flex--twoButtons">
                 <button className="btn btn--leaveTeam btn--overrideMatch"
                         onClick={handleSubmit}>
-                    Usuń dopasowania
+                    {content.deleteMatches}
                 </button>
                 <button className="btn btn--neutral"
                         onClick={closeModal}>
-                    Anuluj
+                    {content.cancel}
                 </button>
             </div>
         </div>

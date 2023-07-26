@@ -10,10 +10,11 @@ import {getSchemaById} from "../api/schemas";
 import ExportSettingsModal from "./ExportSettingsModal";
 import settingsIcon from '../static/img/settings.svg';
 import getRelationNameById from "../helpers/getRelationNameById";
-
-const ROWS_PER_PAGE = 20;
+import { ROWS_PER_PAGE } from "../static/constans";
+import {TranslationContext} from "../App";
 
 const OutputSheetView = forwardRef((props, ref) => {
+    const { content } = useContext(TranslationContext);
     const { outputSheet, outputSheetExportColumns,
         exportFormat, indexesOfCorrelatedRows, matchType,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility, setColumnsToSum } = useContext(ViewContext);
@@ -35,7 +36,6 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [isOutputSheetColumnTypeNumber, setIsOutputSheetColumnTypeNumber] = useState([]);
 
     useEffect(() => {
-        console.log(outputSheetExportColumns);
         setFinalExportColumns([...outputSheetExportColumns, false, false]);
         setColumnsToSum(outputSheetExportColumns.map(() => {
             return 0;
@@ -49,7 +49,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     }, [isDataSheetColumnTypeNumber, isRelationSheetColumnTypeNumber]);
 
     useEffect(() => {
-        // setColumnsToSum(isOutputSheetColumnTypeNumber);
+        setColumnsToSum(isOutputSheetColumnTypeNumber);
     }, [isOutputSheetColumnTypeNumber]);
 
     useEffect(() => {
@@ -94,10 +94,10 @@ const OutputSheetView = forwardRef((props, ref) => {
             setColumnsNames(Object.keys(outputSheet[0])
                 .map((item, index) => {
                     if(index === 0) {
-                        return 'l.p. arkusza 1';
+                        return content.dataSheetIndex;
                     }
                     else if(index === dataSheetLength) {
-                        return 'l.p. arkusza 2';
+                        return content.relationSheetIndex;
                     }
                     else {
                         return item;
@@ -234,11 +234,11 @@ const OutputSheetView = forwardRef((props, ref) => {
     }
 
     const hasDataSheetCounter = () => {
-        return Object.keys(outputSheet[0]).includes('ilość dopasowań ark1 do ark2');
+        return Object.keys(outputSheet[0]).includes(content.matchCounterDataSheetName);
     }
 
     const hasRelationSheetCounter = () => {
-        return Object.keys(outputSheet[0]).includes('ilość dopasowań ark2 do ark1');
+        return Object.keys(outputSheet[0]).includes(content.matchCounterRelationSheetName);
     }
 
     return <div className="sheetWrapper" ref={ref}>
@@ -256,16 +256,16 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                              hideFirstColumn={false}
                                                              columns={columnsSettingsModalVisible === 1 ? outputSheetColumnsVisibility : finalExportColumns}
                                                              setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setFinalExportColumns}
-                                                             header={columnsSettingsModalVisible === 1 ? 'Widoczność kolumn' : 'Uwzględnij w eksporcie'} /> : ''}
+                                                             header={columnsSettingsModalVisible === 1 ? content.columnVisibility : content.includeInExport} /> : ''}
 
         <div className="btnExportWrapper center">
             <button className="btn btn--export"
                     onClick={exportOutputSheet}>
-                Eksportuj arkusz wyjściowy
+                {content.exportOutputSheet}
             </button>
             <button className="btn btn--exportSettings"
                     onClick={() => { setExportSettingsModalVisible(true); }}>
-                <img className="img" src={settingsIcon} alt="ustawienia-eksportu" />
+                <img className="img" src={settingsIcon} alt="settings" />
             </button>
         </div>
 
@@ -273,31 +273,31 @@ const OutputSheetView = forwardRef((props, ref) => {
              onScroll={checkScrollToBottom}>
             <div className="sheet__table__info">
                 <div className="cell--legend">
-                    Widoczność
+                    {content.visibility}
 
                     <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(1); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </ButtonSimple>
                     <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
-                        Formatuj widoczność komórek
+                        {content.formatCellsVisibility}
                     </ButtonSimple>
                 </div>
             </div>
 
             <div className="line line--exportLegend">
                 <div className="cell--legend">
-                    Uwzględnij w eksporcie
+                    {content.includeInExport}
 
                     {finalExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
                                                                                             onClick={() => { handleOutputSheetExportChange(-1); }}>
-                        Zaznacz wszystkie
+                        {content.checkAll}
                     </button> : <button className="btn btn--selectAll"
                                         onClick={() => { handleOutputSheetExportChange(-2); }}>
-                        Odznacz wszystkie
+                        {content.uncheckAll}
                     </button>}
 
                     <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </ButtonSimple>
                 </div>
             </div>
@@ -314,9 +314,6 @@ const OutputSheetView = forwardRef((props, ref) => {
 
                                 </button>
                             </div>
-                        }
-                        else {
-                            return '';
                         }
                     })}
 
@@ -354,14 +351,14 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                   style={{
                                                       minWidth: '280px'
                                                   }}>
-                        ilość dopasowań ark1 do ark2
+                        {content.matchCounterDataSheetName}
                     </div> : ''}
 
                     {hasRelationSheetCounter() ? <div className="sheet__header__cell"
                                                       style={{
                                                           minWidth: '280px'
                                                       }}>
-                        ilość dopasowań ark2 do ark1
+                        {content.matchCounterRelationSheetName}
                     </div> : ''}
                 </div>
             </div>
@@ -390,14 +387,14 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                       minWidth: '280px',
                                                       maxHeight: getColumnMaxHeight()
                                                   }}>
-                        {item['ilość dopasowań ark1 do ark2']}
+                        {item[content.matchCounterDataSheetName]}
                     </div> : ''}
                     {hasRelationSheetCounter() ? <div className="sheet__body__row__cell"
                                                   style={{
                                                       minWidth: '280px',
                                                       maxHeight: getColumnMaxHeight()
                                                   }}>
-                        {item['ilość dopasowań ark2 do ark1']}
+                        {item[content.matchCounterRelationSheetName]}
                     </div> : ''}
                 </div>
             })}

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {getDateFromString, getStringWithFileSize} from "../helpers/others";
 import {assignFileOwnershipToTeam, deleteSheet} from "../api/files";
 import DecisionModal from "./DecisionModal";
@@ -7,11 +7,10 @@ import deleteIcon from '../static/img/no.svg';
 import viewIcon from '../static/img/eye.svg';
 import EditFileModal from "./EditFileModal";
 import FilenameEditionCell from "./FilenameEditionCell";
+import {TranslationContext} from "../App";
 
 const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
-    const columnsNames = [
-        'nazwa pliku', 'data uploadu', 'ilość wierszy', 'rozmiar pliku', 'edycja'
-    ];
+    const { content } = useContext(TranslationContext);
 
     const [fileToAssignToTeamId, setFileToAssignToTeamId] = useState(null);
     const [assignFileToTeamModalVisible, setAssignFileToTeamModalVisible] = useState(false);
@@ -25,14 +24,10 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                                                        closeSideEffectsFunction={() => { setUpdateFiles(p => !p); }}
                                                        submitFunction={assignFileOwnershipToTeam}
                                                        submitFunctionParameters={[fileToAssignToTeamId, teamId]}
-                                                       text={`Pamiętaj o tym! Jeśli uczynisz Twój zespół właścicielem tego pliku, to będziesz posiadać do niego 
-                                                       dostęp tylko gdy jesteś członkiem tego zespołu. Dzięki temu podejściu zespół nie musi martwić się o osoby 
-                                                       odchodzące z zespołu i utworzone przez nich pliki. Pliki zespołu zawsze zostają w zespole. 
-                                                       Jeżeli Twoje uprawnienia w zespole są ograniczone (np. nie możesz edytować lub usuwać schematów) 
-                                                       - to utracisz tą możliwość po zmianie właścicielstwa.`}
-                                                       successText="Plik został przypisany do zespołu"
-                                                       confirmBtnText="Przypisz"
-                                                       backBtnText="Powrót"
+                                                       text={content.makeTeamFileOwnerAlert}
+                                                       successText={content.makeTeamFileOwnerDone}
+                                                       confirmBtnText={content.assign}
+                                                       backBtnText={content.back}
                                                        backBtnLink="/pliki"
         /> : ''}
 
@@ -40,10 +35,10 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                                                  closeSideEffectsFunction={() => { setUpdateFiles(p => !p); }}
                                                  submitFunction={deleteSheet}
                                                  submitFunctionParameters={[deleteFileId]}
-                                                 text="Czy na pewno chcesz usunąć ten plik?"
-                                                 successText="Plik został usunięty"
-                                                 confirmBtnText="Usuń"
-                                                 backBtnText="Powrót"
+                                                 text={content.deleteFileModalAlert}
+                                                 successText={content.deleteFileDone}
+                                                 confirmBtnText={content.delete}
+                                                 backBtnText={content.back}
                                                  backBtnLink="/pliki" /> : ''}
 
         {editFileModalVisible ? <EditFileModal setUpdateFiles={setUpdateFiles}
@@ -54,7 +49,7 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
 
         <div className="sheet__table">
             <div className="line line--membersHeader">
-                {columnsNames.map((item, index) => {
+                {content.filesTableHeader.map((item, index) => {
                     return <div className="sheet__header__cell"
                                 key={index}>
                         {item}
@@ -102,7 +97,7 @@ const MyFilesTable = ({files, teamId, setUpdateFiles}) => {
                             </div>
                             <button className="btn--ownership"
                                     onClick={() => { setFileToAssignToTeamId(item.id); setAssignFileToTeamModalVisible(true); }}>
-                                Uczyń zespół właścicielem pliku
+                                {content.makeTeamFileOwner}
                             </button>
                         </div>
                     </div>

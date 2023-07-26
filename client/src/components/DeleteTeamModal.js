@@ -1,12 +1,15 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
-import {errorText} from "../static/content";
 import {deleteTeam} from "../api/teams";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const DeleteTeamModal = ({closeModal, setTeam, teamId}) => {
+    const { content } = useContext(TranslationContext);
+
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -31,49 +34,45 @@ const DeleteTeamModal = ({closeModal, setTeam, teamId}) => {
                     setSuccess(true);
                 }
                 else {
-                    setError(errorText);
+                    setError(content.error);
                 }
                 setLoading(false);
             })
             .catch(() => {
                 setLoading(false);
-                setError(errorText);
+                setError(content.error);
             });
     }
 
     return <div className="modal modal--leaveTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModalWrapper}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner">
             {!success && !error ? <>
                 <img className="img img--modalWarning" src={noIcon} alt="ostrzezenie" />
 
                 <p className="modal__header modal__header--text">
-                    Uwaga! Usuwając zespół przypiszesz wszystkie pliki
-                    i schematy dopasowania z powrotem do Twojego profilu.
+                    {content.deleteTeamModalAlert}
                 </p>
 
                 {!loading ? <div className="flex flex--twoButtons">
                     <button className="btn btn--leaveTeam"
                             onClick={handleSubmit}>
-                        Usuń zespół
+                        {content.deleteTeam}
                     </button>
                     <button className="btn btn--neutral"
                             onClick={closeModalWrapper}>
-                        Anuluj
+                        {content.cancel}
                     </button>
                 </div>: <Loader width={50} />}
             </> :  <>
                 <h4 className="afterRegister__header afterRegister__header--center">
-                    {error ? error : 'Usunąłeś swój zespół. Możesz teraz dołączyć do innego zespołu lub utworzyć nowy zespół.'}
+                    {error ? error : content.deleteTeamInfo}
                 </h4>
 
                 <a className="btn btn--afterRegister"
                    href="/home">
-                    Wróć na stronę główną
+                    {content.backHomepage}
                 </a>
             </>}
         </div>

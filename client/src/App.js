@@ -10,7 +10,7 @@ import getTranslationContent from "./static/translations/getTranslationContent";
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
 
-const TranslationContext = React.createContext(null);
+const TranslationContext = React.createContext({});
 
 const App = () => {
   const [content, setContent] = useState({});

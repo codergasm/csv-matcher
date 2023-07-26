@@ -5,54 +5,11 @@ import {ViewContext} from "./CorrelationView";
 import ToggleButton from 'react-toggle-button'
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
-
-const exportFormatOptions = [
-    {
-        value: 0,
-        label: '.csv oddzielony przecinkiem'
-    },
-    {
-        value: 1,
-        label: '.csv oddzielny średnikiem'
-    },
-    {
-        value: 2,
-        label: 'tablica obiektów JSON'
-    }
-];
-
-const duplicatedRecordsFormatOptions = [
-    {
-        value: 0,
-        label: 'eksportuj duplikaty rekordów'
-    },
-    {
-        value: 1,
-        label: 'zawsze separuj przecinkiem'
-    },
-    {
-        value: 2,
-        label: 'sumuj wartości lub separuj przecinkiem'
-    }
-];
-
-const exportBuildSystemOptions = [
-    {
-        value: 0,
-        label: 'Tylko dopasowanych rekordów'
-    },
-    {
-        value: 1,
-        label: 'Wszystkie rekordy z arkusza 1'
-    },
-    {
-        value: 2,
-        label: 'Wszystkie rekordy z arkusza 2'
-    }
-];
+import {TranslationContext} from "../App";
 
 const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
-    const { matchType, exportFormat, setExportFormat, outputSheetExportColumns,
+    const { content } = useContext(TranslationContext);
+    const { matchType, exportFormat, setExportFormat,
         duplicatedRecordsFormat, setDuplicatedRecordsFormat,
         columnsToSum, setColumnsToSum,
         exportBuildSystem, setExportBuildSystem,
@@ -73,22 +30,22 @@ const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
 
         <div className="modal__inner scroll">
             <h4 className="modal__header modal__header--center">
-                Ustawienia eksportu
+                {content.exportSettings}
             </h4>
 
-            <SelectInModal label={'Format wyjściowy:'}
+            <SelectInModal label={content.exportFormatLabel}
                            selectOption={exportFormat}
                            setSelectOption={setExportFormat}
-                           options={exportFormatOptions} />
+                           options={content.exportFormatOptions} />
 
-            {matchType !== 0 && exportFormat !== 2 ? <SelectInModal label={'Formatowanie zduplikowanych rekordów (w wyniku relacji wiele do...):'}
+            {matchType !== 0 && exportFormat !== 2 ? <SelectInModal label={content.duplicatedRecordsFormatLabel}
                                                                     selectOption={duplicatedRecordsFormat}
                                                                     setSelectOption={setDuplicatedRecordsFormat}
-                                                                    options={duplicatedRecordsFormatOptions} /> : ''}
+                                                                    options={content.duplicatedRecordsFormatOptions} /> : ''}
 
             {duplicatedRecordsFormat === 2 ? <div className="selectNumberColumns">
                 <span>
-                    Wskaź kolumny, które należy sumować:
+                    {content.columnsToSumLabel}
                 </span>
 
                 {columnsNames.map((item, index) => {
@@ -103,14 +60,14 @@ const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
                 })}
             </div> : ''}
 
-            <SelectInModal label={'Arkusz wyjściowy buduj z:'}
+            <SelectInModal label={content.exportBuildSystemLabel}
                            selectOption={exportBuildSystem}
                            setSelectOption={setExportBuildSystem}
-                           options={exportBuildSystemOptions} />
+                           options={content.exportBuildSystemOptions} />
 
             <div className="modal__label modal__label--select modal__label--toggle">
                  <span>
-                    Dodaj kolumnę wskazującą ilość dopasowań dla danego rekordu:
+                    {content.includeColumnWithMatchCounterLabel}
                 </span>
 
                 <ToggleButton inactiveLabel={''}
@@ -121,7 +78,7 @@ const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
 
             <button className="btn btn--export"
                     onClick={exportOutputSheet}>
-                Eksportuj arkusz wyjściowy
+                {content.exportOutputSheet}
             </button>
         </div>
     </div>

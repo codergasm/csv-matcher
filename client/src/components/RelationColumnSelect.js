@@ -1,7 +1,10 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import Select from "react-select";
+import {TranslationContext} from "../App";
 
 const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColumn}) => {
+    const { content } = useContext(TranslationContext);
+
     const [options, setOptions] = useState([]);
 
     useEffect(() => {
@@ -33,7 +36,7 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColu
     return <div className="matchTypeSelectLabel matchTypeSelectLabel--relationColumn"
                 ref={selectLabel}>
         <span>
-            Kolumna relacji
+            {content.relationColumn}
         </span>
 
         <div className="flex">
@@ -41,14 +44,14 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColu
                     onMenuClose={menuClose}
                     onMenuOpen={menuOpen}
                     options={options}
-                    placeholder="Typ dopasowania"
+                    placeholder={content.relationTypePlaceholder}
                     value={options[selectOption]}
                     onChange={handleChoose}
                     isSearchable={false} />
 
             <button className="btn btn--addRelationColumn"
                     onClick={addRelationColumn}>
-                + Dodaj relację
+                + {content.addRelationColumn}
             </button>
         </div>
     </div>

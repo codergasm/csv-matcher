@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
@@ -9,13 +9,14 @@ import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";
 import SchemaNameEditionCell from "./SchemaNameEditionCell";
 import withSchemasTable from "../hoc/withSchemasTable";
+import {TranslationContext} from "../App";
 
 const MySchemasTable = (props) => {
+    const { content } = useContext(TranslationContext);
     const {schemas, setUpdateSchemas, user,
         getFileName,getFileRowCount, sheetsVisible,
         handleSheetsVisibilityChange,
-        chooseSheetsModalVisible, setChooseSheetsModalVisible,
-        columnsNames, sheetsColumnsNames,
+        chooseSheetsModalVisible, setChooseSheetsModalVisible, sheetsColumnsNames,
         chooseSheetsSchemaId, setChooseSheetsSchemaId} = props;
 
     const [schemeToAssignToTeamId, setSchemeToAssignToTeamId] = useState(null);
@@ -30,10 +31,10 @@ const MySchemasTable = (props) => {
                                                        closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                        submitFunction={assignSchemaToTeam}
                                                        submitFunctionParameters={[schemeToAssignToTeamId]}
-                                                       text="Uwaga! Jeśli uczynisz Twój zespół właścicielem, to będziesz posiadać dostęp do tego schematu, gdy tylko przestaniesz być członkiem tego zespołu. Dzięki temu podejściu zespół nie musi martwić się o osoby odchodzące z zespołu i utworzone przez nich pliki. Jeżeli Twoje uprawnienia w zespole są ograniczone (np. nie możesz edytować lub usuwać schematów) - to utracisz tą możliwość po zmianie właścicielstwa."
-                                                       successText="Schemat został przypisany do zespołu"
-                                                       confirmBtnText="Przypisz"
-                                                       backBtnText="Powrót"
+                                                       text={content.makeTeamSchemaOwnerAlert}
+                                                       successText={content.makeTeamSchemaOwnerDone}
+                                                       confirmBtnText={content.assign}
+                                                       backBtnText={content.back}
                                                        backBtnLink="/schematy-dopasowania"
         /> : ''}
 
@@ -41,20 +42,20 @@ const MySchemasTable = (props) => {
                                                  closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                  submitFunction={deleteSchema}
                                                  submitFunctionParameters={[deleteSchemeId]}
-                                                 text="Czy na pewno chcesz usunąć ten schemat?"
-                                                 successText="Schemat został usunięty"
-                                                 confirmBtnText="Usuń"
-                                                 backBtnText="Powrót"
+                                                 text={content.deleteSchemaAlert}
+                                                 successText={content.schemaDeleteDone}
+                                                 confirmBtnText={content.delete}
+                                                 backBtnText={content.back}
                                                  backBtnLink="/schematy-dopasowania" /> : ''}
 
         {detachSheetFromSchemaModalVisible ? <DecisionModal closeModal={() => { setDetachSheetFromSchemaModalVisible(false); }}
                                                        closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                        submitFunction={detachSheetsFromSchemaById}
                                                        submitFunctionParameters={[detachSheetFromSchemaId]}
-                                                       text="Czy na pewno chcesz odłączyć te pliki od tego schematu?"
-                                                       successText="Pliki zostały odłączone od schematu"
-                                                       confirmBtnText="Odłącz"
-                                                       backBtnText="Powrót"
+                                                       text={content.detachFilesFromSchemaAlert}
+                                                       successText={content.detachFilesFromSchemaDone}
+                                                       confirmBtnText={content.detach}
+                                                       backBtnText={content.back}
                                                        backBtnLink="/schematy-dopasowania"
         /> : ''}
 
@@ -64,12 +65,12 @@ const MySchemasTable = (props) => {
                                                                showBottomNotification={setChooseSheetsSchemaId}
                                                                closeModal={() => { setChooseSheetsModalVisible(false); }} /> : ''}
 
-        {chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1 ? <BottomNotification text={chooseSheetsSchemaId === 0 ? 'Pliki zostały przypisane do schematu' : 'Coś poszło nie tak... Prosimy spróbować później'}
+        {chooseSheetsSchemaId === 0 || chooseSheetsSchemaId === -1 ? <BottomNotification text={chooseSheetsSchemaId === 0 ? content.filesAssignToSchemaDone : content.error}
                                                                                          background={chooseSheetsSchemaId === 0 ? null : '#ff0000'} /> : ''}
 
         {Object.entries(schemas)?.length ? <div className="sheet__table">
             <div className="line line--membersHeader">
-                {columnsNames.map((item, index, array) => {
+                {content.schemasTableHeader.map((item, index, array) => {
                     return <div className={index === array.length-1 ? "sheet__header__cell sheet__header__cell--expand" : "sheet__header__cell"}
                                 key={index}>
                         {item}
@@ -104,18 +105,18 @@ const MySchemasTable = (props) => {
                             </div>
                             <button className="btn--ownership"
                                     onClick={() => { setSchemeToAssignToTeamId(schema.schemas_id); setAssignSchemeToTeamModalVisible(true); }}>
-                                Uczyń zespół właścicielem schematu
+                                {content.makeTeamSchemaOwner}
                             </button>
                         </div>
                         <div className="sheet__header__cell sheet__header__cell--expand">
                             {sheetsVisible[index] ? <button className="btn btn--toggleVisibility btn--toggleVisibility--hide"
                                                             onClick={() => { handleSheetsVisibilityChange(index, false); }}>
                                 <img className="img" src={arrowIcon} alt="rozwin" />
-                                zwiń arkusze
+                                {content.hideSheets}
                             </button> : <button className="btn btn--toggleVisibility btn--toggleVisibility--show"
                                                 onClick={() => { handleSheetsVisibilityChange(index, true); }}>
                                 <img className="img" src={arrowIcon} alt="rozwin" />
-                                rozwiń arkusze
+                                {content.showSheets}
                             </button>}
                         </div>
                     </div>
@@ -142,17 +143,17 @@ const MySchemasTable = (props) => {
                                     </div>
                                     <div className="subTable__cell subTable__cell--progress">
                                         <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_data_sheet)} />
-                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_data_sheet)}
+                                        {item.sheets_number_of_matched_rows} {content.outOf} {getFileRowCount(item.sheets_data_sheet)}
                                     </div>
                                     <div className="subTable__cell subTable__cell--progress">
                                         <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_relation_sheet)} />
-                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_relation_sheet)}
+                                        {item.sheets_number_of_matched_rows} {content.outOf} {getFileRowCount(item.sheets_relation_sheet)}
                                     </div>
                                     <div className="subTable__cell">
                                         <div className="flex">
                                             <a className="btn btn--goToEditor"
                                                href={`/edytor-dopasowania?sheet1=${item.sheets_data_sheet}&sheet2=${item.sheets_relation_sheet}&schema=${item.schemas_id}`}>
-                                                Uruchom edytor
+                                                {content.runEditor}
                                             </a>
                                             <button className="btn--action btn--action--detachSheets"
                                                     onClick={() => { setDetachSheetFromSchemaId(item.sheets_id); setDetachSheetFromSchemaModalVisible(true); }}>
@@ -163,18 +164,18 @@ const MySchemasTable = (props) => {
                                 </div>
                             })}
                         </> : <h5 className="noSheetsInfo">
-                            Nie masz jeszcze żadnych arkuszy przypisanych do tego schematu
+                            {content.noSheetsAssignedToSchema}
                         </h5>}
 
                         <button className="btn btn--assignSheetsToSchema"
                                 onClick={() => { setChooseSheetsSchemaId(schema.schemas_id); setChooseSheetsModalVisible(true); }}>
-                            Dodaj nowe arkusze do schematu
+                            {content.addNewSheetsToSchema}
                         </button>
                     </div> : ''}
                 </div>
             })}
         </div> : <h5 className="emptyTableInfo">
-            Nie masz żadnych schematów dopasowania
+            {content.noSchemasFound}
         </h5>}
     </div>
 };

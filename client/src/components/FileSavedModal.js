@@ -1,10 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import checkIcon from '../static/img/yes.svg';
 import CloseModalButton from "./CloseModalButton";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import {TranslationContext} from "../App";
 
 const FileSavedModal = ({closeModal}) => {
+    const { content } = useContext(TranslationContext);
+
     useCloseModalOnOutsideClick(closeModal);
     useActionOnEscapePress(closeModal);
 
@@ -12,15 +15,15 @@ const FileSavedModal = ({closeModal}) => {
         <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
-            <img className="img img--modalWarning" src={checkIcon} alt="potwierdzenie" />
+            <img className="img img--modalWarning" src={checkIcon} alt="check" />
 
            <h2 className="modal__header">
-               Plik został dodany
+               {content.fileAdded}
            </h2>
 
             <button className="btn btn--backToHomepage"
                     onClick={closeModal}>
-                Powrót
+                {content.back}
             </button>
         </div>
     </div>

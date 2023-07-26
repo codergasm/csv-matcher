@@ -1,14 +1,16 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Loader from "./Loader";
 import fileIcon from '../static/img/file.svg';
 import addIcon from '../static/img/add.svg';
 import {updateSheet} from "../api/files";
 import CloseModalButton from "./CloseModalButton";
-import {errorText} from "../static/content";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import {TranslationContext} from "../App";
 
 const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
+    const { content } = useContext(TranslationContext);
+
     const [newName, setNewName] = useState('');
     const [file, setFile] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -37,13 +39,13 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
                     setSuccess(true);
                 }
                 else {
-                    setError(errorText);
+                    setError(content.error);
                 }
                 setLoading(false);
             })
             .catch(() => {
                 setLoading(false);
-                setError(errorText);
+                setError(content.error);
             });
     }
 
@@ -60,18 +62,18 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
         <div className="modal__inner">
             {!success && !error ? <>
                 <label className="label">
-                    Nazwa pliku
+                    {content.fileName}
                     <input className="input input--teamName"
                            value={newName}
                            onChange={(e) => { setNewName(e.target.value); }}
-                           placeholder="Nazwa pliku" />
+                           placeholder={content.fileName} />
                 </label>
 
                 <div className="editFileWrapper">
                     {file ? <div className="editFileWrapper__fileAdded">
                         <img className="img" src={fileIcon} alt="dodany" />
                         <span>
-                            Plik został dodany.<br/>Kliknij "Edytuj", aby zatwierdzić zmiany.
+                            {content.fileAdded}.<br/>{content.clickEditToConfirm}.
                         </span>
                     </div> : <div className="editFileWrapper__input">
                         <input className="input input--addNewFile"
@@ -79,7 +81,7 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
                                type="file" />
                         <img className="img" src={addIcon} alt="dodaj" />
                         <span>
-                            Dodaj nowy plik
+                            {content.addNewFile}
                         </span>
                     </div>}
                 </div>
@@ -87,16 +89,16 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
                 {!loading ? <div className="flex flex--twoButtons">
                     <button className="btn btn--submitFormNewTeam btn--submitEditFile"
                             onClick={handleSubmit}>
-                        Edytuj
+                        {content.edit}
                     </button>
                 </div>: <Loader width={50} />}
             </> :  <>
                 <h4 className="afterRegister__header afterRegister__header--center">
-                    {error ? error : 'Plik został pomyślnie zaktualizowany'}
+                    {error ? error : content.fileEdited}
                 </h4>
 
                 <a className="btn btn--afterRegister" href="/pliki">
-                    Powrót
+                    {content.back}
                 </a>
             </>}
         </div>

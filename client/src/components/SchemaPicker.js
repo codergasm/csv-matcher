@@ -1,8 +1,10 @@
 import React, {useContext} from 'react';
 import Select from 'react-select';
 import {AppContext} from "../pages/CorrelationPage";
+import {TranslationContext} from "../App";
 
 const SchemaPicker = () => {
+    const { content } = useContext(TranslationContext);
     const { schemas, currentSchemaId, setCurrentSchemaId } = useContext(AppContext);
 
     const handleChange = (el) => {
@@ -11,11 +13,11 @@ const SchemaPicker = () => {
 
     return <div className="schemaPicker schemaPicker--loadFiles">
         <h5 className="schemaPicker__header">
-            Skorzystaj z uprzednio utworzonego schematu dopasowania
+            {content.chooseSchemaLabel}
         </h5>
 
         <Select options={schemas}
-                placeholder="Wybierz schemat"
+                placeholder={content.chooseSchemaPlaceholder}
                 value={schemas.find((item) => (item.value === currentSchemaId))}
                 onChange={handleChange}
                 isSearchable={true} />

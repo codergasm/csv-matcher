@@ -1,11 +1,16 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import placeholderProfileImage from '../static/img/user-placeholder.svg';
 import PageHeaderDropdownMenu from "./PageHeaderDropdownMenu";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import useActionOnMouseClick from "../hooks/useActionOnMouseClick";
 import HeaderMenuLink from "./HeaderMenuLink";
+import {TranslationContext} from "../App";
+
+const topMenuLinks = ['/home', '/pliki', '/schematy-dopasowania', '/edytor-dopasowania', '/zespol'];
 
 const LoggedUserHeader = () => {
+    const { content } = useContext(TranslationContext);
+
     const [dropdownMenuVisible, setDropdownMenuVisible] = useState(false);
 
     const closeDropdownMenu = () => {
@@ -28,21 +33,12 @@ const LoggedUserHeader = () => {
             </a>
 
             <div className="header__menu flex">
-                <HeaderMenuLink href={'/home'}>
-                    Home
-                </HeaderMenuLink>
-                <HeaderMenuLink href={'/pliki'}>
-                    Moje pliki
-                </HeaderMenuLink>
-                <HeaderMenuLink href={'/schematy-dopasowania'}>
-                    Moje schematy
-                </HeaderMenuLink>
-                <HeaderMenuLink href={'/edytor-dopasowania'}>
-                    Nowe dopasowanie
-                </HeaderMenuLink>
-                <HeaderMenuLink href={'/zespol'}>
-                    Zespół
-                </HeaderMenuLink>
+                {content.topMenu.map((item, index) => {
+                    return <HeaderMenuLink key={index}
+                                           href={topMenuLinks[index]}>
+                        {item}
+                    </HeaderMenuLink>
+                })}
 
                 <button className="header__profileImage"
                         onClick={toggleDropdownMenu}>

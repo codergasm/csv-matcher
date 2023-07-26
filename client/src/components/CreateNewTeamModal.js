@@ -1,10 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {createTeam, generateTeamUrl, getAllTeams} from "../api/teams";
 import Loader from "./Loader";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
+import {TranslationContext} from "../App";
+import CloseModalButton from "./CloseModalButton";
+import ErrorInfo from "./ErrorInfo";
 
 const CreateNewTeamModal = ({closeModal}) => {
+    const { content } = useContext(TranslationContext);
+
     const [name, setName] = useState('');
     const [allTeamsNames, setAllTeamsNames] = useState([]);
     const [allTeamsUrls, setAllTeamsUrls] = useState([]);
@@ -32,7 +37,7 @@ const CreateNewTeamModal = ({closeModal}) => {
         const teamUrlNotAvailable = allTeamsUrls.find((item) => (item === teamUrl));
 
         if(teamNameNotAvailable || teamUrlNotAvailable) {
-            setError('Podana nazwa jest już zajęta');
+            setError(content.teamNameAlreadyTaken);
         }
         else {
             setError('');
@@ -49,27 +54,24 @@ const CreateNewTeamModal = ({closeModal}) => {
                         setSuccess(true);
                     }
                     else {
-                        setError('Coś poszło nie tak... Prosimy spróbować później');
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
                 .catch((err) => {
                     setLoading(false);
-                    setError('Coś poszło nie tak... Prosimy spróbować później');
+                    setError(content.error);
                 });
         }
     }
 
     return <div className="modal modal--createNewTeam">
-        <button className="btn btn--closeModal"
-                onClick={() => { closeModal(); }}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner">
             {!success ? <>
                 <h3 className="modal__header">
-                    Utwórz nowy zespół
+                    {content.createNewTeam}
                 </h3>
 
                 <label className="label label--teamName">
@@ -79,21 +81,20 @@ const CreateNewTeamModal = ({closeModal}) => {
                            onChange={(e) => { setName(e.target.value); }} />
                 </label>
 
-                {error ? <span className="error">
-                    {error}
-                </span> : ''}
+                <ErrorInfo content={error} />
 
                 {!loading ? <button className="btn btn--submitForm btn--submitFormNewTeam"
-                                    onClick={() => { handleSubmit(); }}>
-                    Stwórz nowy zespół
+                                    onClick={handleSubmit}>
+                    {content.createNewTeam}
                 </button> : <Loader width={50} />}
             </> : <>
                 <h4 className="afterRegister__header afterRegister__header--center">
-                    Udało się utworzyć Twój zespół!
+                    {content.teamCreatedHeader}
                 </h4>
 
-                <a className="btn btn--afterRegister" href="/zespol">
-                    Zarządzaj zespołem
+                <a className="btn btn--afterRegister"
+                   href="/zespol">
+                    {content.manageTeam}
                 </a>
             </>}
         </div>

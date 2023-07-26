@@ -1,10 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getWaitingJoinTeamRequests} from "../api/teams";
 import {getDateFromString} from "../helpers/others";
 import {acceptJoinRequest, rejectJoinRequest} from "../api/users";
 import Loader from "./Loader";
+import {TranslationContext} from "../App";
 
 const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
+    const { content } = useContext(TranslationContext);
+
     const [joinRequests, setJoinRequests] = useState([]);
     const [updateRequestList, setUpdateRequestList] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -49,7 +52,7 @@ const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
 
     return <div className="joinRequests w">
         <h3 className="joinRequests__header">
-            Prośby dodania do zespołu
+            {content.joinTeamRequestsHeader}
         </h3>
 
         {!loading ? (joinRequests?.length ? joinRequests.map((item, index) => {
@@ -67,16 +70,16 @@ const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
                 <div className="joinRequest__buttons">
                     <button className="btn btn--accept"
                             onClick={() => { acceptRequestWrapper(item.r_user_id, item.r_team_id); }}>
-                        Akceptuj
+                        {content.accept}
                     </button>
                     <button className="btn btn--reject"
                             onClick={() => { rejectRequestWrapper(item.r_user_id, item.r_team_id); }}>
-                        Odrzuć
+                        {content.reject}
                     </button>
                 </div>
             </div>
         }) : <h5 className="noJoinRequests">
-            Nie masz żadnych oczekujących próśb o dołączenie do zespołu
+            {content.noJoinTeamRequestsInfo}
         </h5>) : <div className="joinRequestsLoaderWrapper">
             <Loader />
         </div>}

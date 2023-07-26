@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {getDateFromString, getStringWithFileSize} from "../helpers/others";
 import {deleteSheet} from "../api/files";
 import DecisionModal from "./DecisionModal";
@@ -7,11 +7,14 @@ import deleteIcon from "../static/img/no.svg";
 import EditFileModal from "./EditFileModal";
 import viewIcon from "../static/img/eye.svg";
 import FilenameEditionCell from "./FilenameEditionCell";
+import {TranslationContext} from "../App";
 
 const TeamFilesTable = ({files, setUpdateFiles, canUpdate, canDelete, teamId}) => {
     const columnsNames = [
         'nazwa pliku', 'data uploadu', 'ilość wierszy', 'rozmiar pliku', 'edycja'
     ];
+
+    const { content } = useContext(TranslationContext);
 
     const [deleteFileId, setDeleteFileId] = useState(null);
     const [deleteFileModalVisible, setDeleteFileModalVisible] = useState(false);
@@ -23,10 +26,10 @@ const TeamFilesTable = ({files, setUpdateFiles, canUpdate, canDelete, teamId}) =
                                                  closeSideEffectsFunction={() => { setUpdateFiles(p => !p); }}
                                                  submitFunction={deleteSheet}
                                                  submitFunctionParameters={[deleteFileId]}
-                                                 text="Czy na pewno chcesz usunąć ten plik?"
-                                                 successText="Plik został usunięty"
-                                                 confirmBtnText="Usuń"
-                                                 backBtnText="Powrót"
+                                                 text={content.deleteFileModalAlert}
+                                                 successText={content.deleteFileDone}
+                                                 confirmBtnText={content.delete}
+                                                 backBtnText={content.back}
                                                  backBtnLink="/pliki" /> : ''}
 
         {editFileModalVisible ? <EditFileModal setUpdateFiles={setUpdateFiles}

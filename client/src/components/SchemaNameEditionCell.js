@@ -34,7 +34,7 @@ const SchemaNameEditionCell = ({schemas, setUpdateSchemas, canEdit, schema, inde
 
         {canEdit ? <button className="btn btn--edit btn--editSchema"
                            onClick={() => { handleEditNameClick(schema.schemas_id, index); }}>
-            <img className="img" src={editNameMode !== -1 ? saveIcon : editIcon} alt="edytuj" />
+            <img className="img" src={editNameMode !== -1 ? saveIcon : editIcon} alt="edit" />
         </button> : ''}
     </div>
 };

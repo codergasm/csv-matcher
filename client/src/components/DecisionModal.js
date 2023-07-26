@@ -1,12 +1,16 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import {errorText} from "../static/content";
+import CloseModalButton from "./CloseModalButton";
+import {TranslationContext} from "../App";
 
 const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, submitFunctionParameters, successText,
                            text, confirmBtnText, backBtnText, backBtnLink}) => {
+    const { content } = useContext(TranslationContext);
+
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -57,10 +61,7 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
     }
 
     return <div className="modal modal--leaveTeam">
-        <button className="btn btn--closeModal"
-                onClick={closeModalWrapper}>
-            &times;
-        </button>
+        <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner">
             {!success && !error ? <>
@@ -77,7 +78,7 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                     </button>
                     <button className="btn btn--neutral"
                             onClick={closeModalWrapper}>
-                        Anuluj
+                        {content.cancel}
                     </button>
                 </div>: <Loader width={50} />}
             </> :  <>

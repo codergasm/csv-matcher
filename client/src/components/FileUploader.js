@@ -1,12 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import Loader from "./Loader";
 import uploadIcon from "../static/img/upload.svg";
 import {saveSheet} from "../api/files";
-import {errorText} from "../static/content";
 import ErrorInfo from "./ErrorInfo";
 import QuickBottomInfo from "./QuickBottomInfo";
+import {TranslationContext} from "../App";
 
 const FileUploader = ({user, setUpdateFiles}) => {
+    const { content } = useContext(TranslationContext);
+
     const [loading, setLoading] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [fileSavedModalVisible, setFileSavedModalVisible] = useState(false);
@@ -32,14 +34,14 @@ const FileUploader = ({user, setUpdateFiles}) => {
                     setFileSavedModalVisible(true);
                 }
                 else {
-                    setSaveError(errorText);
+                    setSaveError(content.error);
                 }
 
                 setLoading(false);
             })
             .catch(() => {
                 setLoading(false);
-                setSaveError(errorText);
+                setSaveError(content.error);
             });
     }
 
@@ -65,13 +67,13 @@ const FileUploader = ({user, setUpdateFiles}) => {
                    onChange={addNewFileWrapper} />
 
             <img className="img--upload" src={uploadIcon} alt="dodaj" />
-            Dodaj nowy plik
+            {content.addNewFile}
         </div>}
 
         <ErrorInfo content={saveError} />
 
         {fileSavedModalVisible ? <QuickBottomInfo time={3000}>
-            Plik został dodany
+            {content.fileAdded}
         </QuickBottomInfo> : ''}
     </>
 };

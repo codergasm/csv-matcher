@@ -1,30 +1,33 @@
 import React, {useContext} from 'react';
 import {Tooltip} from "react-tippy";
 import {ViewContext} from "./CorrelationView";
+import {TranslationContext} from "../App";
 
-const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort, setDeleteMatchesModalVisible}) => {
+const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort,
+                                              setDeleteMatchesModalVisible, sheetIndex}) => {
+    const { content } = useContext(TranslationContext);
     const { selectList } = useContext(ViewContext);
 
     return <div className="sheet__header__cell sheet__header__cell--relation">
         <span className="sheet__header__cell--relation__bigText">
-            Rekord z ark. 1, z którym powiązano rekord
+            {content.relationColumnHeaders[sheetIndex]}
         </span>
 
         <button className={relationColumnSort === 1 ? "btn--sortRelation btn--sortRelation--left btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--left"}
                 onClick={() => { sortRelationColumnByMatch(1); }}>
-            Sortuj wg nieprzydzielonych
+            {content.sortByUnmatched}
         </button>
         <button className={relationColumnSort === 2 ? "btn--sortRelation btn--sortRelation--right btn--sortRelation--current" : "btn--sortRelation btn--sortRelation--right"}
                 onClick={() => { sortRelationColumnByMatch(2); }}>
-            Sortuj wg przydzielonych
+            {content.sortByMatched}
         </button>
 
         {selectList?.length ? <button className="btn btn--deleteMatches"
                                       onClick={() => { setDeleteMatchesModalVisible(true); }}>
-            Usuń wszystkie dopasowania
+            {content.deleteAllMatches}
         </button> : ''}
 
-        <Tooltip title="Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1."
+        <Tooltip title={content.selectListTooltip[sheetIndex]}
                  followCursor={true}
                  size="small"
                  position="top">
