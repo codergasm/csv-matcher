@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {TranslationContext} from "../App";
 
 const StartPage = () => {
+    const { content } = useContext(TranslationContext);
+
     return <div className="container">
         <div className="homepage w">
             <h1 className="homepage__header">
@@ -9,16 +12,16 @@ const StartPage = () => {
 
             <a className="btn btn--login"
                href="/zaloguj-sie">
-                Zaloguj się
+                {content.login}
             </a>
 
             <p className="noAccountText">
-                Nie masz konta?
+                {content.doNotHaveAccount}
             </p>
 
             <a className="btn btn--register"
                href="/zarejestruj-sie">
-                Zarejestruj się
+                {content.register}
             </a>
         </div>
     </div>

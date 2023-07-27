@@ -3,7 +3,6 @@ import Loader from "./Loader";
 import noIcon from '../static/img/no.svg';
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
-import {errorText} from "../static/content";
 import CloseModalButton from "./CloseModalButton";
 import {TranslationContext} from "../App";
 
@@ -33,13 +32,13 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                         setSuccess(true);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError(errorText);
+                    setError(content.error);
                 });
         }
         else {
@@ -49,13 +48,13 @@ const DecisionModal = ({closeModal, closeSideEffectsFunction, submitFunction, su
                         setSuccess(true);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError(errorText);
+                    setError(content.error);
                 });
         }
     }

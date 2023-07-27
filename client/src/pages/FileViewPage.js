@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from 'react';
-import PageHeader from "../components/PageHeader";
+import React, {useContext, useEffect, useState} from 'react';
 import getUrlParam from "../helpers/getUrlParam";
 import redirectToHomepage from "../helpers/redirectToHomepage";
 import {getFileById} from "../api/files";
@@ -15,8 +14,11 @@ import getScrollParams from "../helpers/getScrollParams";
 import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
 import convertColumnToNumber from "../helpers/convertColumnToNumber";
 import {sortByColumn} from "../helpers/others";
+import {TranslationContext} from "../App";
 
 const FileViewPage = () => {
+    const { content } = useContext(TranslationContext);
+
     const [sheet, setSheet] = useState([]);
     const [fileName, setFileName] = useState('');
     const [rowsToRender, setRowsToRender] = useState([]);
@@ -175,7 +177,7 @@ const FileViewPage = () => {
 
         <div className="fileViewHeader">
             <h3 className="fileViewHeader__text">
-                Podgląd pliku {fileName}
+                {content.filePreview} {fileName}
             </h3>
         </div>
 
@@ -183,15 +185,15 @@ const FileViewPage = () => {
              onScroll={checkScrollToBottom}>
             <div className="sheet__table__info sheet__table__info--data1">
                 <div className="cell--legend">
-                    Widoczność
+                    {content.visibility}
 
                     <button className="btn btn--selectAll"
                             onClick={() => { setColumnsSettingsModalVisible(true); }}>
-                        Konfiguruj w okienku
+                        {content.configureInWindow}
                     </button>
                     <button className="btn btn--selectAll"
                             onClick={() => { setCellsFormatModalVisible(true); }}>
-                        Formatuj widoczność komórek
+                        {content.formatCellsVisibility}
                     </button>
                 </div>
             </div>

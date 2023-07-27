@@ -1,9 +1,11 @@
-import React from 'react';
-import {teamTableColumnsNames} from "../static/content";
+import React, {useContext} from 'react';
+import {TranslationContext} from "../App";
 
 const TeamTableHeader = () => {
+    const { content } = useContext(TranslationContext);
+
     return <div className="line line--membersHeader">
-        {teamTableColumnsNames.map((item, index) => {
+        {content.teamTableHeader.map((item, index) => {
             return <div className="sheet__header__cell"
                         key={index}>
                 {item}

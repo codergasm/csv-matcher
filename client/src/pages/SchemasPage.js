@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getSchemasByUser} from "../api/schemas";
 import MySchemasTable from "../components/MySchemasTable";
 import {groupBy} from "../helpers/others";
 import {getFilesByUser} from "../api/files";
 import TeamSchemasTable from "../components/TeamSchemasTable";
 import PageHeader from "../components/PageHeader";
+import {TranslationContext} from "../App";
 
 const SchemasPage = ({user}) => {
+    const { content } = useContext(TranslationContext);
+
     const [userSchemas, setUserSchemas] = useState([])
     const [teamSchemas, setTeamSchemas] = useState([]);
     const [userFiles, setUserFiles] = useState([]);
@@ -38,7 +41,7 @@ const SchemasPage = ({user}) => {
     return <div className="container">
         <div className="homepage homepage--files">
             <PageHeader>
-                Twoje schematy dopasowania
+                {content.yourSchemas}
             </PageHeader>
 
             <MySchemasTable schemas={userSchemas}
@@ -49,7 +52,7 @@ const SchemasPage = ({user}) => {
                             setUpdateSchemas={setUpdateSchemas} />
 
             <h2 className="homepage__subheader homepage__subheader--marginTop">
-                Schematy dopasowania zespołu
+                {content.teamSchemas}
             </h2>
 
             <TeamSchemasTable schemas={teamSchemas}

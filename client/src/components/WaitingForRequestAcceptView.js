@@ -1,9 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getTeamById} from "../api/teams";
 import {deleteJoinTeamRequest} from "../api/users";
-import {errorText} from "../static/content";
+import {TranslationContext} from "../App";
 
 const WaitingForRequestAcceptView = ({requestedTeamId}) => {
+    const { content } = useContext(TranslationContext);
+
     const [requestedTeamName, setRequestedTeamName] = useState('');
     const [error, setError] = useState('');
 
@@ -19,13 +21,13 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
     }, [requestedTeamId]);
 
     const removeJoinRequest = () => {
-        if(window.confirm('Czy na pewno chcesz cofnąć to zgłoszenie?')) {
+        if(window.confirm(content.cancelJoinTeamRequestModalAlert)) {
             deleteJoinTeamRequest()
                 .then(() => {
                     window.location = '/zespol';
                 })
                 .catch(() => {
-                    setError(errorText);
+                    setError(content.error);
                 });
         }
     }
@@ -33,10 +35,12 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
     return <div className="container">
         <div className="homepage">
             <h3 className="waitingForRequestAccept__header">
-                Twoje zgłoszenie do zespołu <span className="green">{requestedTeamName}</span> czeka na akceptację właściciela.
+                {content.joinTeamRequestHeaderPart1}
+                <span className="green">{requestedTeamName}</span>
+                {content.joinTeamRequestHeaderPart2}.
             </h3>
             <h4 className="waitingForRequestAccept__subheader">
-                Poinformujemy Cię, gdy Twoje zgłoszenie zostanie zaakceptowane.
+                {content.joinTeamRequestSubheader}
             </h4>
 
             {error ? <span className="error error--deleteRequest">
@@ -44,12 +48,14 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
             </span> : ''}
 
             <div className="flex flex--waitingRequest">
-                <a className="btn btn--backToHomepage" href="/home">
-                    Wróć na stronę główną
+                <a className="btn btn--backToHomepage"
+                   href="/home">
+                    {content.backHomepage}
                 </a>
 
-                <button className="btn btn--deleteRequest" onClick={removeJoinRequest}>
-                    Cofnij zgłoszenie
+                <button className="btn btn--deleteRequest"
+                        onClick={removeJoinRequest}>
+                    {content.cancelJoinTeamRequest}
                 </button>
             </div>
         </div>

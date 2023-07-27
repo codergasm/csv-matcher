@@ -1,4 +1,5 @@
 const pl = {
+    // TODO: last component: TeamFilesTable.js
     // General
     edit: 'Edytuj',
     delete: 'Usuń',
@@ -20,7 +21,7 @@ const pl = {
 
     // Files page
     yourFiles: 'Twoje pliki',
-    teamFile: 'Pliki zespołu',
+    teamFiles: 'Pliki zespołu',
     addFile: 'Dodaj plik',
     addNewFile: 'Dodaj nowy plik',
     filesTableHeader: ['Nazwa pliku', 'Data uploadu', 'Ilość wierszy', 'Rozmiar pliku', 'Edycja'],
@@ -28,10 +29,11 @@ const pl = {
     fileName: 'Nazwa pliku',
     deleteFileModalAlert: 'Czy na pewno chcesz usunąć ten plik?',
     makeTeamFileOwnerAlert: 'Pamiętaj o tym! Jeśli uczynisz Twój zespół właścicielem tego pliku, to będziesz posiadać do niego dostęp tylko gdy jesteś członkiem tego zespołu. Dzięki temu podejściu zespół nie musi martwić się o osoby odchodzące z zespołu i utworzone przez nich pliki. Pliki zespołu zawsze zostają w zespole. Jeżeli Twoje uprawnienia w zespole są ograniczone (np. nie możesz edytować lub usuwać schematów) - to utracisz tą możliwość po zmianie właścicielstwa.',
-    filePreview: 'Przegląd pliku',
+    filePreview: 'Podgląd pliku',
     clickEditToConfirm: 'Kliknij "Edytuj", aby zatwierdzić zmiany',
     makeTeamFileOwnerDone: 'Plik został przypisany do zespołu',
     deleteFileDone: 'Plik został usunięty',
+    noRightsForFileEdition: 'Nie posiadasz praw do edycji pliku',
 
     // Schemas page
     yourSchemas: 'Twoje schematy dopasowania',
@@ -141,10 +143,12 @@ const pl = {
     matchConditionRequiredLabel: 'warunek jest',
     matchConditionRequiredOptions: ['wymagany', 'opcjonalny'],
     closeTesting: 'Zamknij testowanie',
-    numerOfRow: 'numer wiersza',
-    chooseRecordByColumnValueLabel: 'Wskaż rekord wg wartości w kolumnie',
+    numberOfRow: 'numer wiersza',
+    selectRecordByColumnValueLabel: 'Wskaż rekord wg wartości w kolumnie',
     valueInColumnPlaceholder: 'Wartość w kolumnie',
-    runTestingButton: 'Uruchom automatyczne dopasowanie testowo tylko dla wiersza powyżej',
+    rowAnyNotFound: 'Nie znaleziono żadnego wiersza',
+    rowNotFound: 'Nie ma takiego wiersza. Liczba wierszy w arkuszu: ',
+    runTestMatchingButton: 'Uruchom automatyczne dopasowanie testowo tylko dla wiersza powyżej',
     testingMatchNotFound: 'Nie znaleziono dopasowania powyżej wyznaczonego progu. Poniżej znajduje się lista dziesięciu najwyżej dopasowanych rekordów.',
     testingMatchFoundHeaderPart1: 'Znaleziono dopasowanie do wiersza nr ',
     testingMatchFoundHeaderPart2: 'z arkusza 2',
@@ -167,6 +171,7 @@ const pl = {
     yourTeam: 'Twój zespół',
     leaveTeam: 'Opuść zespół',
     deleteTeam: 'Usuń zespół',
+    rightsUpdated: 'Prawa zostały zaktualizowane',
     leaveTeamModalAlert: 'Uwaga! odłączając się od zespołu - wszystkie pliki i schematy, które utworzyłeś i dodałeś jako dostępne dla zespołu pozostaną w nim i nie będą już dla Ciebie dostępne',
     deleteTeamModalAlert: 'Uwaga! Usuwając zespół przypiszesz wszystkie pliki i schematy dopasowania z powrotem do Twojego profilu.',
     teamIdInfo: 'Podaj ten numer członkom swojego zespołu, aby mogli się do niego dodać',
@@ -202,17 +207,25 @@ const pl = {
     repeatPassword: 'Powtórz hasło',
     passwordChanged: 'Twoje hasło zostało zmienione',
     homepage: 'Strona główna',
+    oldPasswordIncorrectError: 'Niepoprawne stare hasło',
+    passwordsIdenticalError: 'Podane hasła nie są identyczne',
+    passwordWeakError: 'Hasło musi mieć co najmniej 8 znaków, zawierać co najmniej jedną wielką literę oraz jedną cyfrę',
 
     // Login page
     login: 'Zaloguj się',
     doNotHaveAccount: 'Nie masz konta?',
     email: 'Adres e-mail',
+    loginError: 'Niepoprawny adres e-mail lub hasło',
 
     // Register page
     register: 'Zarejestruj się',
     createAccount: 'Załóż konto',
+    emailAlreadyTakenError: 'Użytkownik o podanym adresie e-mail już istnieje',
+    registerCheckboxError: 'Akceptuj postanowienia polityki prywatności',
     registerCheckbox: 'Wyrażam zgodę na przetwarzanie danych osobowych przez RowMatcher.com',
     registerEmailError: 'Podaj poprawny adres e-mail',
+    accountVerified: 'Twoje konto zostało pomyślnie zweryfikowane',
+    registerSuccess: 'Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny. Kliknij w niego i korzystaj z RowMatcher.com!'
 }
 
 export default pl;

@@ -10,10 +10,6 @@ import FilenameEditionCell from "./FilenameEditionCell";
 import {TranslationContext} from "../App";
 
 const TeamFilesTable = ({files, setUpdateFiles, canUpdate, canDelete, teamId}) => {
-    const columnsNames = [
-        'nazwa pliku', 'data uploadu', 'ilość wierszy', 'rozmiar pliku', 'edycja'
-    ];
-
     const { content } = useContext(TranslationContext);
 
     const [deleteFileId, setDeleteFileId] = useState(null);
@@ -40,7 +36,7 @@ const TeamFilesTable = ({files, setUpdateFiles, canUpdate, canDelete, teamId}) =
 
         <div className="sheet__table">
             <div className="line line--membersHeader">
-                {columnsNames.map((item, index) => {
+                {content.filesTableHeader.map((item, index) => {
                     return <div className="sheet__header__cell"
                                 key={index}>
                         {item}
@@ -88,7 +84,7 @@ const TeamFilesTable = ({files, setUpdateFiles, canUpdate, canDelete, teamId}) =
                                     <img className="img" src={deleteIcon} alt="usuń" />
                                 </button>
                             </div> : <span className="small">
-                                Nie posiadasz praw do edycji pliku
+                                {content.noRightsForFileEdition}
                             </span> }
                         </div>
                     </div>

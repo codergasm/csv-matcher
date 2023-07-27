@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getFilesByUser} from "../api/files";
 import MyFilesTable from "../components/MyFilesTable";
 import TeamFilesTable from "../components/TeamFilesTable";
 import FileSavedModal from "../components/FileSavedModal";
 import PageHeader from "../components/PageHeader";
 import FileUploader from "../components/FileUploader";
+import {TranslationContext} from "../App";
 
 const FilesPage = ({user}) => {
+    const { content } = useContext(TranslationContext);
+
     const [userFiles, setUserFiles] = useState([]);
     const [teamFiles, setTeamFiles] = useState([]);
     const [updateFiles, setUpdateFiles] = useState(false);
@@ -34,7 +37,7 @@ const FilesPage = ({user}) => {
 
         <div className="homepage homepage--files">
             <PageHeader>
-                Twoje pliki
+                {content.yourFiles}
             </PageHeader>
 
             <FileUploader setUpdateFiles={setUpdateFiles}
@@ -45,7 +48,7 @@ const FilesPage = ({user}) => {
                           setUpdateFiles={setUpdateFiles} />
 
             <h2 className="homepage__subheader homepage__subheader--marginTop">
-                Pliki zespołu
+                {content.teamFiles}
             </h2>
 
             <TeamFilesTable files={teamFiles}

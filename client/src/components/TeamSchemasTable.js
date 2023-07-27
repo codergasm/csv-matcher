@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import DecisionModal from "./DecisionModal";
 import {getDateFromString} from "../helpers/others";
 import deleteIcon from "../static/img/no.svg";
@@ -9,6 +9,7 @@ import BottomNotification from "./BottomNotification";
 import MatchProgressBar from "./MatchProgressBar";
 import SchemaNameEditionCell from "./SchemaNameEditionCell";
 import withSchemasTable from "../hoc/withSchemasTable";
+import {TranslationContext} from "../App";
 
 const TeamSchemasTable = (props) => {
     const {schemas, setUpdateSchemas, user,
@@ -18,6 +19,8 @@ const TeamSchemasTable = (props) => {
         columnsNames, sheetsColumnsNames,
         chooseSheetsModalVisible, setChooseSheetsModalVisible,
         chooseSheetsSchemaId, setChooseSheetsSchemaId} = props;
+
+    const { content } = useContext(TranslationContext);
 
     const [deleteSchemeId, setDeleteSchemeId] = useState(null);
     const [deleteSchemeModalVisible, setDeleteSchemeModalVisible] = useState(false);
@@ -29,20 +32,20 @@ const TeamSchemasTable = (props) => {
                                                    closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                    submitFunction={deleteSchema}
                                                    submitFunctionParameters={[deleteSchemeId]}
-                                                   text="Czy na pewno chcesz usunąć ten schemat?"
-                                                   successText="Schemat został usunięty"
-                                                   confirmBtnText="Usuń"
-                                                   backBtnText="Powrót"
+                                                   text={content.deleteSchemaAlert}
+                                                   successText={content.schemaDeleteDone}
+                                                   confirmBtnText={content.delete}
+                                                   backBtnText={content.back}
                                                    backBtnLink="/schematy-dopasowania" /> : ''}
 
         {detachSheetFromSchemaModalVisible ? <DecisionModal closeModal={() => { setDetachSheetFromSchemaModalVisible(false); }}
                                                             closeSideEffectsFunction={() => { setUpdateSchemas(p => !p); }}
                                                             submitFunction={detachSheetsFromSchemaById}
                                                             submitFunctionParameters={[detachSheetFromSchemaId]}
-                                                            text="Czy na pewno chcesz odłączyć te pliki od tego schematu?"
-                                                            successText="Pliki zostały odłączone od schematu"
-                                                            confirmBtnText="Odłącz"
-                                                            backBtnText="Powrót"
+                                                            text={content.detachFilesFromSchemaAlert}
+                                                            successText={content.detachFilesFromSchemaDone}
+                                                            confirmBtnText={content.detach}
+                                                            backBtnText={content.back}
                                                             backBtnLink="/schematy-dopasowania"
         /> : ''}
 
@@ -95,11 +98,11 @@ const TeamSchemasTable = (props) => {
                             {sheetsVisible[index] ? <button className="btn btn--toggleVisibility btn--toggleVisibility--hide"
                                                             onClick={() => { handleSheetsVisibilityChange(index, false); }}>
                                 <img className="img" src={arrowIcon} alt="rozwin" />
-                                zwiń arkusze
+                                {content.hideSheets}
                             </button> : <button className="btn btn--toggleVisibility btn--toggleVisibility--show"
                                                 onClick={() => { handleSheetsVisibilityChange(index, true); }}>
                                 <img className="img" src={arrowIcon} alt="rozwin" />
-                                rozwiń arkusze
+                                {content.showSheets}
                             </button>}
                         </div>
                     </div>
@@ -126,17 +129,17 @@ const TeamSchemasTable = (props) => {
                                     </div>
                                     <div className="subTable__cell subTable__cell--progress">
                                         <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_data_sheet)} />
-                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_data_sheet)}
+                                        {item.sheets_number_of_matched_rows} {content.outOf} {getFileRowCount(item.sheets_data_sheet)}
                                     </div>
                                     <div className="subTable__cell subTable__cell--progress">
                                         <MatchProgressBar progress={item.sheets_number_of_matched_rows / getFileRowCount(item.sheets_relation_sheet)} />
-                                        {item.sheets_number_of_matched_rows} z {getFileRowCount(item.sheets_relation_sheet)}
+                                        {item.sheets_number_of_matched_rows} {content.outOf} {getFileRowCount(item.sheets_relation_sheet)}
                                     </div>
                                     <div className="subTable__cell">
                                         <div className="flex">
                                             <a className="btn btn--goToEditor"
                                                href={`/edytor-dopasowania?sheet1=${item.sheets_data_sheet}&sheet2=${item.sheets_relation_sheet}&schema=${item.schemas_id}`}>
-                                                Uruchom edytor
+                                                {content.runEditor}
                                             </a>
                                             {canDelete ? <button className="btn--action btn--action--detachSheets"
                                                                  onClick={() => { setDetachSheetFromSchemaId(item.sheets_id); setDetachSheetFromSchemaModalVisible(true); }}>
@@ -147,18 +150,18 @@ const TeamSchemasTable = (props) => {
                                 </div>
                             })}
                         </> : <h5 className="noSheetsInfo">
-                            Nie masz jeszcze żadnych arkuszy przypisanych do tego schematu
+                            {content.noSheetsAssignedToSchema}
                         </h5>}
 
                         {canEdit ? <button className="btn btn--assignSheetsToSchema"
                                            onClick={() => { setChooseSheetsSchemaId(schema.schemas_id); setChooseSheetsModalVisible(true); }}>
-                            Dodaj nowe arkusze do schematu
+                            {content.addNewSheetsToSchema}
                         </button> : ''}
                     </div> : ''}
                 </div>
             })}
         </div> : <h5 className="emptyTableInfo">
-            Nie masz żadnych schematów dopasowania
+            {content.noSchemasFound}
         </h5>}
     </div>
 };

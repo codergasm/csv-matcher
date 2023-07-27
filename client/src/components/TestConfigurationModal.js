@@ -6,8 +6,10 @@ import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import {getSelectList, matching} from "../api/matching";
 import TestConfigurationMatchesList from "./TestConfigurationMatchesList";
+import {TranslationContext} from "../App";
 
 const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, user}) => {
+    const { content } = useContext(TranslationContext);
     const { dataSheet, relationSheet, dataFile, relationFile, dataDelimiter, relationDelimiter } = useContext(AppContext);
     const { showInSelectMenuColumnsDataSheet, priorities, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows, matchType,
@@ -32,12 +34,12 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
 
     useEffect(() => {
         if(relationSheet) {
-            setRelationSheetColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === 'rel_0' ? 'l.p.' : item[0])));
+            setRelationSheetColumnsNames(Object.entries(relationSheet[0]).map((item) => (item[0] === 'rel_0' ? content.index : item[0])));
         }
     }, [relationSheet]);
 
     useEffect(() => {
-        setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] === '0' ? 'l.p.' : item[0])))
+        setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] === '0' ? content.index : item[0])))
     }, [dataSheet]);
 
     useEffect(() => {
@@ -111,23 +113,23 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
         <div className="modal__top">
             <button className="btn btn--openTestConfigurationModal"
                     onClick={closeModal}>
-                Zamknij testowanie
+                {content.closeTesting}
             </button>
 
             <h3 className="modal__header">
-                Przetestuj konfigurację
+                {content.testConfiguration}
             </h3>
         </div>
 
         <div className="modal__line">
                 <span className="flex flex--start">
-                    Arkusz 2 - numer wiersza: <input className="input input--number"
+                    {content.sheet2} - {content.numberOfRow}: <input className="input input--number"
                                                      value={relationSheetRowNumber !== -1 ? relationSheetRowNumber : ''}
                                                      onChange={handleRelationSheetRowNumberInput} />
                 </span>
 
             <span className="flex flex--start">
-                Wskaż rekord wg wartości w kolumnie:
+                {content.selectRecordByColumnValueLabel}
                 <select className="priorities__item__condition__select"
                         value={columnToSearch}
                         onChange={(e) => { setColumnToSearch(e.target.value); }}>
@@ -145,13 +147,13 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                     <input className="input input--search input--valueToSearch"
                            value={valueToSearch}
                            onChange={(e) => { setValueToSearch(e.target.value); }}
-                           placeholder="Wartość w kolumnie" />
+                           placeholder={content.valueInColumnPlaceholder} />
                 </label>
             </span>
 
             {(relationSheetRowNumber > relationSheet?.length) || relationSheetRowNumber === -1 ? <span className="red">
-                    {relationSheetRowNumber === -1 ? 'Nie znaleziono żadnego wiersza' : <>
-                        Nie ma takiego wiersza. Liczba wierszy w arkuszu 2 to: {relationSheet?.length}
+                    {relationSheetRowNumber === -1 ? content.rowAnyNotFound : <>
+                        {content.rowNotFound}: {relationSheet?.length}
                     </>}
                 </span> : <div className="marginTop">
                 <div className="container--scrollX scroll">
@@ -189,13 +191,15 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
 
             <button className="btn btn--startAutoMatch btn--startAutoMatchTest"
                     onClick={startTestCorrelation}>
-                Uruchom automatyczne dopasowanie testowo tylko dla wiersza powyżej
+                {content.runTestMatchingButton}
             </button>
 
             {testSelectList?.length ? <div className="testConfiguration__selectList">
                 {testIndexesOfCorrelatedRows?.length ? <>
                     <p className="text-center">
-                        Znaleziono dopasowanie do wiersza <b>nr {testSelectList[0].dataRowIndex}</b> z arkusza 1.
+                        {content.testingMatchFoundHeaderPart1}
+                        <b>{testSelectList[0].dataRowIndex}</b>
+                        {content.testingMatchFoundHeaderPart2}.
                     </p>
 
                     <div className="center">
@@ -218,7 +222,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                                 })}
 
                                 <div className="sheet__header__cell">
-                                    Dopasowanie
+                                    {content.match}
                                 </div>
                             </div>
 
@@ -231,7 +235,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                     </div>
 
                     <p className="text-center">
-                        Poniżej znajduje się lista pozostałych dziesięciu najwyżej dopasowanych rekordów.
+                        {content.testingMatchFoundListHeader}
                     </p>
 
                     <div className="center">
@@ -254,7 +258,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                                 })}
 
                                 <div className="sheet__header__cell">
-                                    Dopasowanie
+                                    {content.match}
                                 </div>
                             </div>
 
@@ -267,8 +271,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                     </div>
                 </> : <>
                     <p className="text-center">
-                        Nie znaleziono dopasowania powyżej wyznaczonego progu.
-                        Poniżej znajduje się lista dziesięciu najwyżej dopasowanych rekordów.
+                        {content.testingMatchNotFound}
                     </p>
 
                     <div className="center">
@@ -291,7 +294,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                                 })}
 
                                 <div className="sheet__header__cell">
-                                    Dopasowanie
+                                    {content.match}
                                 </div>
                             </div>
                             <TestConfigurationMatchesList from={0}

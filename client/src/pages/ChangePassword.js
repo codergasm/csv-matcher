@@ -1,15 +1,17 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Loader from "../components/Loader";
 import {isPasswordStrength} from "../helpers/others";
 import {changeUserPassword} from "../api/users";
-import { errorText } from "../static/content";
 import InputPrimary from "../components/InputPrimary";
 import ErrorInfo from "../components/ErrorInfo";
 import ButtonSubmit from "../components/ButtonSubmit";
 import AfterFormSubmitView from "../components/AfterFormSubmitView";
 import PageHeader from "../components/PageHeader";
+import {TranslationContext} from "../App";
 
 const ChangePassword = () => {
+    const { content } = useContext(TranslationContext);
+
     const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -23,11 +25,11 @@ const ChangePassword = () => {
 
     const validateData = () => {
         if(!arePasswordsEqual()) {
-            setError('Podane hasła nie są identyczne');
+            setError(content.passwordsIdenticalError);
             return false;
         }
         if(!isPasswordStrength(password)) {
-            setError('Hasło musi mieć co najmniej 8 znaków, zawierać co najmniej jedną wielką literę oraz jedną cyfrę');
+            setError(content.passwordWeakError);
             return false;
         }
 
@@ -46,13 +48,13 @@ const ChangePassword = () => {
                         setSuccess(true);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError('Niepoprawne stare hasło');
+                    setError(content.oldPasswordIncorrectError);
                 });
         }
     }
@@ -60,22 +62,22 @@ const ChangePassword = () => {
     return <div className="container">
         <div className="homepage">
             <PageHeader>
-                Zmień hasło
+                {content.changePassword}
             </PageHeader>
 
             {!success ? <form className="form form--register shadow">
-                <InputPrimary label={'Aktualne hasło'}
-                              placeholder={'Twoje aktualne hasło'}
+                <InputPrimary label={content.currentPassword}
+                              placeholder={content.currentPassword}
                               type={'password'}
                               value={oldPassword}
                               setValue={setOldPassword} />
-                <InputPrimary label={'Nowe hasło'}
-                              placeholder={'Nowe hasło'}
+                <InputPrimary label={content.newPassword}
+                              placeholder={content.newPassword}
                               type={'password'}
                               value={password}
                               setValue={setPassword} />
-                <InputPrimary label={'Powtórz nowe hasło'}
-                              placeholder={'Powtórz nowe hasło'}
+                <InputPrimary label={content.repeatNewPassword}
+                              placeholder={content.repeatNewPassword}
                               type={'password'}
                               value={repeatPassword}
                               setValue={setRepeatPassword} />
@@ -83,11 +85,11 @@ const ChangePassword = () => {
                 <ErrorInfo content={error} />
 
                 {!loading ? <ButtonSubmit onClick={handleSubmit}>
-                    Zmień hasło
+                    {content.changePassword}
                 </ButtonSubmit>: <Loader width={50} />}
 
             </form> : <AfterFormSubmitView>
-                Twoje hasło zostało zmienione
+                {content.passwordChanged}
             </AfterFormSubmitView>}
         </div>
     </div>

@@ -1,15 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {generateTeamUrl, getAllTeams, updateTeamName} from "../api/teams";
 import LeaveTeamModal from "./LeaveTeamModal";
 import copyIcon from '../static/img/copy.svg';
 import editIcon from '../static/img/edit.svg';
 import checkIcon from '../static/img/check.svg';
 import Loader from "./Loader";
-import {errorText} from "../static/content";
 import LeaveTeamButton from "./LeaveTeamButton";
 import DeleteTeamModal from "./DeleteTeamModal";
+import {TranslationContext} from "../App";
 
 const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
+    const { content } = useContext(TranslationContext);
+
     const [name, setName] = useState('');
     const [newName, setNewName] = useState('');
     const [newTeamUrl, setNewTeamUrl] = useState('');
@@ -42,7 +44,7 @@ const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
         const teamUrlNotAvailable = allTeamsUrls.find((item) => (item === teamUrl));
 
         if(teamNameNotAvailable || teamUrlNotAvailable) {
-            setError('Podana nazwa jest już zajęta');
+            setError(content.teamNameAlreadyTaken);
         }
         else {
             setError('');
@@ -84,15 +86,15 @@ const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
                         setName(newName);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setUpdateMode(false);
                     setLoading(false);
                 })
-                .catch((err) => {
+                .catch(() => {
                     setUpdateMode(false);
                     setLoading(false);
-                    setError(errorText);
+                    setError(content.error);
                 });
         }
     }
@@ -106,20 +108,21 @@ const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
                                                    setTeam={setTeam} /> : ''}
 
         <h3 className="teamNameHeader">
-            Twój zespół:
+            {content.yourTeam}:
 
             {!isOwner || !updateMode ? <span>
                 {name}
             </span> : <input className="input input--teamNameUpdate"
-                             placeholder="Nazwa zespołu"
+                             placeholder={content.teamName}
                              value={newName}
                              onChange={(e) => { setNewName(e.target.value); }} />}
 
             {isOwner ? (updateMode ? (!loading ? <button className="btn btn--save"
                                                          disabled={!!error || !newName}
                                                          onClick={changeTeamNameWrapper}>
-                Zmień nazwę
-            </button> : <Loader width={40} />) : <button className="btn--edit" onClick={() => { setUpdateMode(true); }}>
+                {content.editName}
+            </button> : <Loader width={40} />) : <button className="btn--edit"
+                                                         onClick={() => { setUpdateMode(true); }}>
                 <img className="img" src={editIcon} alt="edytuj" />
             </button>) : ''}
 
@@ -144,7 +147,7 @@ const TeamViewHeader = ({team, setTeam, isOwner, isTeamEmpty}) => {
                 </span>
 
                 <span className="teamId--info">
-                    Podaj ten numer członkom swojego zespołu, aby mogli się do niego dodać
+                    {content.teamIdInfo}
                 </span>
         </h4>
     </div>

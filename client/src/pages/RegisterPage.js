@@ -1,15 +1,17 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {isEmail, isPasswordStrength} from "../helpers/others";
 import {registerUser} from "../api/users";
 import Loader from "../components/Loader";
-import {errorText} from "../static/content";
 import PageHeader from "../components/PageHeader";
 import AfterFormSubmitView from "../components/AfterFormSubmitView";
 import ErrorInfo from "../components/ErrorInfo";
 import ButtonSubmit from "../components/ButtonSubmit";
 import InputPrimary from "../components/InputPrimary";
+import {TranslationContext} from "../App";
 
 const RegisterPage = () => {
+    const { content } = useContext(TranslationContext);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -24,19 +26,19 @@ const RegisterPage = () => {
 
     const validateData = () => {
         if(!isEmail(email)) {
-            setError('Podaj poprawny adres e-mail');
+            setError(content.registerEmailError);
             return false;
         }
         if(!arePasswordsEqual()) {
-            setError('Podane hasła nie są identyczne');
+            setError(content.passwordsIdenticalError);
             return false;
         }
         if(!isPasswordStrength(password)) {
-            setError('Hasło musi mieć co najmniej 8 znaków, zawierać co najmniej jedną wielką literę oraz jedną cyfrę');
+            setError(content.passwordWeakError);
             return false;
         }
         if(!checkbox) {
-            setError('Akceptuj postanowienia polityki prywatności');
+            setError(content.registerCheckboxError);
             return false;
         }
 
@@ -55,7 +57,7 @@ const RegisterPage = () => {
                         setStatus(1);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                     setLoading(false);
                 })
@@ -63,10 +65,10 @@ const RegisterPage = () => {
                     setLoading(false);
 
                     if(err?.response?.data?.statusCode === 400) {
-                        setError('Użytkownik o podanym adresie e-mail już istnieje');
+                        setError(content.emailAlreadyTakenError);
                     }
                     else {
-                        setError(errorText);
+                        setError(content.error);
                     }
                 });
         }
@@ -80,22 +82,22 @@ const RegisterPage = () => {
     return <div className="container">
         <div className="homepage w">
             <PageHeader>
-                Załóż konto
+                {content.createAccount}
             </PageHeader>
 
             {status === 0 ? <form className="form form--register shadow">
-                <InputPrimary label={'Adres e-mail'}
-                              placeholder={'E-mail'}
+                <InputPrimary label={content.email}
+                              placeholder={content.email}
                               type={'email'}
                               value={email}
                               setValue={setEmail} />
-                <InputPrimary label={'Hasło'}
-                              placeholder={'Hasło'}
+                <InputPrimary label={content.password}
+                              placeholder={content.password}
                               type={'password'}
                               value={password}
                               setValue={setPassword} />
-                <InputPrimary label={'Powtórz hasło'}
-                              placeholder={'Powtórz hasło'}
+                <InputPrimary label={content.repeatPassword}
+                              placeholder={content.repeatPassword}
                               type={'password'}
                               value={repeatPassword}
                               setValue={setRepeatPassword} />
@@ -105,17 +107,16 @@ const RegisterPage = () => {
                             onClick={toggleCheckbox}>
 
                     </button>
-                    Wyrażam zgodę na przetwarzanie danych osobowych przez RowMatcher.com
+                    {content.registerCheckbox}
                 </label>
 
                 <ErrorInfo content={error} />
 
                 {!loading ? <ButtonSubmit onClick={handleSubmit}>
-                    Zarejestruj się
+                    {content.register}
                 </ButtonSubmit> : <Loader width={50} />}
             </form> : <AfterFormSubmitView>
-                Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny.
-                Kliknij w niego i korzystaj z RowMatcher.com!
+                {content.registerSuccess}
             </AfterFormSubmitView>}
         </div>
     </div>

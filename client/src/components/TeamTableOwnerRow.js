@@ -1,13 +1,16 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import checkIcon from "../static/img/check.svg";
 import {updateUserRights} from "../api/users";
 import Loader from "./Loader";
 import QuickBottomInfo from "./QuickBottomInfo";
+import {TranslationContext} from "../App";
 
 const rightsList = ['can_edit_team_files', 'can_delete_team_files',
     'can_edit_team_match_schemas', 'can_delete_team_match_schemas'];
 
 const TeamTableOwnerRow = ({item, index, members, setMembers}) => {
+    const { content } = useContext(TranslationContext);
+
     const [loadingRightsRequest, setLoadingRightsRequest] = useState(-2);
 
     const toggleMemberRights = async (email, rightType) => {
@@ -86,7 +89,7 @@ const TeamTableOwnerRow = ({item, index, members, setMembers}) => {
         })}
 
         {loadingRightsRequest === -1 ? <QuickBottomInfo time={2000}>
-            Prawa zostały zaktualizowane
+            {content.rightsUpdated}
         </QuickBottomInfo> : ''}
     </div>
 };

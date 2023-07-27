@@ -14,6 +14,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { FilesModule } from './files/files.module';
 import { SchemasModule } from './schemas/schemas.module';
 import {join} from "path";
+import { ApiModule } from './api/api.module';
+import {AuthModule} from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -50,7 +52,9 @@ import {join} from "path";
     TeamsModule,
     UsersModule,
     FilesModule,
-    SchemasModule
+    SchemasModule,
+    ApiModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

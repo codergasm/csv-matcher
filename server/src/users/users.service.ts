@@ -4,12 +4,12 @@ import {UsersEntity} from "../entities/users.entity";
 import {Repository} from "typeorm";
 import {TeamsEntity} from "../entities/teams.entity";
 import {AddToTeamUsersRequestsEntity} from "../entities/add_to_team_users_requests.entity";
-import * as crypto from 'crypto'
 import { v4 as uuid } from 'uuid';
 import {MailerService} from "@nestjs-modules/mailer";
 import {JwtService} from "@nestjs/jwt";
 import {UsersVerificationEntity} from "../entities/users_verification.entity";
 import accountVerificationMail from "../mails/accountVerificationMail";
+import createPasswordHash from "../common/createPasswordHash";
 
 @Injectable()
 export class UsersService {
@@ -27,13 +27,6 @@ export class UsersService {
     ) {
     }
 
-    createPasswordHash(password) {
-        return crypto
-            .createHash('sha256')
-            .update(password)
-            .digest('hex');
-    }
-
     async registerUser(email: string, password: string) {
         const existingUser = await this.usersRepository.findOneBy({
             email
@@ -43,7 +36,7 @@ export class UsersService {
             throw new HttpException('Użytkownik o podanym adresie e-mail już istnieje', 400);
         }
         else {
-            const passwordHash = this.createPasswordHash(password);
+            const passwordHash = createPasswordHash(password);
             const token = await uuid();
 
             await this.mailerService.sendMail(accountVerificationMail(email, token));
@@ -89,7 +82,7 @@ export class UsersService {
 
         const user = await this.usersRepository.findOneBy({
             email,
-            password: this.createPasswordHash(password)
+            password: createPasswordHash(password)
         });
 
         if(user) {
@@ -141,14 +134,14 @@ export class UsersService {
     async changePassword(oldPassword, newPassword, email) {
         const user = await this.usersRepository.findBy({
             email,
-            password: this.createPasswordHash(oldPassword)
+            password: createPasswordHash(oldPassword)
         });
 
         if(user?.length) {
             return this.usersRepository
                 .createQueryBuilder()
                 .update({
-                    password: this.createPasswordHash(newPassword)
+                    password: createPasswordHash(newPassword)
                 })
                 .where({
                     email

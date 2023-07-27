@@ -1,11 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import createTeamIcon from '../static/img/people.svg';
 import joinTeamIcon from '../static/img/request.svg';
 import CreateNewTeamModal from "./CreateNewTeamModal";
 import JoinTeamModal from "./JoinTeamModal";
 import ButtonTile from "./ButtonTile";
+import {TranslationContext} from "../App";
 
 const UserNotInTeamView = () => {
+    const { content } = useContext(TranslationContext);
+
     const [createNewTeamModalVisible, setCreateNewTeamModalVisible] = useState(false);
     const [joinTeamModalVisible, setJoinTeamModalVisible] = useState(false);
 
@@ -35,17 +38,17 @@ const UserNotInTeamView = () => {
                 RowMatcher.com
             </h1>
             <h2 className="homepage__subheader homepage__subheader--notInTeam">
-                Nie należysz do żadnego zespołu
+                {content.notInTeamHeader}
             </h2>
 
             <div className="userNotInTeamChoice flex">
                 <ButtonTile onClick={showCreateNewTeamModal}
                             icon={createTeamIcon}>
-                    Stwórz nowy zespół
+                    {content.createNewTeam}
                 </ButtonTile>
                 <ButtonTile onClick={showJoinTeamModal}
                             icon={joinTeamIcon}>
-                    Dołącz do zespołu
+                    {content.joinTeam}
                 </ButtonTile>
             </div>
         </div>

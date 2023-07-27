@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Loader from "../components/Loader";
 import {loginUser} from "../api/users";
 import Cookies from "universal-cookie";
@@ -7,8 +7,11 @@ import ErrorInfo from "../components/ErrorInfo";
 import ButtonSubmit from "../components/ButtonSubmit";
 import PageHeader from "../components/PageHeader";
 import {SESSION_TIME} from "../static/constans";
+import {TranslationContext} from "../App";
 
 const LoginPage = () => {
+    const { content } = useContext(TranslationContext);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -28,14 +31,14 @@ const LoginPage = () => {
                         window.location = '/home';
                     }
                     else {
-                        setError('Niepoprawny adres e-mail lub hasło');
+                        setError(content.loginError);
                     }
 
                     setLoading(false);
                 })
                 .catch(() => {
                     setLoading(false);
-                    setError('Niepoprawny adres e-mail lub hasło');
+                    setError(content.loginError);
                 });
         }
     }
@@ -50,17 +53,17 @@ const LoginPage = () => {
     return <div className="container">
         <div className="homepage w">
             <PageHeader>
-                Zaloguj się
+                {content.login}
             </PageHeader>
 
             <form className="form form--register shadow">
-                <InputPrimary label={'Adres e-mail'}
-                              placeholder={'E-mail'}
+                <InputPrimary label={content.email}
+                              placeholder={content.email}
                               value={email}
                               type={'email'}
                               setValue={setEmail} />
-                <InputPrimary label={'Hasło'}
-                              placeholder={'Hasło'}
+                <InputPrimary label={content.password}
+                              placeholder={content.password}
                               type={'password'}
                               value={password}
                               setValue={setPassword} />
@@ -68,7 +71,7 @@ const LoginPage = () => {
                 <ErrorInfo content={error} />
 
                 {!loading ? <ButtonSubmit onClick={handleSubmit}>
-                    Zaloguj się
+                    {content.login}
                 </ButtonSubmit> : <Loader width={50} />}
             </form>
         </div>

@@ -5,7 +5,8 @@ import getSimilarityColor from "../helpers/getSimilarityColor";
 import {ViewContext} from "./CorrelationView";
 import {AppContext} from "../pages/CorrelationPage";
 
-const TestConfigurationMatchesList = ({from, to, testSelectList, joinStringOfColumnsFromRelationSheet, columnsNamesInConditions}) => {
+const TestConfigurationMatchesList = ({from, to, testSelectList, joinStringOfColumnsFromRelationSheet,
+                                          columnsNamesInConditions}) => {
     const { dataSheet } = useContext(AppContext);
     const { showInSelectMenuColumnsDataSheet } = useContext(ViewContext);
 
