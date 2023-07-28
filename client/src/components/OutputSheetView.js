@@ -12,15 +12,21 @@ import settingsIcon from '../static/img/settings.svg';
 import getRelationNameById from "../helpers/getRelationNameById";
 import { ROWS_PER_PAGE } from "../static/constans";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
+import SchemaNotCreatedModal from "./SchemaNotCreatedModal";
+import SchemaChangedAndNotSavedModal from "./SchemaChangedAndNotSavedModal";
+import {sendRequestToExternalApp} from "../api/api";
 
 const OutputSheetView = forwardRef((props, ref) => {
     const { content } = useContext(TranslationContext);
+    const { api, apiRequestId, apiUserId, apiUserRedirectionWebsite,
+        apiOutputEndpoint, apiRequestCreateDateTime } = useContext(ApiContext);
     const { outputSheet, outputSheetExportColumns,
         exportFormat, indexesOfCorrelatedRows, matchType,
         outputSheetColumnsVisibility, setOutputSheetColumnsVisibility, setColumnsToSum } = useContext(ViewContext);
-    const { currentSchemaId, dataSheet, relationSheet, dataSheetName,
+    const { currentSchemaId,  dataSheet, relationSheet, dataSheetName,
         relationSheetName, dataFile, relationFile, dataFileSize, relationFileSize,
-        dataFileOwnerUserId, relationFileOwnerUserId,
+        dataFileOwnerUserId, relationFileOwnerUserId, currentSchemaChangedAndNotSaved,
         isDataSheetColumnTypeNumber, isRelationSheetColumnTypeNumber,
         dataFileOwnerTeamId, relationFileOwnerTeamId } = useContext(AppContext);
 
@@ -34,6 +40,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [exportSettingsModalVisible, setExportSettingsModalVisible] = useState(false);
     const [cellsHeight, setCellsHeight] = useState(-1);
     const [isOutputSheetColumnTypeNumber, setIsOutputSheetColumnTypeNumber] = useState([]);
+    const [modalsBeforeReturnToExternalAppVisible, setModalsBeforeReturnToExternalAppVisible] = useState(false);
 
     useEffect(() => {
         setFinalExportColumns([...outputSheetExportColumns, false, false]);
@@ -154,6 +161,45 @@ const OutputSheetView = forwardRef((props, ref) => {
         }
     }
 
+    const getExportJsonOutputMatchedData = () => {
+        if(matchType === 2) {
+            return relationSheet.map((item, index) => {
+                return {
+                    sourceFileIndex: 1,
+                    rowBeforeMatchingIndex: index,
+                    rowValue: item,
+                    matchedWithRows: indexesOfCorrelatedRows.filter((item) => {
+                        return item[1] === index;
+                    }).map((item) => {
+                        return {
+                            sourceFileIndex: 0,
+                            rowBeforeMatchingIndex: item[0],
+                            rowValue: dataSheet[item[0]]
+                        }
+                    })
+                }
+            });
+        }
+        else {
+            return dataSheet.map((item, index) => {
+               return {
+                   sourceFileIndex: 0,
+                   rowBeforeMatchingIndex: index,
+                   rowValue: item,
+                   matchedWithRows: indexesOfCorrelatedRows.filter((item) => {
+                       return item[0] === index;
+                   }).map((item) => {
+                       return {
+                           sourceFileIndex: 1,
+                           rowBeforeMatchingIndex: item[1],
+                           rowValue: relationSheet[item[1]]
+                       }
+                   })
+               }
+            });
+        }
+    }
+
     const createExportJSON = () => {
         const json = {
             inputSheets: [
@@ -178,7 +224,7 @@ const OutputSheetView = forwardRef((props, ref) => {
             ],
             outputMatchedData: {
                 relationType: getRelationNameById(matchType),
-                rows: indexesOfCorrelatedRows
+                rows: getExportJsonOutputMatchedData()
             }
         }
 
@@ -241,6 +287,28 @@ const OutputSheetView = forwardRef((props, ref) => {
         return Object.keys(outputSheet[0]).includes(content.matchCounterRelationSheetName);
     }
 
+    const saveAndReturnToExternalAppValidate = () => {
+        if(currentSchemaId === -1 || currentSchemaChangedAndNotSaved) {
+            setModalsBeforeReturnToExternalAppVisible(true);
+        }
+        else {
+            saveAndReturnToExternalApp();
+        }
+    }
+
+    const saveAndReturnToExternalApp = () => {
+        const outputJsonMatchedRows = createExportJSON();
+        const matchingRequestObject = {
+            id: apiRequestId,
+            createDateTime: apiRequestCreateDateTime,
+            userId: apiUserId,
+            relationType: matchType
+        }
+
+        sendRequestToExternalApp(apiOutputEndpoint, outputJsonMatchedRows, matchingRequestObject);
+        window.location.href = apiUserRedirectionWebsite;
+    }
+
     return <div className="sheetWrapper" ref={ref}>
         {exportSettingsModalVisible ? <ExportSettingsModal closeModal={() => { setExportSettingsModalVisible(false); }}
                                                            exportOutputSheet={exportOutputSheet}
@@ -258,8 +326,20 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                              setColumns={columnsSettingsModalVisible === 1 ? setOutputSheetColumnsVisibility : setFinalExportColumns}
                                                              header={columnsSettingsModalVisible === 1 ? content.columnVisibility : content.includeInExport} /> : ''}
 
+        {modalsBeforeReturnToExternalAppVisible
+            && currentSchemaId === -1 ? <SchemaNotCreatedModal handleSubmit={saveAndReturnToExternalApp}
+                                                               closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
+
+        {modalsBeforeReturnToExternalAppVisible
+            && currentSchemaChangedAndNotSaved ? <SchemaChangedAndNotSavedModal handleSubmit={saveAndReturnToExternalApp}
+                                                                                closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
+
         <div className="btnExportWrapper center">
-            <button className="btn btn--export"
+            {api ? <button className="btn btn--export"
+                           onClick={saveAndReturnToExternalAppValidate}>
+                    {content.saveAndReturnToExternalApp}
+            </button> : ''}
+            <button className={api ? "btn btn--export btn--export--small" : "btn btn--export"}
                     onClick={exportOutputSheet}>
                 {content.exportOutputSheet}
             </button>

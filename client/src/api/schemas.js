@@ -12,18 +12,18 @@ const getSchemasByUser = () => {
 
 const saveSchema = (name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
                     matchType, matchFunction,
-                    email, teamOwner, dataSheetId, relationSheetId) => {
-    return axios.post(`/schemas/saveSchema`, {
+                    email, userId, teamOwner, dataSheetId, relationSheetId, api) => {
+    return axios.post(`/schemas/saveSchema${api}`, {
         name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
         matchType, matchFunction,
-        email, teamOwner, dataSheetId, relationSheetId
+        email, userId, teamOwner, dataSheetId, relationSheetId
     }, getConfigWithAuthHeader());
 }
 
 const updateSchema = (id, name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
                       matchType, matchFunction,
-                      dataSheetId, relationSheetId) => {
-    return axios.patch(`/schemas/updateSchema`, {
+                      dataSheetId, relationSheetId, api) => {
+    return axios.patch(`/schemas/updateSchema${api}`, {
         id, name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
         matchType, matchFunction,
         dataSheetId, relationSheetId

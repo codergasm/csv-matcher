@@ -52,9 +52,9 @@ export class SchemasService {
 
     async saveSchema(body) {
         const { name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
-            matchType, matchFunction,
+            matchType, matchFunction, userId,
             email, teamOwner, dataSheetId, relationSheetId } = body;
-        const user = await this.usersRepository.findOneBy({email});
+        const user = await this.usersRepository.findOneBy(userId ? {id: userId} : {email});
 
         if(user) {
             try {
@@ -279,7 +279,7 @@ export class SchemasService {
             const dataSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(dataSheet);
             const relationSheetShortcuts = this.convertArrayOfObjectsToRowShortcuts(relationSheet);
 
-            const matchedRows = matchedStringsArray.map((item) => {
+            return matchedStringsArray.map((item) => {
                 const matchDataString = item[0];
                 const matchRelationString = item[1];
                 const dataSheetMatchIndex = dataSheetShortcuts.findIndex((item) =>
@@ -294,24 +294,6 @@ export class SchemasService {
                     return null;
                 }
             }).filter((item) => (item));
-
-            const matchedRowsInRelationSheet = matchedRows.map((item) => (item[1]));
-
-            return relationSheetShortcuts.map((item, relationSheetIndex) => {
-                if(matchedRowsInRelationSheet.includes(relationSheetIndex)) {
-                    const matchedRow = matchedRows.find((item) => (item[1] === relationSheetIndex))
-
-                    if(matchedRow) {
-                        return matchedRow[0];
-                    }
-                    else {
-                        return -1;
-                    }
-                }
-                else {
-                    return -1;
-                }
-            });
         }
         else {
             throw new BadRequestException('Nie znaleziono podanych plików');

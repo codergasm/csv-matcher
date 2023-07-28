@@ -2602,6 +2602,10 @@ input[type=number] {
     height: 100%;
 }
 
+.header__menu--end {
+    justify-content: flex-end;
+}
+
 .header__menu__item {
     color: #313131;
     font-size: 15px;
@@ -2867,4 +2871,13 @@ input[type=number] {
 .modal--export .btn--export {
     min-height: 50px;
     margin: 20px auto 0;
+}
+
+.btn--export--small {
+    font-size: 14px;
+    width: auto;
+    height: 40px;
+    border-radius: 40px;
+    padding: 5px 20px;
+    margin-left: 40px;
 }

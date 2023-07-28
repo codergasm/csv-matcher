@@ -24,10 +24,6 @@ const LoggedUserHeader = () => {
         setDropdownMenuVisible(p => !p);
     }
 
-    const displayInApiMode = (i) => {
-        return i === 0 || i === 2;
-    }
-
     useActionOnEscapePress(closeDropdownMenu);
     useActionOnMouseClick(closeDropdownMenu);
 
@@ -38,15 +34,13 @@ const LoggedUserHeader = () => {
                 RowMatcher.com
             </a>
 
-            <div className="header__menu flex">
-                {content.topMenu.map((item, index) => {
-                    if(!api || displayInApiMode(index)) {
-                        return <HeaderMenuLink key={index}
-                                               href={topMenuLinks[index]}>
-                            {item}
-                        </HeaderMenuLink>
-                    }
-                })}
+            <div className={api ? "header__menu header__menu--end flex" : "header__menu flex"}>
+                {!api ? content.topMenu.map((item, index) => {
+                    return <HeaderMenuLink key={index}
+                                           href={topMenuLinks[index]}>
+                        {item}
+                    </HeaderMenuLink>
+                }) : ''}
 
                 <button className="header__profileImage"
                         onClick={toggleDropdownMenu}>

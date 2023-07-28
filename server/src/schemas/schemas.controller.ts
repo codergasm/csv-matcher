@@ -32,9 +32,19 @@ export class SchemasController {
         return this.schemasService.saveSchema(body);
     }
 
+    @Post('/saveSchemaApi')
+    saveSchemaApi(@Body() body) {
+        return this.schemasService.saveSchema(body);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Patch('/updateSchema')
     updateSchema(@Body() body) {
+        return this.schemasService.updateSchema(body);
+    }
+
+    @Patch('/updateSchemaApi')
+    updateSchemaApi(@Body() body) {
         return this.schemasService.updateSchema(body);
     }
 

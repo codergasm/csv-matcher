@@ -10,14 +10,17 @@ import ButtonCorrelationViewPicker from "./ButtonCorrelationViewPicker";
 import QuickBottomInfo from "./QuickBottomInfo";
 import transposeMatrix from "../helpers/transposeMatrix";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const ViewContext = React.createContext(null);
 
 const CorrelationView = ({user}) => {
     const { content } = useContext(TranslationContext);
+    const { api, apiUserId } = useContext(ApiContext);
     const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
         dataSheetId, relationSheetId, dataSheetName, relationSheetName,
-        dataDelimiter, relationDelimiter } = useContext(AppContext);
+        dataDelimiter, relationDelimiter, currentSchemaChangedAndNotSaved,
+        setCurrentSchemaChangedAndNotSaved } = useContext(AppContext);
 
     let dataSheetWrapper = useRef(null);
     let relationSheetWrapper = useRef(null);
@@ -69,6 +72,14 @@ const CorrelationView = ({user}) => {
     const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
 
     useEffect(() => {
+        console.log(currentSchemaId);
+    }, [currentSchemaId]);
+
+    useEffect(() => {
+        console.log(currentSchemaChangedAndNotSaved);
+    }, [currentSchemaChangedAndNotSaved]);
+
+    useEffect(() => {
         if(numberOfMatches !== -1) {
             setTimeout(() => {
                 setNumberOfMatches(-1);
@@ -77,10 +88,24 @@ const CorrelationView = ({user}) => {
     }, [numberOfMatches]);
 
     useEffect(() => {
+        if(currentSchemaId !== -1) {
+            setCurrentSchemaChangedAndNotSaved(true);
+        }
+
         if(indexesOfCorrelatedRows) {
             setNumberOfMatches(indexesOfCorrelatedRows?.length);
         }
     }, [indexesOfCorrelatedRows]);
+
+    useEffect(() => {
+        if(dataSheet && relationSheet) {
+            setSelectListIndicators(relationSheet.map(() => {
+                return dataSheet.map(() => {
+                    return [0, 0];
+                });
+            }));
+        }
+    }, [dataSheet, relationSheet]);
 
     useEffect(() => {
         // Change matching and columns settings every time currentSchemaId change
@@ -97,10 +122,7 @@ const CorrelationView = ({user}) => {
                 .then((res) => {
                     if(res?.data) {
                         setIndexesOfCorrelatedRows(res.data);
-                        setSchemaCorrelatedRows(res.data.map((item, index) => {
-                            if(index !== -1) return index;
-                            else return null;
-                        }).filter((item) => (item !== null)));
+                        setSchemaCorrelatedRows(res.data);
                     }
                 });
         }
@@ -305,8 +327,6 @@ const CorrelationView = ({user}) => {
 
     const joinTwoSheetsMatchesSystemDuplicatesFormatWithBothCounters = () => {
         let result = [];
-
-        console.log('witam');
 
         for(const pair of indexesOfCorrelatedRows) {
             const dataRowIndex = pair[0];
@@ -586,8 +606,6 @@ const CorrelationView = ({user}) => {
 
     const joinTwoSheetsMatchesSystemCommaOrSumFormatWithoutCounter = (sum = false) => {
         let result = [];
-
-        console.log('hi');
 
         dataSheet.forEach((item, index) => {
             let combined = {...item};
@@ -1315,10 +1333,6 @@ const CorrelationView = ({user}) => {
         return result;
     }
 
-    useEffect(() => {
-        console.log(outputSheet);
-    }, [outputSheet]);
-
     const joinTwoFullSheets = () => {
         let result = [];
 
@@ -1551,7 +1565,7 @@ const CorrelationView = ({user}) => {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
                     false, showInSelectMenuColumnsDataSheet,
-                    dataSheet.length, relationSheet.length, selectListIndicators)
+                    dataSheet.length, relationSheet.length, selectListIndicators, api ? 'api' : '')
                     .then((res) => {
                         if(res?.data) {
                             // Select list for relation sheet
@@ -1633,6 +1647,7 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(indexesOfCorrelatedRows) {
+            console.log(indexesOfCorrelatedRows);
             setMatchSchemaArray(indexesOfCorrelatedRows.map((item) => {
                 return [
                     createRowShortcut(dataSheet[item[0]]),
@@ -1644,9 +1659,10 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(manuallyCorrelatedRows?.length) {
-            setSchemaCorrelatedRows(prevState => (prevState.filter((item) => {
-                return !manuallyCorrelatedRows.includes(item);
-            })));
+            console.log('yup');
+            // setSchemaCorrelatedRows(prevState => (prevState.filter((item) => {
+            //     return !manuallyCorrelatedRows.includes(item);
+            // })));
         }
     }, [manuallyCorrelatedRows]);
 
@@ -1723,7 +1739,7 @@ const CorrelationView = ({user}) => {
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, user.id, matchType)
+            manuallyCorrelatedRows, api ? apiUserId : user.id, matchType, api ? 'api' : '')
             .then((res) => {
                if(res?.data) {
                    const { newIndexesOfCorrelatedRows, newCorrelationMatrix, newSelectListIndicators }

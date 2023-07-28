@@ -5,11 +5,13 @@ import {ViewContext} from "./CorrelationView";
 import {saveSchema, updateSchema} from "../api/schemas";
 import BottomNotification from "./BottomNotification";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const ChooseAndSaveSchema = ({user}) => {
     const { content } = useContext(TranslationContext);
     const { schemas, availableForUserSchemas, currentSchemaId, setCurrentSchemaId, setUpdateSchemas,
-        dataSheetId, relationSheetId } = useContext(AppContext);
+        dataSheetId, relationSheetId, setCurrentSchemaChangedAndNotSaved } = useContext(AppContext);
+    const { api, apiUserId } = useContext(ApiContext);
     const { priorities, matchSchemaArray, showInSelectMenuColumnsDataSheet, showInSelectMenuColumnsRelationSheet,
         outputSheetExportColumns, dataSheetColumnsVisibility,
         relationSheetColumnsVisibility, outputSheetColumnsVisibility, matchType, matchFunction } = useContext(ViewContext);
@@ -52,12 +54,14 @@ const ChooseAndSaveSchema = ({user}) => {
     const createSchemaWrapper = () => {
         saveSchema(name, matchSchemaArray, priorities, getColumnsSettingsObject(),
             matchType, matchFunction,
-            user.email, false, dataSheetId, relationSheetId)
+            api ? null : user.email, api ? apiUserId : null,
+            false, dataSheetId, relationSheetId, api ? 'api' : '')
             .then((res) => {
                 setUpdateSchemas(p => !p);
                 setCurrentSchemaId(res?.data?.id);
                 setNotificationColor('#508345');
                 setNotificationText(content.schemaAdded);
+                setCurrentSchemaChangedAndNotSaved(false);
             })
             .catch(() => {
                 setNotificationText(content.error);
@@ -67,10 +71,12 @@ const ChooseAndSaveSchema = ({user}) => {
 
     const updateSchemaWrapper = () => {
         updateSchema(currentSchemaId, name, matchSchemaArray, priorities,
-            getColumnsSettingsObject(), matchType, matchFunction, dataSheetId, relationSheetId)
+            getColumnsSettingsObject(), matchType, matchFunction,
+            dataSheetId, relationSheetId, api ? 'api' : '')
             .then(() => {
                 setNotificationColor('#508345');
                 setNotificationText(content.schemaUpdated);
+                setCurrentSchemaChangedAndNotSaved(false);
             })
             .catch(() => {
                 setNotificationText(content.error);

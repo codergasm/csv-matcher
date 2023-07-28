@@ -44,8 +44,8 @@ PRZYPISYWANIE PLIKÓW DO SCHEMATÓW DOPASOWANIA
 
 12. currentSchema przechowuje indeks do tablicy schemas dla aktualnego schematu dopasowania, a currentSchemaId -
 id aktualnego schematu dopasowania
-13. schemaCorrelatedRows to tablica indeksów wierszy z relationSheet, które zostały skorelowane na podstawie
-schematu dopasowania
+13. schemaCorrelatedRows to tablica dwuelementowa indeksu z dataSheet oraz indeksu z relationSheet,
+które zostały skorelowane na podstawie schematu dopasowania
 
 RELACJE X DO WIELU
 14. Dla relacji jeden do wielu, wiele do jednego i wiele do wielu correlationMatrix oraz selectList pozostają takie same,

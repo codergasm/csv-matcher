@@ -12,11 +12,7 @@ export class AppController {
     return this.appService.getProgressByJobId(id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('/getSelectList')
-  @UseInterceptors(FilesInterceptor('files'))
-  async getSelectList(@UploadedFiles() files: Array<Express.Multer.File>,
-                      @Body() body) {
+  async getSelectList(body, files) {
     const { jobId, priorities, dataFilePath, relationFilePath, dataDelimiter, relationDelimiter, selectListIndicators,
       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength, relationTestRow } = body;
 
@@ -33,10 +29,21 @@ export class AppController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/correlate')
+  @Post('/getSelectList')
   @UseInterceptors(FilesInterceptor('files'))
-  async correlate(@UploadedFiles() files: Array<Express.Multer.File>,
-                  @Body() body) {
+  async getSelectListNormal(@UploadedFiles() files: Array<Express.Multer.File>,
+                      @Body() body) {
+    return this.getSelectList(body, files);
+  }
+
+  @Post('/getSelectListApi')
+  @UseInterceptors(FilesInterceptor('files'))
+  async getSelectListApi(@UploadedFiles() files: Array<Express.Multer.File>,
+                      @Body() body) {
+    return this.getSelectList(body, files);
+  }
+
+  async correlate(body, files) {
     const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
       dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
@@ -52,5 +59,20 @@ export class AppController {
         prioritiesObject, correlationMatrix, indexesOfCorrelatedRows,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
         manuallyCorrelatedRows, userId, parseInt(matchType), relationTestRowToSend);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/correlate')
+  @UseInterceptors(FilesInterceptor('files'))
+  async correlateNormal(@UploadedFiles() files: Array<Express.Multer.File>,
+                  @Body() body) {
+    return this.correlate(body, files);
+  }
+
+  @Post('/correlateApi')
+  @UseInterceptors(FilesInterceptor('files'))
+  async correlateApi(@UploadedFiles() files: Array<Express.Multer.File>,
+                        @Body() body) {
+    return this.correlate(body, files);
   }
 }

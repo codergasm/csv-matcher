@@ -10,7 +10,6 @@ const getFilesByApiRequest = (id, token) => {
     return axios.get(`/api/getFilesByApiRequest/${id}/${token}`);
 }
 
-
 const getSchemasByUserApiToken = (token) => {
     return axios.get(`/api/getSchemasByUserApiToken/${token}`);
 }
@@ -23,5 +22,12 @@ const getApiRequestById = (id, token) => {
     return axios.get(`/api/getApiRequestById/${id}/${token}`);
 }
 
+const sendRequestToExternalApp = (api, outputJsonMatchedRows, matchingRequestObject) => {
+    return axios.post(api, {
+        outputJsonMatchedRows,
+        matchingRequestObject
+    });
+}
+
 export { apiAuthorization, getFilesByApiRequest, getApiRequestById,
-    getSchemasByUserApiToken, getFilesByUserApiToken }
+    getSchemasByUserApiToken, getFilesByUserApiToken, sendRequestToExternalApp }

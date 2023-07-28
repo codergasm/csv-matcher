@@ -18,7 +18,9 @@ const ApiContext = React.createContext({});
 
 const LoggedUserWrapper = ({page}) => {
     const [api, setApi] = useState(false);
+    const [apiUserId, setApiUserId] = useState(-1);
     const [apiRequestId, setApiRequestId] = useState(0);
+    const [apiRequestCreateDateTime, setApiRequestCreateDateTime] = useState(null);
     const [apiToken, setApiToken] = useState('');
     const [apiOutputEndpoint, setApiOutputEndpoint] = useState('');
     const [apiUserRedirectionWebsite, setApiUserRedirectionWebsite] = useState('');
@@ -55,6 +57,8 @@ const LoggedUserWrapper = ({page}) => {
                             if(res?.data) {
                                 const data = res.data;
 
+                                setApiUserId(data.user_id);
+                                setApiRequestCreateDateTime(data.create_datetime);
                                 setApiOutputEndpoint(data.output_endpoint);
                                 setApiUserRedirectionWebsite(data.user_redirection_website);
                                 setApiRelationType(convertRelationTypeStringToNumber(data.relation_type));
@@ -158,7 +162,8 @@ const LoggedUserWrapper = ({page}) => {
     return render ? <ApiContext.Provider value={{
         api, setApi,
         apiRequestId,
-        apiToken, apiRelationType,
+        apiToken, apiRelationType, apiUserId,
+        apiRequestCreateDateTime,
         apiOutputEndpoint, apiUserRedirectionWebsite
     }}>
         <LoggedUserHeader user={user} />

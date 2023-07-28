@@ -126,10 +126,19 @@ export class AppService {
           }
 
           // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
-          const correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
-                                                                    dataSheet, relationSheet,[], true);
-          const correlationMatrixForDataSheet = this.transposeMatrix(correlationMatrix);
+          let correlationMatrix;
 
+          // TODO: problem jesli nie mamy priorities - sama manualna korelacja
+          if(JSON.parse(priorities)?.length) {
+              correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
+                  dataSheet, relationSheet,[], true);
+          }
+          else {
+              console.log('return');
+            return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
+          }
+
+          const correlationMatrixForDataSheet = this.transposeMatrix(correlationMatrix);
           const selectListIndicatorsForDataSheet = this.transposeMatrix(selectListIndicators);
 
           await this.finishCorrelationJob(jobId, relationSheet.length);

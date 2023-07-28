@@ -9,7 +9,7 @@ const getProgressByJobId = (jobId) => {
 
 const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
                        isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-                       dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) => {
+                       dataSheetLength, relationSheetLength, selectListIndicators, api, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -43,14 +43,14 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
         formData.append('files', relationFile);
     }
 
-    return axios.post('/getSelectList', formData, config);
+    return axios.post(`/getSelectList${api}`, formData, config);
 }
 
 const matching = (jobId, priorities, correlationMatrix,
                   dataFile, relationFile, dataDelimiter, relationDelimiter,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, userId, matchType, relationTestRow = -1) => {
+                  manuallyCorrelatedRows, userId, matchType, api, relationTestRow = -1) => {
 
     const formData = new FormData();
     const config = {
@@ -87,7 +87,7 @@ const matching = (jobId, priorities, correlationMatrix,
         formData.append('files', relationFile);
     }
 
-    return axios.post('/correlate', formData, config);
+    return axios.post(`/correlate${api}`, formData, config);
 }
 
 const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {

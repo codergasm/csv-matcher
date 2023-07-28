@@ -1,5 +1,4 @@
 const pl = {
-    // TODO: last component: TeamFilesTable.js
     // General
     edit: 'Edytuj',
     delete: 'Usuń',
@@ -12,6 +11,8 @@ const pl = {
     accept: 'Akceptuj',
     reject: 'Odrzuć',
     confirm: 'Zatwierdź',
+    next: 'Dalej',
+    close: 'Zamknij',
     error: 'Coś poszło nie tak... Prosimy spróbować później',
 
     // Homepage
@@ -118,6 +119,7 @@ const pl = {
     matchCounterDataSheetName: 'ilość dopasowań ark1 do ark2',
     matchCounterRelationSheetName: 'ilość dopasowań ark2 do ark1',
     showAll: 'zobacz wszystko',
+    saveAndReturnToExternalApp: 'Zapisz i cofnij do nadrzędnej aplikacji',
     rowWithLargerMatchAlert: 'Znaleziono wiersz o większym dopasowaniu, jednak został on już przypisany do innego rekordu',
     deleteAllMatches: 'Usuń wszystkie dopasowania',
     selectListTooltip: ['Skorzystaj z konfiguracji arkusza 2 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 2.', 'Skorzystaj z konfiguracji arkusza 1 i wskaż wartość których kolumn ma się tutaj wyświetlać, aby pomóc Tobie zidentyfikować dane wiersze z danymi z arkusza 1.'],
@@ -166,6 +168,10 @@ const pl = {
     exportBuildSystemOptions: ['Tylko dopasowanych rekordów', 'Wszystkie rekordy z arkusza 1', 'Wszystkie rekordy z arkusz 2'],
     includeColumnWithMatchCounterLabel: 'Dodaj kolumnę wskazującą ilość dopasowań dla danego rekordu',
     columnsToSumLabel: 'Wskaż kolumny, które należy sumować',
+    apiModeSchemaNotCreatedAlert: 'Pamiętaj, że możesz stworzyć schemat i następnym razem skorelować dane szybciej',
+    apiModeAlertDismissButton: 'Zapisz mimo to',
+    apiModeSchemaNotSavedAlert: 'Schemat nie został zaktualizowany, zaktualizować go również? Jeśli nie, to wynik prac zostanie zachowany, ale już ustawienia widoczności i parametry auto dopasowania - nie',
+    dataSendToExternalAppDone: 'Dane zostały wysłane do nadrzędnej aplikacji',
 
     // Team page
     yourTeam: 'Twój zespół',

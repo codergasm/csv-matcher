@@ -30,6 +30,7 @@ const CorrelationPage = ({user}) => {
     const [schemas, setSchemas] = useState([]);
     const [availableForUserSchemas, setAvailableForUserSchemas] = useState([]);
     const [currentSchemaId, setCurrentSchemaId] = useState(-1);
+    const [currentSchemaChangedAndNotSaved, setCurrentSchemaChangedAndNotSaved] = useState(false);
     const [updateSchemas, setUpdateSchemas] = useState(false);
     const [dataSheetId, setDataSheetId] = useState(0);
     const [relationSheetId, setRelationSheetId] = useState(0);
@@ -166,7 +167,8 @@ const CorrelationPage = ({user}) => {
         dataFileOwnerUserId, setDataFileOwnerUserId, relationFileOwnerUserId, setRelationFileOwnerUserId,
         dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId,
         isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber,
-        isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber
+        isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber,
+        currentSchemaChangedAndNotSaved, setCurrentSchemaChangedAndNotSaved
     }}>
         {mainComponent}
     </AppContext.Provider>
