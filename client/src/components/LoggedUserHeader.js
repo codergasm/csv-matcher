@@ -5,11 +5,13 @@ import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import useActionOnMouseClick from "../hooks/useActionOnMouseClick";
 import HeaderMenuLink from "./HeaderMenuLink";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const topMenuLinks = ['/home', '/pliki', '/schematy-dopasowania', '/edytor-dopasowania', '/zespol'];
 
 const LoggedUserHeader = () => {
     const { content } = useContext(TranslationContext);
+    const { api } = useContext(ApiContext);
 
     const [dropdownMenuVisible, setDropdownMenuVisible] = useState(false);
 
@@ -20,6 +22,10 @@ const LoggedUserHeader = () => {
     const toggleDropdownMenu = (e) => {
         e.stopPropagation();
         setDropdownMenuVisible(p => !p);
+    }
+
+    const displayInApiMode = (i) => {
+        return i === 0 || i === 2;
     }
 
     useActionOnEscapePress(closeDropdownMenu);
@@ -34,10 +40,12 @@ const LoggedUserHeader = () => {
 
             <div className="header__menu flex">
                 {content.topMenu.map((item, index) => {
-                    return <HeaderMenuLink key={index}
-                                           href={topMenuLinks[index]}>
-                        {item}
-                    </HeaderMenuLink>
+                    if(!api || displayInApiMode(index)) {
+                        return <HeaderMenuLink key={index}
+                                               href={topMenuLinks[index]}>
+                            {item}
+                        </HeaderMenuLink>
+                    }
                 })}
 
                 <button className="header__profileImage"
@@ -45,7 +53,7 @@ const LoggedUserHeader = () => {
                     <img className="img" src={placeholderProfileImage} alt="profilowe" />
                 </button>
 
-                <PageHeaderDropdownMenu visible={dropdownMenuVisible} />
+                {!api ? <PageHeaderDropdownMenu visible={dropdownMenuVisible} /> : ''}
             </div>
         </div>
     </header>

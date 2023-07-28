@@ -2,15 +2,23 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import Select from "react-select";
 import {ViewContext} from "./CorrelationView";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const MatchTypeSelect = () => {
     const { content } = useContext(TranslationContext);
+    const { apiRelationType } = useContext(ApiContext);
     const { matchType, setMatchType } = useContext(ViewContext);
 
     const [options, setOptions] = useState([]);
 
     let selectRef = useRef(null);
     let selectLabel = useRef(null);
+
+    useEffect(() => {
+        if(apiRelationType !== -1) {
+            setMatchType(apiRelationType);
+        }
+    }, [apiRelationType]);
 
     useEffect(() => {
         if(content) {
@@ -48,6 +56,7 @@ const MatchTypeSelect = () => {
                 placeholder={content.relationTypePlaceholder}
                 value={options[matchType]}
                 onChange={handleChoose}
+                isDisabled={apiRelationType !== -1}
                 isSearchable={true} />
     </div>
 };

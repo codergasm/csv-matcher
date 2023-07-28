@@ -21,6 +21,11 @@ export class SchemasController {
         return this.schemasService.getSchemasByUser(email);
     }
 
+    @Get('/getSchemasByUserId/:id')
+    getSchemasByUserId(@Param('id') id) {
+        return this.schemasService.getSchemasByUserId(id);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Post('/saveSchema')
     saveSchema(@Body() body) {

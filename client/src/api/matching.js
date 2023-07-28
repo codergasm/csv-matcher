@@ -94,4 +94,5 @@ const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {
     return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`, getConfigWithAuthHeader());
 }
 
-export { getSelectList, matching, getProgressByJobId, correlateUsingSchema }
+export { getSelectList, matching, getProgressByJobId,
+    correlateUsingSchema }

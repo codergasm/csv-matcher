@@ -8,14 +8,16 @@ import {
 } from "../entities/files_api_matching_requests_registry_relation.entity";
 import {UsersEntity} from "../entities/users.entity";
 import {FilesEntity} from "../entities/files.entity";
+import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 
 @Module({
   imports: [
       TypeOrmModule.forFeature([
         ApiMatchingRequestsRegistryEntity,
         FilesApiMatchingRequestsRegistryRelationEntity,
-          UsersEntity,
-          FilesEntity
+        UsersEntity,
+        FilesEntity,
+        MatchSchemasEntity
       ])
   ],
   controllers: [ApiController],

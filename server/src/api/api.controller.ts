@@ -1,4 +1,4 @@
-import {Body, Controller, Post, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import {ApiService} from "./api.service";
 import {AuthGuard} from "@nestjs/passport";
 
@@ -26,5 +26,32 @@ export class ApiController {
 
         return this.apiService.matching(username, password, sheet1, sheet2,
             outputEndpoint, userRedirectionWebsite, relationType);
+    }
+
+    @Post('/auth')
+    auth(@Body() body) {
+        const { id, token } = body;
+
+        return this.apiService.apiAuthorization(id, token);
+    }
+
+    @Get('/getApiRequestById/:id/:token')
+    getApiRequestById(@Param('id') id, @Param('token') token) {
+        return this.apiService.getApiRequestById(id, token);
+    }
+
+    @Get('/getFilesByApiRequest/:id/:token')
+    getFilesByApiRequest(@Param('id') id, @Param('token') token) {
+        return this.apiService.getFilesByApiRequest(id, token);
+    }
+
+    @Get('/getFilesByUserApiToken/:token')
+    getFilesByUserApiToken(@Param('token') token) {
+        return this.apiService.getFilesByUserApiToken(token);
+    }
+
+    @Get('/getSchemasByUserApiToken/:token')
+    getSchemasByUserApiToken(@Param('token') token) {
+        return this.apiService.getSchemasByUserApiToken(token);
     }
 }

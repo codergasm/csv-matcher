@@ -29,6 +29,10 @@ const getFilesByUser = () => {
     return axios.get(`/files/getFilesByUser/${getLoggedUserEmail()}`, getConfigWithAuthHeader());
 }
 
+const getFilesByUserId = (id) => {
+    return axios.get(`/files/getFilesByUserId/${id}`);
+}
+
 const assignFileOwnershipToTeam = (fileId, teamId) => {
     return axios.patch(`/files/assignFileOwnershipToTeam`, {
         fileId, teamId
@@ -59,4 +63,4 @@ const updateSheet = (file, teamId, id, name) => {
 }
 
 export { saveSheet, deleteSheet, getFilesByUser, getFileById,
-    assignFileOwnershipToTeam, updateSheet }
+    assignFileOwnershipToTeam, updateSheet, getFilesByUserId }

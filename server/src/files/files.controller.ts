@@ -43,6 +43,11 @@ export class FilesController {
         return this.filesService.getFilesByUser(email);
     }
 
+    @Get('/getFilesByUserId/:id')
+    async getFilesByUserId(@Param('id') id) {
+        return this.filesService.getFilesByUserId(id);
+    }
+
     @Patch('/assignFileOwnershipToTeam')
     async assignFileOwnershipToTeam(@Body() body) {
         const { fileId, teamId } = body;

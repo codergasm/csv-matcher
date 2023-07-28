@@ -1,12 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import LoadFilesView from "../components/LoadFilesView";
 import CorrelationView from "../components/CorrelationView";
 import {getSchemasByUser} from "../api/schemas";
 import {getFileById} from "../api/files";
+import getUrlParam from "../helpers/getUrlParam";
+import {ApiContext} from "../components/LoggedUserWrapper";
+import {getFilesByApiRequest, getSchemasByUserApiToken} from "../api/api";
+import redirectToHomepage from "../helpers/redirectToHomepage";
 
 const AppContext = React.createContext(null);
 
 const CorrelationPage = ({user}) => {
+    const { api, apiRequestId, apiToken } = useContext(ApiContext);
+
     const [currentView, setCurrentView] = useState(0);
     const [mainComponent, setMainComponent] = useState(<LoadFilesView />);
     const [dataSheet, setDataSheet] = useState({});
@@ -33,10 +39,9 @@ const CorrelationPage = ({user}) => {
     const [isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber] = useState([]);
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const sheet1 = params.get('sheet1');
-        const sheet2 = params.get('sheet2');
-        const schema = params.get('schema');
+        const sheet1 = getUrlParam('sheet1');
+        const sheet2 = getUrlParam('sheet2');
+        const schema = getUrlParam('schema');
 
         const sheet1Id = parseInt(sheet1);
         const sheet2Id = parseInt(sheet2);
@@ -54,30 +59,45 @@ const CorrelationPage = ({user}) => {
     }, []);
 
     useEffect(() => {
-        getSchemasByUser()
-            .then((res) => {
-                if(res?.data) {
-                    const allSchemas = res.data.map((item) => {
-                        return {
-                            value: item.schemas_id,
-                            label: item.schemas_name
-                        }
-                    });
+        if(api && apiRequestId && apiToken) {
+            getFilesByApiRequest(apiRequestId, apiToken)
+                .then((res) => {
+                    if(res?.data?.length > 1) {
+                        const dataFileRow = res.data[0];
+                        const relationFileRow = res.data[1];
 
-                    setSchemas(allSchemas);
-
-                    if(user.canEditTeamMatchSchemas) {
-                        setAvailableForUserSchemas(allSchemas);
+                        setDataSheetId(dataFileRow.id);
+                        setRelationSheetId(relationFileRow.id);
+                        setDataSheetName(dataFileRow.filename);
+                        setRelationSheetName(relationFileRow.filename);
                     }
                     else {
-                        setAvailableForUserSchemas(res.data.filter((item) => {
-                            return item.schemas_owner_user_id;
-                        }).map((item) => {
-                            return item.schemas_id;
-                        }));
+                        redirectToHomepage();
                     }
-                }
-            });
+                })
+        }
+    }, [api, apiRequestId, apiToken]);
+
+    useEffect(() => {
+        if(apiToken && dataSheetId && user) {
+            getSchemasByUserApiToken(apiToken)
+                .then((res) => {
+                    if(res?.data) {
+                        setUserSchemas(res.data);
+                    }
+                });
+        }
+    }, [apiToken, user, dataSheetId]);
+
+    useEffect(() => {
+        if(user) {
+            getSchemasByUser()
+                .then((res) => {
+                    if(res?.data) {
+                        setUserSchemas(res.data);
+                    }
+                });
+        }
     }, [updateSchemas, user]);
 
     useEffect(() => {
@@ -94,6 +114,28 @@ const CorrelationPage = ({user}) => {
             }
         }
     }, [currentView, user]);
+
+    const setUserSchemas = (data) => {
+        const allSchemas = data.map((item) => {
+            return {
+                value: item.schemas_id,
+                label: item.schemas_name
+            }
+        });
+
+        setSchemas(allSchemas);
+
+        if(user.canEditTeamMatchSchemas) {
+            setAvailableForUserSchemas(allSchemas);
+        }
+        else {
+            setAvailableForUserSchemas(data.filter((item) => {
+                return item.schemas_owner_user_id;
+            }).map((item) => {
+                return item.schemas_id;
+            }));
+        }
+    }
 
     const setFilenames = (sheet1Id, sheet2Id) => {
         getFileById(sheet1Id)

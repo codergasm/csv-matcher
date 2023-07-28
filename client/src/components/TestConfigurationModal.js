@@ -190,6 +190,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
             </div>}
 
             <button className="btn btn--startAutoMatch btn--startAutoMatchTest"
+                    disabled={!priorities?.length}
                     onClick={startTestCorrelation}>
                 {content.runTestMatchingButton}
             </button>

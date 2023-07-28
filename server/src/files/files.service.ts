@@ -83,7 +83,15 @@ export class FilesService {
 
     async getFilesByUser(email) {
         const user = await this.usersRepository.findOneBy({email});
+        return this.getUserFiles(user);
+    }
 
+    async getFilesByUserId(id) {
+        const user = await this.usersRepository.findOneBy({id});
+        return this.getUserFiles(user);
+    }
+
+    async getUserFiles(user) {
         if(user) {
             return this.filesRepository.find({
                 where: [

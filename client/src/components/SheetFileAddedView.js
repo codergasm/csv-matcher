@@ -1,17 +1,19 @@
 import React, {useContext} from 'react';
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const SheetFileAddedView = ({removeFile}) => {
     const { content } = useContext(TranslationContext);
+    const { api } = useContext(ApiContext);
 
     return <>
         <p className="sheetLoaded__text">
             {content.fileAdded}
         </p>
-        <button className="btn btn--remove"
-                onClick={removeFile}>
+        {!api ? <button className="btn btn--remove"
+                        onClick={removeFile}>
             {content.delete}
-        </button>
+        </button> : ''}
     </>
 };
 

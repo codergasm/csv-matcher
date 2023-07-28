@@ -4,12 +4,6 @@ const moveFileToTeamDirectoryByName = async (path, teamId) => {
     const filename = path.split('/').slice(-1).join('/');
     const destination = path.replace(filename, '');
 
-    console.log(teamId);
-
-    console.log(path);
-    console.log(destination);
-    console.log(filename);
-
     try {
         await fs.promises.mkdir(`${path}/${teamId}`, {
             recursive: true
@@ -20,15 +14,10 @@ const moveFileToTeamDirectoryByName = async (path, teamId) => {
         return `${path}/${teamId}/${filename}`;
     }
     catch(e) {
-        console.log('directory exists');
-        console.log(e);
         // If directory already exists
         try {
-            const res = await fs.promises.rename(path, `${destination}${teamId}/${filename}`);
-            console.log('success');
-            console.log(path);
-            console.log(`${destination}${teamId}/${filename}`);
-            console.log(res);
+            await fs.promises.rename(path, `${destination}${teamId}/${filename}`);
+            return `${destination}${teamId}/${filename}`;
         } catch(e) {
             console.log(e);
         }

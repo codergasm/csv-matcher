@@ -9,9 +9,12 @@ import FilePicker from "./FilePicker";
 import Row from "./Row";
 import convertResponseToObject from "../helpers/convertResponseToObject";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
+import {getFilesByUserApiToken} from "../api/api";
 
 const LoadFilesView = ({user}) => {
     const { content } = useContext(TranslationContext);
+    const { apiToken } = useContext(ApiContext);
     const { setCurrentView, dataSheet, setDataSheet, dataFile, relationFile,
         setDataFile, setRelationFile, setDataDelimiter, setRelationDelimiter,
         relationSheet, setRelationSheet, dataSheetId, setDataSheetId,
@@ -33,19 +36,35 @@ const LoadFilesView = ({user}) => {
     let selectDataSheetRef = useRef(null);
 
     useEffect(() => {
-        getFilesByUser()
-            .then((res) => {
-               if(res?.data) {
-                   setFiles(res.data);
-                   setFilesToChoose(res.data.map((item) => {
-                       return {
-                           value: item.id,
-                           label: item.filename
-                       }
-                   }));
-               }
-            });
-    }, []);
+        if(!apiToken) {
+            getFilesByUser()
+                .then((res) => {
+                    if(res?.data) {
+                        setFiles(res.data);
+                        setFilesToChoose(res.data.map((item) => {
+                            return {
+                                value: item.id,
+                                label: item.filename
+                            }
+                        }));
+                    }
+                });
+        }
+        else {
+            getFilesByUserApiToken(apiToken)
+                .then((res) => {
+                    if(res?.data) {
+                        setFiles(res.data);
+                        setFilesToChoose(res.data.map((item) => {
+                            return {
+                                value: item.id,
+                                label: item.filename
+                            }
+                        }));
+                    }
+                });
+        }
+    }, [apiToken, user]);
 
     useEffect(() => {
         if(relationSheet?.length) {

@@ -3,10 +3,12 @@ import Select from "react-select";
 import Loader from "./Loader";
 import SheetFileAddedView from "./SheetFileAddedView";
 import {TranslationContext} from "../App";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
                         setSheetId, setSheet, handleChoose, handleChange, assignToTeam, setAssignToTeam}) => {
     const { content } = useContext(TranslationContext);
+    const { api } = useContext(ApiContext);
 
     const toggleAssignOwnershipToTeam = () => {
         setAssignToTeam(p => !p);
@@ -26,14 +28,14 @@ const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
         <span>
             {label}
         </span>
-        <div className="loadFiles__choose">
+        {!api ? <div className="loadFiles__choose">
             <Select ref={selectRef}
                     options={options}
                     placeholder={content.chooseSheetPlaceholder}
                     value={options.find((item) => (item.value === sheetId))}
                     onChange={handleChoose}
                     isSearchable={true} />
-        </div>
+        </div> : ''}
 
         {isSheetAdded() ? <div className="sheetLoaded">
             {sheetLoading ? <div className="center">
@@ -49,13 +51,13 @@ const FilePicker = ({label, selectRef, options, sheet, sheetId, sheetLoading,
                        onChange={handleChange} />
             </div>}
 
-        <label className="label label--ownership">
+        {!api ? <label className="label label--ownership">
             <button className={assignToTeam ? "btn btn--check btn--check--selected" : "btn btn--check"}
                     onClick={toggleAssignOwnershipToTeam}>
 
             </button>
             {content.makeTeamFileOwner}
-        </label>
+        </label> : ''}
     </div>
 };
 

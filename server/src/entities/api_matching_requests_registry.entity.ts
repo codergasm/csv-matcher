@@ -19,4 +19,7 @@ export class ApiMatchingRequestsRegistryEntity {
 
     @Column()
     relation_type: string;
+
+    @Column()
+    token: string;
 }

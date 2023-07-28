@@ -8,10 +8,12 @@ import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import {TranslationContext} from "../App";
 import CloseModalButton from "./CloseModalButton";
+import {ApiContext} from "./LoggedUserWrapper";
 
 const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, columnsVisibility, user}) => {
     const { content } = useContext(TranslationContext);
     const { relationSheet } = useContext(AppContext);
+    const { apiRelationType } = useContext(ApiContext);
     const { priorities, setPriorities, matchType, setMatchType, progressCount,
         correlate, correlationStatus, overrideAllRows, setOverrideAllRows,
         avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows } = useContext(ViewContext);
@@ -258,7 +260,7 @@ const AutoMatchModal = ({dataSheetColumns, relationSheetColumns, closeModal, col
                 </div>
 
                 {content?.relationTypes?.map((item, index) => {
-                    return <label className="modal__label"
+                    return <label className={apiRelationType !== -1 ? "modal__label modal__label--disabled" : "modal__label"}
                                   key={index}>
                         <button className={matchType === index ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                 onClick={() => { setMatchType(index); }}>

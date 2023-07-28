@@ -28,7 +28,15 @@ export class SchemasService {
 
     async getSchemasByUser(email) {
         const user = await this.usersRepository.findOneBy({email});
+        return this.getSchemas(user);
+    }
 
+    async getSchemasByUserId(id) {
+        const user = await this.usersRepository.findOneBy({id});
+        return this.getSchemas(user);
+    }
+
+    async getSchemas(user) {
         if(user) {
             return this.schemasRepository
                 .createQueryBuilder('schemas')

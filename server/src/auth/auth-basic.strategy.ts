@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import {InjectRepository} from "@nestjs/typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import {Repository} from "typeorm";
-import * as crypto from 'crypto'
 import createPasswordHash from "../common/createPasswordHash";
 
 @Injectable()

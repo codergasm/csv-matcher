@@ -10,12 +10,80 @@ import FilesPage from "../pages/FilesPage";
 import SchemasPage from "../pages/SchemasPage";
 import redirectToHomepage from "../helpers/redirectToHomepage";
 import FileViewPage from "../pages/FileViewPage";
+import getUrlParam from "../helpers/getUrlParam";
+import {apiAuthorization, getApiRequestById} from "../api/api";
+import convertRelationTypeStringToNumber from "../helpers/convertRelationTypeStringToNumber";
+
+const ApiContext = React.createContext({});
 
 const LoggedUserWrapper = ({page}) => {
+    const [api, setApi] = useState(false);
+    const [apiRequestId, setApiRequestId] = useState(0);
+    const [apiToken, setApiToken] = useState('');
+    const [apiOutputEndpoint, setApiOutputEndpoint] = useState('');
+    const [apiUserRedirectionWebsite, setApiUserRedirectionWebsite] = useState('');
+    const [apiRelationType, setApiRelationType] = useState(-1);
+
     const [render, setRender] = useState(null);
     const [user, setUser] = useState({});
 
     useEffect(() => {
+        const apiRequestId = getUrlParam('id');
+        const apiRequestToken = getUrlParam('token');
+
+        if(apiRequestId && apiRequestToken) {
+            authApiUser(apiRequestId, apiRequestToken);
+        }
+        else {
+            authNormalUser();
+        }
+    }, [page]);
+
+    const authApiUser = (id, token) => {
+        apiAuthorization(id, token)
+            .then((res) => {
+                if(res?.data) {
+                    setApi(true);
+                    setApiRequestId(parseInt(id));
+                    setApiToken(token);
+
+                    localStorage.setItem('apiRequestId', id);
+                    localStorage.setItem('apiToken', token);
+
+                    getApiRequestById(id, token)
+                        .then((res) => {
+                            if(res?.data) {
+                                const data = res.data;
+
+                                setApiOutputEndpoint(data.output_endpoint);
+                                setApiUserRedirectionWebsite(data.user_redirection_website);
+                                setApiRelationType(convertRelationTypeStringToNumber(data.relation_type));
+
+                                if(page === 3 || page === 4) {
+                                    selectPage(page);
+                                }
+                                else {
+                                    redirectToHomepage();
+                                }
+                            }
+                            else {
+                                authNormalUser();
+                            }
+                        })
+                        .catch(() => {
+                            authNormalUser();
+                        })
+                }
+                else {
+                    authNormalUser();
+                }
+            })
+            .catch(() => {
+                authNormalUser();
+            })
+    }
+
+    const authNormalUser = () => {
         if(page) {
             authUser()
                 .then((res) => {
@@ -39,38 +107,13 @@ const LoggedUserWrapper = ({page}) => {
                                     }
 
                                     setUser(userTmp);
-
-                                    switch(page) {
-                                        case 1:
-                                            setRender(<Homepage />);
-                                            break;
-                                        case 2:
-                                            setRender(<FilesPage user={userTmp} />);
-                                            break;
-                                        case 3:
-                                            setRender(<SchemasPage user={userTmp} />);
-                                            break;
-                                        case 4:
-                                            setRender(<CorrelationPage user={userTmp} />);
-                                            break;
-                                        case 5:
-                                            setRender(<TeamPage user={userTmp} />);
-                                            break;
-                                        case 6:
-                                            setRender(<ChangePassword />);
-                                            break;
-                                        case 7:
-                                            setRender(<FileViewPage />);
-                                            break;
-                                        default:
-                                            redirectToHomepage();
-                                    }
+                                    selectPage(userTmp);
                                 }
                                 else {
                                     redirectToHomepage();
                                 }
                             })
-                            .catch((err) => {
+                            .catch(() => {
                                 redirectToHomepage();
                             });
                     }
@@ -78,16 +121,50 @@ const LoggedUserWrapper = ({page}) => {
                         redirectToHomepage();
                     }
                 })
-                .catch((err) => {
+                .catch(() => {
                     redirectToHomepage();
                 });
         }
-    }, [page]);
+    }
 
-    return render ? <>
+    const selectPage = (userTmp) => {
+        switch(page) {
+            case 1:
+                setRender(<Homepage />);
+                break;
+            case 2:
+                setRender(<FilesPage user={userTmp} />);
+                break;
+            case 3:
+                setRender(<SchemasPage user={userTmp} />);
+                break;
+            case 4:
+                setRender(<CorrelationPage user={userTmp} />);
+                break;
+            case 5:
+                setRender(<TeamPage user={userTmp} />);
+                break;
+            case 6:
+                setRender(<ChangePassword />);
+                break;
+            case 7:
+                setRender(<FileViewPage />);
+                break;
+            default:
+                redirectToHomepage();
+        }
+    }
+
+    return render ? <ApiContext.Provider value={{
+        api, setApi,
+        apiRequestId,
+        apiToken, apiRelationType,
+        apiOutputEndpoint, apiUserRedirectionWebsite
+    }}>
         <LoggedUserHeader user={user} />
         {render}
-    </> : <LoadingPage />
-};
+    </ApiContext.Provider> : <LoadingPage />
+}
 
 export default LoggedUserWrapper;
+export { ApiContext };
