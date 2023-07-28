@@ -134,7 +134,6 @@ export class AppService {
                   dataSheet, relationSheet,[], true);
           }
           else {
-              console.log('return');
             return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
           }
 
@@ -178,7 +177,6 @@ export class AppService {
               }
           }
           catch(e) {
-              console.log(e);
               throw new HttpException(e, 500);
           }
       }

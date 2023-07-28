@@ -1344,7 +1344,7 @@ input[type=number] {
     font-size: 10px;
     position: relative;
     top: 50%;
-    margin-right: 5px;
+    margin-right: 15px;
     transform: translateY(-50%);
     opacity: .5;
     transition: .2s all;
@@ -2880,4 +2880,19 @@ input[type=number] {
     border-radius: 40px;
     padding: 5px 20px;
     margin-left: 40px;
+}
+
+.btn--removeCorrelation {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    font-size: 14px;
+    background: red;
+}
+
+.btn--removeCorrelation:hover {
+    background: red;
+    opacity: .75;
 }

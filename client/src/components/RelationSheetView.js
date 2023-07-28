@@ -40,7 +40,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const { content } = useContext(TranslationContext);
     const { currentSchemaId } = useContext(AppContext);
     const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
-        addManualCorrelation, indexesOfCorrelatedRows, matchType } = useContext(ViewContext);
+        addManualCorrelation, setIndexesOfCorrelatedRows, indexesOfCorrelatedRows, matchType } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
     const [currentSheetSorted, setCurrentSheetSorted] = useState([]);
@@ -76,9 +76,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
 
     useEffect(() => {
-        if(indexesOfCorrelatedRows?.length) {
-            setIndexesOfCorrelatedRowsLevels(getLevelsOfRelationColumn(indexesOfCorrelatedRows, sheetIndex));
-        }
+        setIndexesOfCorrelatedRowsLevels(getLevelsOfRelationColumn(indexesOfCorrelatedRows, sheetIndex));
     }, [indexesOfCorrelatedRows]);
 
     useEffect(() => {
@@ -352,6 +350,14 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             else {
                 return [...prevState, relationRowIndex];
             }
+        });
+    }
+
+    const removeCorrelation = (dataRowIndex, relationRowIndex) => {
+        setIndexesOfCorrelatedRows((prevState) => {
+            return prevState.filter((item) => {
+                return item[0] !== dataRowIndex || item[1] !== relationRowIndex;
+            });
         });
     }
 
@@ -804,6 +810,11 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     Aa
                                 </button>
                             </Tooltip>
+
+                            {correlatedRow ? <button className="btn btn--removeCorrelation"
+                                                     onClick={() => { removeCorrelation(correlatedRow.dataRowIndex, correlatedRow.relationRowIndex); }}>
+                                &times;
+                            </button> : ''}
                         </> : ''}
 
                         {/* Dropdown menu */}

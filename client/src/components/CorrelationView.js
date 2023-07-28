@@ -72,14 +72,6 @@ const CorrelationView = ({user}) => {
     const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
 
     useEffect(() => {
-        console.log(currentSchemaId);
-    }, [currentSchemaId]);
-
-    useEffect(() => {
-        console.log(currentSchemaChangedAndNotSaved);
-    }, [currentSchemaChangedAndNotSaved]);
-
-    useEffect(() => {
         if(numberOfMatches !== -1) {
             setTimeout(() => {
                 setNumberOfMatches(-1);
@@ -1647,7 +1639,6 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(indexesOfCorrelatedRows) {
-            console.log(indexesOfCorrelatedRows);
             setMatchSchemaArray(indexesOfCorrelatedRows.map((item) => {
                 return [
                     createRowShortcut(dataSheet[item[0]]),
@@ -1659,7 +1650,6 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(manuallyCorrelatedRows?.length) {
-            console.log('yup');
             // setSchemaCorrelatedRows(prevState => (prevState.filter((item) => {
             //     return !manuallyCorrelatedRows.includes(item);
             // })));
