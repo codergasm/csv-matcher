@@ -152,6 +152,7 @@
 .correlation__viewPicker {
     width: 80%;
     margin: 0 auto 30px;
+    align-items: flex-end;
 }
 
 .btn--correlationViewPicker {
@@ -183,6 +184,18 @@
     font-weight: 700;
 }
 
+.sheetInner {
+    width: 90%;
+    margin: 20px auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.sheetInner__left {
+    width: 10%;
+}
+
 .sheet {
     position: relative;
     width: 90%;
@@ -190,6 +203,10 @@
     margin: 20px auto;
     overflow: scroll;
     border: 1px solid var(--primary);
+}
+
+.sheetInner > .sheet {
+    margin: 0;
 }
 
 .sheet__table {
@@ -272,19 +289,11 @@ div.check__cell {
 }
 
 .sheet__header__cell--relation {
-    transform: translateY(-100px);
-}
-
-.sheet__header__cell--relation::after {
-    content: "";
-    background: var(--primary);
-    position: absolute;
-    bottom: -60px;
-    left: -1px;
-    width: 101%;
-    height: 42px;
-    transform: translateY(100%);
-    z-index: 100;
+    position: sticky !important;
+    top: 250px !important;
+    height: 250px !important;
+    transform: translateY(-250px) !important;
+    left: calc(100% - 400px) !important;
 }
 
 .line > .sheet__header__cell {
@@ -390,7 +399,7 @@ div.check__cell:first-of-type {
 }
 
 .sheet__table__info {
-    height: 40px;
+    height: 70px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -398,7 +407,7 @@ div.check__cell:first-of-type {
     position: relative;
 }
 
-.sheet__table__info:first-of-type {
+.sheet__table__info {
     border-bottom: 1px solid var(--primary);
 }
 
@@ -429,6 +438,10 @@ div.check__cell:first-of-type {
     border-radius: 3px;
 }
 
+.cell--legend {
+    font-size: 12px;
+}
+
 table .cell--legend {
     text-align: left;
     font-weight: 700;
@@ -436,20 +449,19 @@ table .cell--legend {
 
 .btn--selectAll {
     background: transparent;
-    color: var(--primary);
-    font-weight: 500;
-    font-size: 14px;
+    width: 20px;
+    height: auto;
     margin: 0 15px;
     display: inline-block;
+}
+
+.btn--selectAll > img {
+    width: 100%;
 }
 
 .btn--selectAll:hover {
     background: transparent;
     text-decoration: underline;
-}
-
-.btn--selectAll:first-of-type {
-    margin-left: 30px;
 }
 
 .scroll {
@@ -970,14 +982,14 @@ option {
     justify-content: center;
     align-items: center;
     position: absolute;
-    top: 150%;
+    top: 33%;
     transform: translate(-50%, -50%);
     left: 50%;
 }
 
 .sheet__header__cell--relation {
     overflow: visible !important;
-    z-index: 11;
+    z-index: 1002;
 }
 
 .btn--notVisible {
@@ -1127,7 +1139,7 @@ option {
     background: transparent;
     text-decoration: underline;
     position: absolute;
-    top: -12px;
+    top: 60px;
     left: 10px;
     font-size: 11px;
     color: #fff;
@@ -2895,4 +2907,33 @@ input[type=number] {
 .btn--removeCorrelation:hover {
     background: red;
     opacity: .75;
+}
+
+.cell--legend {
+    width: 100%;
+    text-align: center;
+}
+
+.cell--legend > .center {
+    padding-top: 6px;
+}
+
+.line--columnsToCheck > .check__cell,
+.line--columnsToCheck {
+    height: 70px !important;
+}
+
+.line--columnsToCheck {
+    position: relative;
+}
+
+.sheet__stickyRows {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+}
+
+.sheetInner .line--tableRow:nth-of-type(3) {
+    margin-top: -250px;
 }

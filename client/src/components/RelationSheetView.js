@@ -29,6 +29,11 @@ import useCloseDropdownSelectMenu from "../hooks/useCloseDropdownSelectMenu";
 import getLevelsOfRelationColumn from "../helpers/getLevelsOfRelationColumn";
 import RelationColumnSelect from "./RelationColumnSelect";
 import {TranslationContext} from "../App";
+import checkAllIcon from '../static/img/select-all.svg';
+import uncheckAllIcon from '../static/img/unselect-all.svg';
+import configureInWindowIcon from '../static/img/configure-in-window.svg';
+import formatCellsIcon from '../static/img/format-cells.svg';
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsSecondSheet,
@@ -496,6 +501,21 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }
 
+    const noColumnsInSelectMenu = () => {
+        return showInSelectMenuColumnsCurrentSheet.findIndex((item) => (!item)) !== -1;
+    }
+
+    const notAllColumnsInOutputSheet = () => {
+        return outputSheetExportColumns.filter((_, i) => {
+            if(sheetIndex === 0) {
+                return i <= secondSheetColumnsNames.length;
+            }
+            else {
+                return i > secondSheetColumnsNames.length;
+            }
+        }).findIndex((item) => (!item)) !== -1;
+    }
+
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
@@ -541,249 +561,261 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             </span>
         </span> : ''}
 
-        {selectList?.length && !selectListLoading ? <div className="sheet scroll"
-                                                         onScroll={checkScrollToBottom}>
+        {selectList?.length && !selectListLoading ? <div className="sheetInner">
+            {/* LEFT SIDEBAR WITH BUTTONS */}
+            <div className="sheetInner__left">
+                <div className="sheet__table__info sheet__table__info--data1">
+                    <div className="cell--legend">
+                        {content.visibility}
 
-            {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
-                                                                       addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}
-                                                                       selectOption={currentRelationColumnVisible}
-                                                                       setSelectOption={setCurrentRelationColumnVisible} /> : ''}
+                        <div className="center">
+                            <IconButtonWithTooltip title={content.configureInWindow}
+                                                   onClick={() => { setColumnsSettingsModalVisible(3); }}
+                                                   img={configureInWindowIcon} />
 
-            <div className="sheet__table__info sheet__table__info--data1">
-                <div className="cell--legend">
-                    {content.visibility}
-
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(3); }}>
-                        {content.configureInWindow}
-                    </ButtonSimple>
-                    <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
-                        {content.formatCellsVisibility}
-                    </ButtonSimple>
-                </div>
-            </div>
-
-            <div className="sheet__table__info sheet__table__info--data1">
-                <div className="cell--legend">
-                    {content.showInSelectMenu}
-
-                    {showInSelectMenuColumnsCurrentSheet.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                                        onClick={() => { handleSelectMenuColumnsChange(-1); }}>
-                        {content.checkAll}
-                    </button> : <button className="btn btn--selectAll"
-                                        onClick={() => { handleSelectMenuColumnsChange(-2); }}>
-                        {content.uncheckAll}
-                    </button>}
-
-                    <button className="btn btn--selectAll"
-                            onClick={() => { setColumnsSettingsModalVisible(1); }}>
-                        {content.configureInWindow}
-                    </button>
-                </div>
-            </div>
-
-            <div className="line line--noFlex">
-                {showInSelectMenuColumnsCurrentSheet.map((item, index) => {
-                    if(currentSheetColumnsVisibility[index]) {
-                        return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
-                                    style={columnWithMinWidth()}
-                                    key={index}>
-                            <button className={showInSelectMenuColumnsCurrentSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                    onClick={() => { handleSelectMenuColumnsChange(index); }}>
-
-                            </button>
+                            <IconButtonWithTooltip title={content.formatCellsVisibility}
+                                                   onClick={() => { setCellsFormatModalVisible(true); }}
+                                                   img={formatCellsIcon} />
                         </div>
-                    }
-                    else {
-                        return '';
-                    }
-                })}
+                    </div>
+                </div>
+
+                <div className="sheet__table__info sheet__table__info--data1">
+                    <div className="cell--legend">
+                        {content.showInSelectMenu}
+
+                        <div className="center">
+                            {noColumnsInSelectMenu() ? <IconButtonWithTooltip title={content.checkAll}
+                                                                              onClick={() => { handleSelectMenuColumnsChange(-1); }}
+                                                                              img={checkAllIcon} /> : <IconButtonWithTooltip title={content.uncheckAll}
+                                                                                                                             onClick={() => { handleSelectMenuColumnsChange(-2); }}
+                                                                                                                             img={uncheckAllIcon} />}
+
+                            <IconButtonWithTooltip title={content.configureInWindow}
+                                                   onClick={() => { setColumnsSettingsModalVisible(1); }}
+                                                   img={configureInWindowIcon} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="sheet__table__info sheet__table__info--data2">
+                    <div className="cell--legend">
+                        {content.includeInExport}
+
+                        <div className="center">
+                            {notAllColumnsInOutputSheet() ? <IconButtonWithTooltip title={content.checkAll}
+                                                                                   onClick={() => { handleExportColumnsChange(-1); }}
+                                                                                   img={checkAllIcon} /> : <IconButtonWithTooltip title={content.uncheckAll}
+                                                                                                                                  onClick={() => { handleExportColumnsChange(-2); }}
+                                                                                                                                  img={uncheckAllIcon} />}
+
+                            <IconButtonWithTooltip title={content.configureInWindow}
+                                                   onClick={() => { setColumnsSettingsModalVisible(2); }}
+                                                   img={configureInWindowIcon} />
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="sheet__table__info sheet__table__info--data2">
-                <div className="cell--legend">
-                    {content.includeInExport}
+            {/* ACTUAL TABLE */}
+            <div className="sheet scroll"
+                 onScroll={checkScrollToBottom}>
 
-                    {outputSheetExportColumns.filter((_, i) => {
+                {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
+                                                                           addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}
+                                                                           selectOption={currentRelationColumnVisible}
+                                                                           setSelectOption={setCurrentRelationColumnVisible} /> : ''}
+
+                <div className="sheet__stickyRows">
+                    <div className="line line--noFlex line--columnsToCheck">
+                        {currentSheetColumnsVisibility.map((item, index) => {
+                            return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                        style={columnWithMinWidth()}
+                                        key={index}>
+                                <button className={currentSheetColumnsVisibility[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                        onClick={() => { handleExportColumnsChange(index); /* TODO */ }}>
+
+                                </button>
+                            </div>
+                        })}
+                    </div>
+
+                    <div className="line line--noFlex line--columnsToCheck">
+                        {showInSelectMenuColumnsCurrentSheet.map((item, index) => {
+                            if(currentSheetColumnsVisibility[index]) {
+                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                            style={columnWithMinWidth()}
+                                            key={index}>
+                                    <button className={showInSelectMenuColumnsCurrentSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleSelectMenuColumnsChange(index); }}>
+
+                                    </button>
+                                </div>
+                            }
+                        })}
+                    </div>
+
+                    <div className="line line--noFlex line--columnsToCheck">
+                        {outputSheetExportColumns.map((item, index) => {
+                            if(outputSheetExportColumnsVisibilityCondition(index)) {
+                                if(outputSheetExportColumnsVisibilityFirstColumnCondition(index)) {
+                                    return <div className="check__cell check__cell--first"
+                                                style={columnWithMinWidth()}
+                                                key={index}>
+                                        <button className="btn btn--check btn--notVisible"
+                                                disabled={true}>
+
+                                        </button>
+                                    </div>
+                                }
+                                else {
+                                    return <div className="check__cell"
+                                                style={columnWithMinWidth()}
+                                                key={index}>
+                                        <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                                onClick={() => { handleExportColumnsChange(index); }}>
+
+                                        </button>
+                                    </div>
+                                }
+                            }
+                        })}
+                    </div>
+
+                    <div className="sheet__table">
+                        <div className="line line--noFlex">
+                            <TableViewHeaderRow columnsNames={columnsNames}
+                                                columnsVisibility={currentSheetColumnsVisibility}
+                                                columnsSorting={columnsSorting}
+                                                getColumnMinWidth={getColumnMinWidth}
+                                                sortSheet={sortSheet}
+                                                removeSorting={removeSorting} />
+                        </div>
+                    </div>
+                </div>
+
+                <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
+                                                  sheetIndex={sheetIndex}
+                                                  setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
+                                                  sortRelationColumnByMatch={sortRelationColumnByMatch} />
+
+
+                {rowsToRender.map((item, index) => {
+                    let currentSheetRowIndex = index;
+                    let correlatedRow = null;
+                    let substringIndexes = [];
+                    const currentSelectList = selectList[indexesInRender[index]];
+                    const currentIndexesOfCorrelatedRows = indexesOfCorrelatedRowsLevels[currentRelationColumnVisible];
+
+                    if(currentSelectList?.length && currentIndexesOfCorrelatedRows?.length) {
                         if(sheetIndex === 0) {
-                            return i <= secondSheetColumnsNames.length;
+                            const pair = currentIndexesOfCorrelatedRows.find((item) => (item[0] === index));
+
+                            if(pair) {
+                                correlatedRow = currentSelectList.find((item) => (item.relationRowIndex === pair[1]));
+                            }
                         }
                         else {
-                            return i > secondSheetColumnsNames.length;
-                        }
-                    }).findIndex((item) => (!item)) !== -1 ? <ButtonSimple onClick={() => { handleExportColumnsChange(-1); }}>
-                        {content.checkAll}
-                    </ButtonSimple> : <ButtonSimple onClick={() => { handleExportColumnsChange(-2); }}>
-                        {content.uncheckAll}
-                    </ButtonSimple>}
+                            const pair = currentIndexesOfCorrelatedRows.find((item) => (item[1] === index));
 
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
-                        {content.configureInWindow}
-                    </ButtonSimple>
-                </div>
-            </div>
-
-            <div className="line line--noFlex">
-                {outputSheetExportColumns.map((item, index) => {
-                    if(outputSheetExportColumnsVisibilityCondition(index)) {
-                        if(outputSheetExportColumnsVisibilityFirstColumnCondition(index)) {
-                            return <div className="check__cell check__cell--first"
-                                        style={columnWithMinWidth()}
-                                        key={index}>
-                                <button className="btn btn--check btn--notVisible"
-                                        disabled={true}>
-
-                                </button>
-                            </div>
-                        }
-                        else {
-                            return <div className="check__cell"
-                                        style={columnWithMinWidth()}
-                                        key={index}>
-                                <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleExportColumnsChange(index); }}>
-
-                                </button>
-                            </div>
+                            if(pair) {
+                                correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === pair[0]));
+                            }
                         }
                     }
-                })}
-                <div className="check__cell check__cell--relation">
 
-                </div>
-            </div>
+                    let isCorrelatedRowWithHighestSimilarity = false;
+                    let correlatedRowValue = '-';
+                    let joinStringOfColumnsFromCurrentSheet = '';
+                    let colorLettersActive = false;
+                    let correlatedRowValueToDisplay = '';
 
-            <div className="sheet__table">
-                <div className="line line--noFlex">
-                    <TableViewHeaderRow columnsNames={columnsNames}
-                                        columnsVisibility={currentSheetColumnsVisibility}
-                                        columnsSorting={columnsSorting}
-                                        getColumnMinWidth={getColumnMinWidth}
-                                        sortSheet={sortSheet}
-                                        removeSorting={removeSorting} />
+                    if(correlatedRow) {
+                        isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
+                            || (manuallyCorrelatedRowsIndexes.includes(indexesInRender[index])));
 
-                    <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
-                                                      sheetIndex={sheetIndex}
-                                                      setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
-                                                      sortRelationColumnByMatch={sortRelationColumnByMatch} />
-                </div>
-            </div>
+                        correlatedRowValue = Object.entries(secondSheet[sheetIndex === 0 ? correlatedRow.relationRowIndex : correlatedRow.dataRowIndex])
+                            .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
+                            .map((item) => (item[1]))
+                            .join(' - ');
 
-            {rowsToRender.map((item, index) => {
-                let currentSheetRowIndex = index;
-                let correlatedRow = null;
-                let substringIndexes = [];
-                const currentSelectList = selectList[indexesInRender[index]];
-                const currentIndexesOfCorrelatedRows = indexesOfCorrelatedRowsLevels[currentRelationColumnVisible];
-
-                if(currentSelectList?.length && currentIndexesOfCorrelatedRows?.length) {
-                    if(sheetIndex === 0) {
-                        const pair = currentIndexesOfCorrelatedRows.find((item) => (item[0] === index));
-
-                        if(pair) {
-                            correlatedRow = currentSelectList.find((item) => (item.relationRowIndex === pair[1]));
-                        }
+                        correlatedRowValueToDisplay = correlatedRowValue.length <= 50 ?
+                            correlatedRowValue : `${correlatedRowValue.substring(0, 50)}...`;
                     }
-                    else {
-                        const pair = currentIndexesOfCorrelatedRows.find((item) => (item[1] === index));
 
-                        if(pair) {
-                            correlatedRow = currentSelectList.find((item) => (item.dataRowIndex === pair[0]));
-                        }
-                    }
-                }
+                    if(markLettersRows.includes(index)) {
+                        const columnsNamesInConditions = priorities.map((item) => (item.conditions.map((item) =>
+                            (sheetIndex === 0 ? item.relationSheet : item.dataSheet))))
+                            .flat();
+                        const columnsNamesInSelectMenu = Object.entries(secondSheet[0])
+                            .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
+                            .map((item) => (item[0]));
 
-                let isCorrelatedRowWithHighestSimilarity = false;
-                let correlatedRowValue = '-';
-                let joinStringOfColumnsFromCurrentSheet = '';
-                let colorLettersActive = false;
-                let correlatedRowValueToDisplay = '';
-
-                if(correlatedRow) {
-                    isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
-                        || (manuallyCorrelatedRowsIndexes.includes(indexesInRender[index])));
-
-                    correlatedRowValue = Object.entries(secondSheet[sheetIndex === 0 ? correlatedRow.relationRowIndex : correlatedRow.dataRowIndex])
-                        .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
-                        .map((item) => (item[1]))
-                        .join(' - ');
-
-                    correlatedRowValueToDisplay = correlatedRowValue.length <= 50 ?
-                        correlatedRowValue : `${correlatedRowValue.substring(0, 50)}...`;
-                }
-
-                if(markLettersRows.includes(index)) {
-                    const columnsNamesInConditions = priorities.map((item) => (item.conditions.map((item) =>
-                        (sheetIndex === 0 ? item.relationSheet : item.dataSheet))))
-                        .flat();
-                    const columnsNamesInSelectMenu = Object.entries(secondSheet[0])
-                        .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
-                        .map((item) => (item[0]));
-
-                    joinStringOfColumnsFromCurrentSheet = priorities.map((item) => {
-                        return item.conditions.map((item) => {
-                            return sheetIndex === 0 ? item.dataSheet : item.relationSheet;
-                        });
-                    })
-                        .flat()
-                        .map((item, i) => {
-                            return currentSheet[index][item];
+                        joinStringOfColumnsFromCurrentSheet = priorities.map((item) => {
+                            return item.conditions.map((item) => {
+                                return sheetIndex === 0 ? item.dataSheet : item.relationSheet;
+                            });
                         })
-                        .join(' ');
+                            .flat()
+                            .map((item, i) => {
+                                return currentSheet[index][item];
+                            })
+                            .join(' ');
 
-                    if(correlatedRowValueToDisplay && checkCommonElement(columnsNamesInConditions, columnsNamesInSelectMenu)) {
-                        colorLettersActive = true;
-                        substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, correlatedRowValueToDisplay);
-                    }
-                }
-
-                return <div className="line line--tableRow"
-                            key={index}>
-                    {/* Relation sheet columns */}
-                    {Object.entries(item).map((item, index) => {
-                        const cellValue = item[1];
-
-                        if(currentSheetColumnsVisibility[index]) {
-                            return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
-                                        style={{
-                                            minWidth: getColumnMinWidth(),
-                                            maxHeight: getColumnMaxHeight()
-                                        }}
-                                        key={index}>
-                                <SheetCell>{cellValue}</SheetCell>
-                            </div>
+                        if(correlatedRowValueToDisplay && checkCommonElement(columnsNamesInConditions, columnsNamesInSelectMenu)) {
+                            colorLettersActive = true;
+                            substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, correlatedRowValueToDisplay);
                         }
-                    })}
+                    }
 
-                    {/* Column with relation selection */}
-                    <div className="sheet__body__row__cell sheet__body__row__cell--relation">
-                        {currentSelectList?.length ? <>
-                            <button className="select__btn"
-                                    onClick={(e) => { showRelationSelectionDropdown(e, index); }}>
+                    return <div className="line line--tableRow"
+                                key={index}>
+                        {/* Relation sheet columns */}
+                        {Object.entries(item).map((item, index) => {
+                            const cellValue = item[1];
 
-                                {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
-                                                                                   key={index}>
+                            if(currentSheetColumnsVisibility[index]) {
+                                return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
+                                            style={{
+                                                minWidth: getColumnMinWidth(),
+                                                maxHeight: getColumnMaxHeight()
+                                            }}
+                                            key={index}>
+                                    <SheetCell>{cellValue}</SheetCell>
+                                </div>
+                            }
+                        })}
+
+                        {/* Column with relation selection */}
+                        <div className="sheet__body__row__cell sheet__body__row__cell--relation">
+                            {currentSelectList?.length ? <>
+                                <button className="select__btn"
+                                        onClick={(e) => { showRelationSelectionDropdown(e, index); }}>
+
+                                    {showSelectMenu !== indexesInRender[index] ? <span className="select__menu__item"
+                                                                                       key={index}>
                                 {correlatedRow ? <>
                                     <span className="select__menu__item__value">
                                         {correlatedRowValueToDisplay.length === correlatedRowValue.length ?
                                             <ColorMarkedText string={correlatedRowValueToDisplay}
                                                              indexes={substringIndexes} /> : <>
-                                            <ColorMarkedText string={correlatedRowValueToDisplay}
-                                                             indexes={substringIndexes} />
+                                                <ColorMarkedText string={correlatedRowValueToDisplay}
+                                                                 indexes={substringIndexes} />
 
-                                            <button className="btn btn--showFullValue"
-                                                    onClick={(e) => { showFullRow(e, correlatedRowValue, joinStringOfColumnsFromCurrentSheet); }}>
-                                                ({content.showAll})
-                                            </button>
-                                        </>}
+                                                <button className="btn btn--showFullValue"
+                                                        onClick={(e) => { showFullRow(e, correlatedRowValue, joinStringOfColumnsFromCurrentSheet); }}>
+                                                    ({content.showAll})
+                                                </button>
+                                            </>}
                                     </span>
                                     <span className="select__menu__item__similarity" style={{
                                         background: getSimilarityColorForRelationSheet(correlatedRow.similarity, sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex),
                                         color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) || schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                     }}>
                                         {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? <Tooltip title={content.rowWithLargerMatchAlert}
-                                                                                          followCursor={true}
-                                                                                          size="small"
-                                                                                          position="top">
+                                                                                                                                                                                                                     followCursor={true}
+                                                                                                                                                                                                                     size="small"
+                                                                                                                                                                                                                     position="top">
                                             <span className="select__menu__item__similarity__info">
                                                 !
                                             </span>
@@ -796,54 +828,54 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                              value={searchInputValue}
                                              onChange={(e) => { setSearchInputValue(e.target.value); }} />}
 
-                                <img className="select__btn__img"
-                                     src={arrowDown}
-                                     alt="arrow-down" />
-                            </button>
-
-                            <Tooltip title={markLettersRows.includes(index) ? content.turnOffColorOnStrings : content.turnOnColorOnStrings}
-                                     followCursor={true}
-                                     size="small"
-                                     position="top">
-                                <button className={markLettersRows.includes(index) ? "btn btn--markLetters btn--markLetters--selected" : "btn btn--markLetters"}
-                                        onClick={() => { markLetters(index); }}>
-                                    Aa
+                                    <img className="select__btn__img"
+                                         src={arrowDown}
+                                         alt="arrow-down" />
                                 </button>
-                            </Tooltip>
 
-                            {correlatedRow ? <button className="btn btn--removeCorrelation"
-                                                     onClick={() => { removeCorrelation(correlatedRow.dataRowIndex, correlatedRow.relationRowIndex); }}>
-                                &times;
-                            </button> : ''}
-                        </> : ''}
+                                <Tooltip title={markLettersRows.includes(index) ? content.turnOffColorOnStrings : content.turnOnColorOnStrings}
+                                         followCursor={true}
+                                         size="small"
+                                         position="top">
+                                    <button className={markLettersRows.includes(index) ? "btn btn--markLetters btn--markLetters--selected" : "btn btn--markLetters"}
+                                            onClick={() => { markLetters(index); }}>
+                                        Aa
+                                    </button>
+                                </Tooltip>
 
-                        {/* Dropdown menu */}
-                        {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll"
-                                                                          onScroll={checkListScrollToBottom}>
-                            {currentSelectMenuToDisplay?.map((item, index) => {
-                                const value = Object.entries(secondSheet[sheetIndex === 0 ? item.relationRowIndex : item.dataRowIndex])
-                                    .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
-                                    .map((item) => (item[1]))
-                                    .join(' - ');
+                                {correlatedRow ? <button className="btn btn--removeCorrelation"
+                                                         onClick={() => { removeCorrelation(correlatedRow.dataRowIndex, correlatedRow.relationRowIndex); }}>
+                                    &times;
+                                </button> : ''}
+                            </> : ''}
 
-                                const currentSelectMenuItemIndex = sheetIndex === 0 ? item.relationRowIndex : item.dataRowIndex;
+                            {/* Dropdown menu */}
+                            {showSelectMenu === indexesInRender[index] ? <div className="select__menu scroll"
+                                                                              onScroll={checkListScrollToBottom}>
+                                {currentSelectMenuToDisplay?.map((item, index) => {
+                                    const value = Object.entries(secondSheet[sheetIndex === 0 ? item.relationRowIndex : item.dataRowIndex])
+                                        .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
+                                        .map((item) => (item[1]))
+                                        .join(' - ');
 
-                                const numberOfMatches = sheetIndex === 0 ? indexesOfCorrelatedRows.filter((item) => {
-                                    return item[1] === currentSelectMenuItemIndex;
-                                }).length : indexesOfCorrelatedRows.filter((item) => {
-                                    return item[0] === currentSelectMenuItemIndex;
-                                }).length;
+                                    const currentSelectMenuItemIndex = sheetIndex === 0 ? item.relationRowIndex : item.dataRowIndex;
 
-                                const valueToDisplay = value.length <= 50 ? value : `${value.substring(0, 50)}...`;
-                                let substringIndexes = [];
+                                    const numberOfMatches = sheetIndex === 0 ? indexesOfCorrelatedRows.filter((item) => {
+                                        return item[1] === currentSelectMenuItemIndex;
+                                    }).length : indexesOfCorrelatedRows.filter((item) => {
+                                        return item[0] === currentSelectMenuItemIndex;
+                                    }).length;
 
-                                if(colorLettersActive || markLettersRows.includes(currentSheetRowIndex)) {
-                                    substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, valueToDisplay);
-                                }
+                                    const valueToDisplay = value.length <= 50 ? value : `${value.substring(0, 50)}...`;
+                                    let substringIndexes = [];
 
-                                return <button className={isDropdownMenuItemDisabled(item.dataRowIndex, item.relationRowIndex) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
-                                               onClick={(e) => {addManualCorrelationWrapper(e, item); }}
-                                               key={index}>
+                                    if(colorLettersActive || markLettersRows.includes(currentSheetRowIndex)) {
+                                        substringIndexes = findSubstrings(joinStringOfColumnsFromCurrentSheet, valueToDisplay);
+                                    }
+
+                                    return <button className={isDropdownMenuItemDisabled(item.dataRowIndex, item.relationRowIndex) ? "select__menu__item select__menu__item--disabled" : "select__menu__item"}
+                                                   onClick={(e) => {addManualCorrelationWrapper(e, item); }}
+                                                   key={index}>
                                     <span className="select__menu__item__value">
                                         {valueToDisplay.length === value.length ? <ColorMarkedText string={value}
                                                                                                    indexes={substringIndexes} /> : <>
@@ -851,24 +883,25 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                                              indexes={substringIndexes} />
                                             <button className="btn btn--showFullValue"
                                                     onClick={(e) => { showFullRow(e, value, joinStringOfColumnsFromCurrentSheet); }}>
-                                                (zobacz wszystko)
+                                                ({content.showAll})
                                             </button>
                                         </>}
                                     </span>
-                                    <span className="select__menu__item__similarity" style={{
-                                        background: getSimilarityColorForRelationSheet(item.similarity, -1)
-                                    }}>
+                                        <span className="select__menu__item__similarity" style={{
+                                            background: getSimilarityColorForRelationSheet(item.similarity, -1)
+                                        }}>
                                         {printSimilarityPercentage(item.similarity)}
                                     </span>
-                                    <span className="select__menu__item__counter">
+                                        <span className="select__menu__item__counter">
                                         {numberOfMatches}
                                     </span>
-                                </button>
-                            })}
-                        </div> : ''}
+                                    </button>
+                                })}
+                            </div> : ''}
+                        </div>
                     </div>
-                </div>
-            })}
+                })}
+            </div>
         </div> : <div className="sheet__loader">
             <Loader />
         </div>}

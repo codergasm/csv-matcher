@@ -26,6 +26,10 @@ const App = () => {
     }
   }, [lang]);
 
+  const confirmCorrelationPageLeave = () => {
+    alert('test');
+  }
+
   return <TranslationContext.Provider value={{
     content, lang, setLang
   }}>

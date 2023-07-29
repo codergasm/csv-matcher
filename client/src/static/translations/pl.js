@@ -95,8 +95,9 @@ const pl = {
     deleteMatches: 'Usuń dopasowania',
     overrideMatchAlert: 'Rekord jest już przypisany. Czy na pewno chcesz nadpisać przypisanie?',
     overrideMatch: 'Nadpisz przypisanie',
-    noColumnsInSelectMenuAlert: 'Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce,\n' +
-        '                dlatego wiersze poniżej są puste.',
+    noColumnsInSelectMenuAlert: 'Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce, dlatego wiersze poniżej są puste.',
+    leaveCorrelationPageAlert: 'Czy na pewno chcesz opuścić tę stronę?',
+    numberOfRecords: 'Liczba rekordów',
 
     // Correlation table
     visibility: 'Widoczność',

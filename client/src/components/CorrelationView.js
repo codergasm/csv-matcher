@@ -19,7 +19,7 @@ const CorrelationView = ({user}) => {
     const { api, apiUserId } = useContext(ApiContext);
     const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
         dataSheetId, relationSheetId, dataSheetName, relationSheetName,
-        dataDelimiter, relationDelimiter, currentSchemaChangedAndNotSaved,
+        dataDelimiter, relationDelimiter,
         setCurrentSchemaChangedAndNotSaved } = useContext(AppContext);
 
     let dataSheetWrapper = useRef(null);
@@ -1811,7 +1811,8 @@ const CorrelationView = ({user}) => {
                                                  fileName={relationSheetName}>
                         Arkusz 2
                     </ButtonCorrelationViewPicker>
-                    <ButtonCorrelationViewPicker index={2}>
+                    <ButtonCorrelationViewPicker index={2}
+                                                 numberOfRecords={numberOfMatches !== -1 ? numberOfMatches.toString() : '0'}>
                         Arkusz wyjściowy
                     </ButtonCorrelationViewPicker>
                 </div>
@@ -1855,7 +1856,7 @@ const CorrelationView = ({user}) => {
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}
             </div>
 
-            {numberOfMatches !== -1 ? <QuickBottomInfo time={5000}>
+            {numberOfMatches > 0 ? <QuickBottomInfo time={5000}>
                 {content.matchesDone}: {numberOfMatches}
             </QuickBottomInfo> : ''}
         </div>

@@ -7,10 +7,13 @@ import getUrlParam from "../helpers/getUrlParam";
 import {ApiContext} from "../components/LoggedUserWrapper";
 import {getFilesByApiRequest, getSchemasByUserApiToken} from "../api/api";
 import redirectToHomepage from "../helpers/redirectToHomepage";
+import {TranslationContext} from "../App";
+import useAlertOnPageLeave from "../hooks/useAlertOnPageLeave";
 
 const AppContext = React.createContext(null);
 
 const CorrelationPage = ({user}) => {
+    const { content } = useContext(TranslationContext);
     const { api, apiRequestId, apiToken } = useContext(ApiContext);
 
     const [currentView, setCurrentView] = useState(0);
@@ -38,6 +41,8 @@ const CorrelationPage = ({user}) => {
     const [relationSheetName, setRelationSheetName] = useState('');
     const [isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber] = useState([]);
     const [isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber] = useState([]);
+
+    useAlertOnPageLeave(dataSheetId || relationSheetId, content.leaveCorrelationPageAlert);
 
     useEffect(() => {
         const sheet1 = getUrlParam('sheet1');
@@ -155,22 +160,22 @@ const CorrelationPage = ({user}) => {
     }
 
     return <AppContext.Provider value={{
-        currentView, setCurrentView,
-        dataFile, setDataFile, relationFile, setRelationFile,
-        dataSheet, setDataSheet, relationSheet, setRelationSheet,
-        dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
-        schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
-        availableForUserSchemas, setAvailableForUserSchemas,
-        dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId,
-        dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName,
-        dataFileSize, setDataFileSize, relationFileSize, setRelationFileSize,
-        dataFileOwnerUserId, setDataFileOwnerUserId, relationFileOwnerUserId, setRelationFileOwnerUserId,
-        dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId,
-        isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber,
-        isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber,
-        currentSchemaChangedAndNotSaved, setCurrentSchemaChangedAndNotSaved
-    }}>
-        {mainComponent}
+            currentView, setCurrentView,
+            dataFile, setDataFile, relationFile, setRelationFile,
+            dataSheet, setDataSheet, relationSheet, setRelationSheet,
+            dataDelimiter, setDataDelimiter, relationDelimiter, setRelationDelimiter,
+            schemas, setSchemas, currentSchemaId, setCurrentSchemaId, updateSchemas, setUpdateSchemas,
+            availableForUserSchemas, setAvailableForUserSchemas,
+            dataSheetId, setDataSheetId, relationSheetId, setRelationSheetId,
+            dataSheetName, setDataSheetName, relationSheetName, setRelationSheetName,
+            dataFileSize, setDataFileSize, relationFileSize, setRelationFileSize,
+            dataFileOwnerUserId, setDataFileOwnerUserId, relationFileOwnerUserId, setRelationFileOwnerUserId,
+            dataFileOwnerTeamId, setDataFileOwnerTeamId, relationFileOwnerTeamId, setRelationFileOwnerTeamId,
+            isDataSheetColumnTypeNumber, setIsDataSheetColumnTypeNumber,
+            isRelationSheetColumnTypeNumber, setIsRelationSheetColumnTypeNumber,
+            currentSchemaChangedAndNotSaved, setCurrentSchemaChangedAndNotSaved
+        }}>
+            {mainComponent}
     </AppContext.Provider>
 };
 
