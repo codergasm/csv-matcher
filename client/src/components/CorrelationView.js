@@ -241,12 +241,14 @@ const CorrelationView = ({user}) => {
 
     const setDefaultShowInSelectMenuColumnsDataSheet = () => {
         const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(dataSheet);
-        setShowInSelectMenuColumnsDataSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        // setShowInSelectMenuColumnsDataSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        setShowInSelectMenuColumnsDataSheet(columnsContent[0].map(() => false));
     }
 
     const setDefaultShowInSelectMenuColumnsRelationSheet = () => {
         const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(relationSheet);
-        setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        // setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map(() => false));
     }
 
     const setDefaultOutputSheetExportColumns = () => {

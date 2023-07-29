@@ -26,7 +26,7 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColu
     }
 
     const menuClose = () => {
-        selectLabel.current.style.zIndex = '10';
+        selectLabel.current.style.zIndex = '1999';
     }
 
     const handleChoose = (e) => {
@@ -44,7 +44,7 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColu
                     onMenuClose={menuClose}
                     onMenuOpen={menuOpen}
                     options={options}
-                    placeholder={content.relationTypePlaceholder}
+                    placeholder={'1'}
                     value={options[selectOption]}
                     onChange={handleChoose}
                     isSearchable={false} />

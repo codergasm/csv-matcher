@@ -13,6 +13,7 @@ const pl = {
     confirm: 'Zatwierdź',
     next: 'Dalej',
     close: 'Zamknij',
+    use: 'Zastosuj',
     error: 'Coś poszło nie tak... Prosimy spróbować później',
 
     // Homepage
@@ -98,6 +99,11 @@ const pl = {
     noColumnsInSelectMenuAlert: 'Uwaga! Żadne kolumny nie są wskazane w drugim arkuszu jako mające się wyświetlać w podpowiadajce, dlatego wiersze poniżej są puste.',
     leaveCorrelationPageAlert: 'Czy na pewno chcesz opuścić tę stronę?',
     numberOfRecords: 'Liczba rekordów',
+    onlyVisibleColumns: 'Tylko widoczne kolumny',
+    showAllColumns: 'Pokaż wszystkie kolumny',
+    configureLater: 'Skonfiguruję później',
+    noColumnsInSelectMenu: 'Żadne kolumny nie są wybrane do podpowiedzi!',
+    checkColumnsForSelectMenu: 'Zaznacz, które kolumny mają być widoczne w podpowiedziach',
 
     // Correlation table
     visibility: 'Widoczność',

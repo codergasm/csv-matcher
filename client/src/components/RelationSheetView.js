@@ -20,7 +20,6 @@ import getScrollParams from "../helpers/getScrollParams";
 import SheetCell from "./SheetCell";
 import getColumnsSortingAndSortType from "../helpers/getColumnsSortingAndSortType";
 import convertColumnToNumber from "../helpers/convertColumnToNumber";
-import ButtonSimple from "./ButtonSimple";
 import OverrideMatchModal from "./OverrideMatchModal";
 import DeleteMatchesModal from "./DeleteMatchesModal";
 import MatchTypeSelect from "./MatchTypeSelect";
@@ -33,7 +32,10 @@ import checkAllIcon from '../static/img/select-all.svg';
 import uncheckAllIcon from '../static/img/unselect-all.svg';
 import configureInWindowIcon from '../static/img/configure-in-window.svg';
 import formatCellsIcon from '../static/img/format-cells.svg';
+import checkIcon from '../static/img/check.svg';
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import areArraysEqual from "../helpers/areArraysEqual";
+import SelectMenuSettingsModal from "./SelectMenuSettingsModal";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsSecondSheet,
@@ -77,12 +79,21 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [indexesOfCorrelatedRowsLevels, setIndexesOfCorrelatedRowsLevels] = useState([[]]);
     const [numberOfRelationColumns, setNumberOfRelationColumns] = useState(0);
     const [currentRelationColumnVisible, setCurrentRelationColumnVisible] = useState(0);
+    const [temporaryColumnsVisibility, setTemporaryColumnsVisibility] = useState([]);
+    const [columnsVisibilityReadyToChange, setColumnsVisibilityReadyToChange] = useState(false);
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
 
     useEffect(() => {
         setIndexesOfCorrelatedRowsLevels(getLevelsOfRelationColumn(indexesOfCorrelatedRows, sheetIndex));
     }, [indexesOfCorrelatedRows]);
+
+    useEffect(() => {
+        if(columnsVisibilityReadyToChange && columnsSettingsModalVisible === 0) {
+            setColumnsVisibilityReadyToChange(false);
+            setCurrentSheetColumnsVisibility(temporaryColumnsVisibility);
+        }
+    }, [columnsVisibilityReadyToChange, columnsSettingsModalVisible]);
 
     useEffect(() => {
         if(indexesOfCorrelatedRowsLevels) {
@@ -198,6 +209,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     useEffect(() => {
         if(currentSheetColumnsVisibility) {
+            setTemporaryColumnsVisibility(currentSheetColumnsVisibility);
             setMinColumnWidth(125 / (currentSheetColumnsVisibility.filter((item) => (item)).length));
         }
     }, [currentSheetColumnsVisibility]);
@@ -217,7 +229,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const setDefaultColumnsVisibility = () => {
-        setCurrentSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+        // setCurrentSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+        setCurrentSheetColumnsVisibility(columnsNames.map(() => true));
     }
 
     const handleExportColumnsChange = (i) => {
@@ -246,6 +259,19 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                 return index === i ? !item : item;
             })));
         }
+    }
+
+    const handleTemporaryColumnsVisibilityChange = (i) => {
+        setTemporaryColumnsVisibility(prevState => {
+            return prevState.map((item, index) => {
+                if(index === i) {
+                    return !item;
+                }
+                else {
+                    return item;
+                }
+            });
+        });
     }
 
     const getSimilarityColorForRelationSheet = (val, relationRow) => {
@@ -501,8 +527,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }
 
-    const noColumnsInSelectMenu = () => {
+    const noAllColumnsInSelectMenu = () => {
         return showInSelectMenuColumnsCurrentSheet.findIndex((item) => (!item)) !== -1;
+    }
+
+    const noColumnsInSelectMenu = () => {
+        return showInSelectMenuColumnsCurrentSheet.findIndex((item) => (item)) === -1;
     }
 
     const notAllColumnsInOutputSheet = () => {
@@ -516,6 +546,16 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }).findIndex((item) => (!item)) !== -1;
     }
 
+    const confirmColumnsVisibilityChange = () => {
+        if(noColumnsInSelectMenu()) {
+            setColumnsVisibilityReadyToChange(true);
+            setColumnsSettingsModalVisible(1);
+        }
+        else {
+            setCurrentSheetColumnsVisibility(temporaryColumnsVisibility);
+        }
+    }
+
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
@@ -523,13 +563,21 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                                  user={user}
                                                  closeModal={() => { setAutoMatchModalVisible(false); }} /> : ''}
 
-        {columnsSettingsModalVisible ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
+        {columnsSettingsModalVisible > 1 ? <ColumnsSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
                                                              columnsNames={columnsNames}
                                                              extraIndex={columnsSettingsModalVisible === 2 && sheetIndex === 1 ? secondSheetColumnsNames.length : (columnsSettingsModalVisible === 2 ? 1 : 0)}
                                                              hideFirstColumn={false}
                                                              columns={getColumnsForModal(columnsSettingsModalVisible)}
                                                              setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
                                                              header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
+
+        {columnsSettingsModalVisible === 1 ? <SelectMenuSettingsModal closeModal={() => { setColumnsSettingsModalVisible(0); }}
+                                                                      columnsNames={columnsNames}
+                                                                      warning={noColumnsInSelectMenu()}
+                                                                      visibleColumns={currentSheetColumnsVisibility}
+                                                                      columns={getColumnsForModal(columnsSettingsModalVisible)}
+                                                                      setColumns={getSetColumnsForModal(columnsSettingsModalVisible)}
+                                                                      header={getSettingsModalHeader(columnsSettingsModalVisible)} /> : ''}
 
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
                                                      setCellsHeight={setCellsHeight}
@@ -562,6 +610,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         </span> : ''}
 
         {selectList?.length && !selectListLoading ? <div className="sheetInner">
+            {/* RELATION COLUMN SELECT */}
+            {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
+                                                                       addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}
+                                                                       selectOption={currentRelationColumnVisible}
+                                                                       setSelectOption={setCurrentRelationColumnVisible} /> : ''}
+
             {/* LEFT SIDEBAR WITH BUTTONS */}
             <div className="sheetInner__left">
                 <div className="sheet__table__info sheet__table__info--data1">
@@ -576,6 +630,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                             <IconButtonWithTooltip title={content.formatCellsVisibility}
                                                    onClick={() => { setCellsFormatModalVisible(true); }}
                                                    img={formatCellsIcon} />
+
+                            {!areArraysEqual(currentSheetColumnsVisibility, temporaryColumnsVisibility) ? <IconButtonWithTooltip title={content.use}
+                                                                                                                                 onClick={confirmColumnsVisibilityChange}
+                                                                                                                                 img={checkIcon} /> : ''}
                         </div>
                     </div>
                 </div>
@@ -585,7 +643,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                         {content.showInSelectMenu}
 
                         <div className="center">
-                            {noColumnsInSelectMenu() ? <IconButtonWithTooltip title={content.checkAll}
+                            {noAllColumnsInSelectMenu() ? <IconButtonWithTooltip title={content.checkAll}
                                                                               onClick={() => { handleSelectMenuColumnsChange(-1); }}
                                                                               img={checkAllIcon} /> : <IconButtonWithTooltip title={content.uncheckAll}
                                                                                                                              onClick={() => { handleSelectMenuColumnsChange(-2); }}
@@ -621,22 +679,19 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             <div className="sheet scroll"
                  onScroll={checkScrollToBottom}>
 
-                {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
-                                                                           addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}
-                                                                           selectOption={currentRelationColumnVisible}
-                                                                           setSelectOption={setCurrentRelationColumnVisible} /> : ''}
-
                 <div className="sheet__stickyRows">
                     <div className="line line--noFlex line--columnsToCheck">
-                        {currentSheetColumnsVisibility.map((item, index) => {
-                            return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
-                                        style={columnWithMinWidth()}
-                                        key={index}>
-                                <button className={currentSheetColumnsVisibility[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleExportColumnsChange(index); /* TODO */ }}>
+                        {temporaryColumnsVisibility.map((item, index) => {
+                            if(currentSheetColumnsVisibility[index]) {
+                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                            style={columnWithMinWidth()}
+                                            key={index}>
+                                    <button className={temporaryColumnsVisibility[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleTemporaryColumnsVisibilityChange(index); }}>
 
-                                </button>
-                            </div>
+                                    </button>
+                                </div>
+                            }
                         })}
                     </div>
 

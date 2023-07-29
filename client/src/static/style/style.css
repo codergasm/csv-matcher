@@ -451,7 +451,7 @@ table .cell--legend {
     background: transparent;
     width: 20px;
     height: auto;
-    margin: 0 15px;
+    margin: 0 10px;
     display: inline-block;
 }
 
@@ -949,7 +949,12 @@ option {
 }
 
 .btn--selectAll--modal {
+    width: auto;
     margin: 20px auto 0 !important;
+}
+
+.btn--selectAll--selected {
+    text-decoration: underline;
 }
 
 .disclaimer {
@@ -2798,9 +2803,9 @@ input[type=number] {
 
 .matchTypeSelectLabel--relationColumn {
     position: absolute;
-    top: 15px;
-    right: 112px;
-    z-index: 100;
+    top: 267px;
+    right: 190px;
+    z-index: 2000;
 }
 
 .matchTypeSelectLabel--relationColumn > span {
@@ -2936,4 +2941,14 @@ input[type=number] {
 
 .sheetInner .line--tableRow:nth-of-type(3) {
     margin-top: -250px;
+}
+
+.modal__header--marginTop {
+    margin-top: 25px;
+}
+
+.modal--selectMenuSettings .btn--selectAll--modal {
+    color: var(--primary);
+    margin-top: 30px !important;
+    font-size: 13px;
 }
