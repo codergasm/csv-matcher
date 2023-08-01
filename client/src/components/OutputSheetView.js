@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState, forwardRef} from 'react';
 import {ViewContext} from "./CorrelationView";
 import Papa from "papaparse";
 import getScrollParams from "../helpers/getScrollParams";
-import ButtonSimple from "./ButtonSimple";
 import CellsFormatModal from "./CellsFormatModal";
 import ColumnsSettingsModal from "./ColumnsSettingsModal";
 import {AppContext} from "../pages/CorrelationPage";
@@ -16,6 +15,13 @@ import {ApiContext} from "./LoggedUserWrapper";
 import SchemaNotCreatedModal from "./SchemaNotCreatedModal";
 import SchemaChangedAndNotSavedModal from "./SchemaChangedAndNotSavedModal";
 import {sendRequestToExternalApp} from "../api/api";
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import configureInWindowIcon from "../static/img/configure-in-window.svg";
+import formatCellsIcon from "../static/img/format-cells.svg";
+import areArraysEqual from "../helpers/areArraysEqual";
+import checkIcon from "../static/img/check.svg";
+import checkAllIcon from "../static/img/select-all.svg";
+import uncheckAllIcon from "../static/img/unselect-all.svg";
 
 const OutputSheetView = forwardRef((props, ref) => {
     const { content } = useContext(TranslationContext);
@@ -41,9 +47,26 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [cellsHeight, setCellsHeight] = useState(-1);
     const [isOutputSheetColumnTypeNumber, setIsOutputSheetColumnTypeNumber] = useState([]);
     const [modalsBeforeReturnToExternalAppVisible, setModalsBeforeReturnToExternalAppVisible] = useState(false);
+    const [temporaryColumnsVisibility, setTemporaryColumnsVisibility] = useState([]);
+
+    // 1 - normal export, 2 - api, export to external app
+    const [typeOfExport, setTypeOfExport] = useState(1);
 
     useEffect(() => {
-        setFinalExportColumns([...outputSheetExportColumns, false, false]);
+        setTemporaryColumnsVisibility(outputSheetColumnsVisibility);
+    }, [outputSheetColumnsVisibility]);
+
+    useEffect(() => {
+        if(hasDataSheetCounter() && hasRelationSheetCounter()) {
+            setFinalExportColumns([...outputSheetExportColumns, false, false]);
+        }
+        else if(hasDataSheetCounter() || hasRelationSheetCounter()) {
+            setFinalExportColumns([...outputSheetExportColumns, false]);
+        }
+        else {
+            setFinalExportColumns(outputSheetExportColumns);
+        }
+
         setColumnsToSum(outputSheetExportColumns.map(() => {
             return 0;
         }));
@@ -118,7 +141,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     }, [outputSheetExportColumns]);
 
     const setDefaultOutputSheetColumnsVisibility = () => {
-        setOutputSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
+        setOutputSheetColumnsVisibility(outputSheetExportColumns);
     }
 
     const handleOutputSheetExportChange = (i) => {
@@ -135,7 +158,19 @@ const OutputSheetView = forwardRef((props, ref) => {
         }
     }
 
+    const exportOutputSheetValidate = () => {
+        if(currentSchemaId === -1 || currentSchemaChangedAndNotSaved) {
+            setModalsBeforeReturnToExternalAppVisible(true);
+            setTypeOfExport(1);
+        }
+        else {
+            exportOutputSheet();
+        }
+    }
+
     const exportOutputSheet = () => {
+        setModalsBeforeReturnToExternalAppVisible(false);
+
         if(exportFormat < 2) {
             // CSV file
             const data = outputSheet.map((item) => {
@@ -290,6 +325,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     const saveAndReturnToExternalAppValidate = () => {
         if(currentSchemaId === -1 || currentSchemaChangedAndNotSaved) {
             setModalsBeforeReturnToExternalAppVisible(true);
+            setTypeOfExport(2);
         }
         else {
             saveAndReturnToExternalApp();
@@ -309,9 +345,32 @@ const OutputSheetView = forwardRef((props, ref) => {
         window.location.href = apiUserRedirectionWebsite;
     }
 
-    return <div className="sheetWrapper" ref={ref}>
+    const notAllColumnsIncludeInExport = () => {
+        return finalExportColumns.findIndex((item) => {
+            return !item;
+        }) !== -1;
+    }
+
+    const handleTemporaryColumnsVisibilityChange = (i) => {
+        setTemporaryColumnsVisibility(prevState => {
+            return prevState.map((item, index) => {
+                if(index === i) {
+                    return !item;
+                }
+                else {
+                    return item;
+                }
+            });
+        });
+    }
+
+    const confirmColumnsVisibilityChange = () => {
+        setOutputSheetColumnsVisibility(temporaryColumnsVisibility);
+    }
+
+    return <div className="sheetWrapper sheetWrapper--outputSheet" ref={ref}>
         {exportSettingsModalVisible ? <ExportSettingsModal closeModal={() => { setExportSettingsModalVisible(false); }}
-                                                           exportOutputSheet={exportOutputSheet}
+                                                           exportOutputSheet={exportOutputSheetValidate}
                                                            columnsNames={columnsNames} /> : ''}
 
         {cellsFormatModalVisible ? <CellsFormatModal cellsHeight={cellsHeight}
@@ -327,11 +386,11 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                              header={columnsSettingsModalVisible === 1 ? content.columnVisibility : content.includeInExport} /> : ''}
 
         {modalsBeforeReturnToExternalAppVisible
-            && currentSchemaId === -1 ? <SchemaNotCreatedModal handleSubmit={saveAndReturnToExternalApp}
+            && currentSchemaId === -1 ? <SchemaNotCreatedModal handleSubmit={typeOfExport === 2 ? saveAndReturnToExternalApp : exportOutputSheet}
                                                                closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
 
         {modalsBeforeReturnToExternalAppVisible
-            && currentSchemaChangedAndNotSaved ? <SchemaChangedAndNotSavedModal handleSubmit={saveAndReturnToExternalApp}
+            && currentSchemaChangedAndNotSaved ? <SchemaChangedAndNotSavedModal handleSubmit={typeOfExport === 2 ? saveAndReturnToExternalApp : exportOutputSheet}
                                                                                 closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
 
         <div className="btnExportWrapper center">
@@ -340,7 +399,7 @@ const OutputSheetView = forwardRef((props, ref) => {
                     {content.saveAndReturnToExternalApp}
             </button> : ''}
             <button className={api ? "btn btn--export btn--export--small" : "btn btn--export"}
-                    onClick={exportOutputSheet}>
+                    onClick={exportOutputSheetValidate}>
                 {content.exportOutputSheet}
             </button>
             <button className="btn btn--exportSettings"
@@ -349,135 +408,170 @@ const OutputSheetView = forwardRef((props, ref) => {
             </button>
         </div>
 
-        <div className="sheet scroll"
-             onScroll={checkScrollToBottom}>
-            <div className="sheet__table__info">
-                <div className="cell--legend">
-                    {content.visibility}
+        <div className="sheetInner">
 
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(1); }}>
-                        {content.configureInWindow}
-                    </ButtonSimple>
-                    <ButtonSimple onClick={() => { setCellsFormatModalVisible(true); }}>
-                        {content.formatCellsVisibility}
-                    </ButtonSimple>
+            <div className="sheetInner__left">
+                <div className="sheet__table__info sheet__table__info--data1">
+                    <div className="cell--legend">
+                        {content.visibility}
+
+                        <div className="center">
+                            <IconButtonWithTooltip title={content.configureInWindow}
+                                                   onClick={() => { setColumnsSettingsModalVisible(1); }}
+                                                   img={configureInWindowIcon} />
+
+                            <IconButtonWithTooltip title={content.formatCellsVisibility}
+                                                   onClick={() => { setCellsFormatModalVisible(true); }}
+                                                   img={formatCellsIcon} />
+
+                            {!areArraysEqual(outputSheetColumnsVisibility, temporaryColumnsVisibility) ? <IconButtonWithTooltip title={content.use}
+                                                                                                                                 onClick={confirmColumnsVisibilityChange}
+                                                                                                                                 img={checkIcon} /> : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="sheet__table__info sheet__table__info--data2">
+                    <div className="cell--legend">
+                        {content.includeInExport}
+
+                        <div className="center">
+                            {notAllColumnsIncludeInExport() ? <IconButtonWithTooltip title={content.checkAll}
+                                                                                   onClick={() => { handleOutputSheetExportChange(-1); }}
+                                                                                   img={checkAllIcon} /> : <IconButtonWithTooltip title={content.uncheckAll}
+                                                                                                                                  onClick={() => { handleOutputSheetExportChange(-2); }}
+                                                                                                                                  img={uncheckAllIcon} />}
+
+                            <IconButtonWithTooltip title={content.configureInWindow}
+                                                   onClick={() => { setColumnsSettingsModalVisible(2); }}
+                                                   img={configureInWindowIcon} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="line line--exportLegend">
-                <div className="cell--legend">
-                    {content.includeInExport}
+            <div className="sheet scroll"
+                 onScroll={checkScrollToBottom}>
 
-                    {finalExportColumns.findIndex((item) => (!item)) !== -1 ? <button className="btn btn--selectAll"
-                                                                                            onClick={() => { handleOutputSheetExportChange(-1); }}>
-                        {content.checkAll}
-                    </button> : <button className="btn btn--selectAll"
-                                        onClick={() => { handleOutputSheetExportChange(-2); }}>
-                        {content.uncheckAll}
-                    </button>}
+                <div className="sheet__stickyRows">
+                    <div className="line line--noFlex line--columnsToCheck">
+                        {temporaryColumnsVisibility.map((item, index) => {
+                            if(outputSheetColumnsVisibility[index]) {
+                                return <div className={"check__cell check__cell--borderBottom"}
+                                            style={{
+                                                minWidth: getColumnMinWidth()
+                                            }}
+                                            key={index}>
+                                    <button className={temporaryColumnsVisibility[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleTemporaryColumnsVisibilityChange(index); }}>
 
-                    <ButtonSimple onClick={() => { setColumnsSettingsModalVisible(2); }}>
-                        {content.configureInWindow}
-                    </ButtonSimple>
-                </div>
-            </div>
+                                    </button>
+                                </div>
+                            }
+                        })}
+                    </div>
 
-            <div className="sheet__table">
-                <div className="line line--noFlex">
-                    {outputSheetExportColumns.map((item, index) => {
-                        if(item && outputSheetColumnsVisibility[index]) {
-                            return <div className="check__cell"
-                                        style={getStyleWithMinWidth()}
-                                        key={index}>
-                                <button className={finalExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                        onClick={() => { handleOutputSheetExportChange(index); }}>
+                    <div className="line line--noFlex line--columnsToCheck">
+                        {finalExportColumns.map((item, index) => {
+                            if(outputSheetColumnsVisibility[index]) {
+                                return <div className="check__cell"
+                                            style={{
+                                                minWidth: getColumnMinWidth()
+                                            }}
+                                            key={index}>
+                                    <button className={finalExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                            onClick={() => { handleOutputSheetExportChange(index); }}>
 
-                                </button>
-                            </div>
-                        }
-                    })}
+                                    </button>
+                                </div>
+                            }
+                        })}
 
-                    {hasDataSheetCounter() ? <div className="check__cell"
-                                                  style={{
-                                                      minWidth: '280px'
-                                                  }}>
-                        <button className={finalExportColumns[finalExportColumns.length-(hasRelationSheetCounter() ? 2 : 1)] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - (hasRelationSheetCounter() ? 2 : 1)); }}>
-
-                        </button>
-                    </div> : ''}
-                    {hasRelationSheetCounter() ? <div className="check__cell"
-                                                  style={{
-                                                      minWidth: '280px'
-                                                  }}>
-                        <button className={finalExportColumns[finalExportColumns.length-1] ? "btn btn--check btn--check--selected" : "btn btn--check"}
-                                onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - 1); }}>
-
-                        </button>
-                    </div> : ''}
-                </div>
-
-                <div className="line line--noFlex">
-                    {columnsNames.filter((_, index) => (outputSheetExportColumns[index] && outputSheetColumnsVisibility[index]))
-                        .map((item, index) => {
-                            return <div className="sheet__header__cell"
-                                        style={getStyleWithMinWidth()}
-                                        key={index}>
-                                {item}
-                            </div>
-                    })}
-
-                    {hasDataSheetCounter() ? <div className="sheet__header__cell"
-                                                  style={{
-                                                      minWidth: '280px'
-                                                  }}>
-                        {content.matchCounterDataSheetName}
-                    </div> : ''}
-
-                    {hasRelationSheetCounter() ? <div className="sheet__header__cell"
+                        {hasDataSheetCounter() ? <div className="check__cell"
                                                       style={{
                                                           minWidth: '280px'
                                                       }}>
-                        {content.matchCounterRelationSheetName}
-                    </div> : ''}
+                            <button className={finalExportColumns[finalExportColumns.length-(hasRelationSheetCounter() ? 2 : 1)] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - (hasRelationSheetCounter() ? 2 : 1)); }}>
+
+                            </button>
+                        </div> : ''}
+                        {hasRelationSheetCounter() ? <div className="check__cell"
+                                                          style={{
+                                                              minWidth: '280px'
+                                                          }}>
+                            <button className={finalExportColumns[finalExportColumns.length-1] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleOutputSheetExportChange(finalExportColumns.length - 1); }}>
+
+                            </button>
+                        </div> : ''}
+                    </div>
+
+                    <div className="sheet__table">
+                        <div className="line line--noFlex">
+                            {columnsNames.filter((_, index) => (outputSheetColumnsVisibility[index]))
+                                .map((item, index) => {
+                                    return <div className="sheet__header__cell"
+                                                style={getStyleWithMinWidth()}
+                                                key={index}>
+                                        {item}
+                                    </div>
+                                })}
+
+                            {hasDataSheetCounter() ? <div className="sheet__header__cell"
+                                                          style={{
+                                                              minWidth: '280px'
+                                                          }}>
+                                {content.matchCounterDataSheetName}
+                            </div> : ''}
+
+                            {hasRelationSheetCounter() ? <div className="sheet__header__cell"
+                                                              style={{
+                                                                  minWidth: '280px'
+                                                              }}>
+                                {content.matchCounterRelationSheetName}
+                            </div> : ''}
+                        </div>
+                    </div>
                 </div>
+
+                {rowsToRender.map((item, index) => {
+                    return <div className="line line--tableRow"
+                                key={index}>
+                        {/* Columns */}
+                        {Object.entries(item).map((item, index) => {
+                            if(outputSheetColumnsVisibility[index]) {
+                                const cellValue = item[1];
+
+                                return <div className="sheet__body__row__cell"
+                                            style={{
+                                                minWidth: getColumnMinWidth(),
+                                                maxHeight: getColumnMaxHeight()
+                                            }}
+                                            key={index}>
+                                    {cellValue}
+                                </div>
+                            }
+                        })}
+
+                        {/* Match counters */}
+                        {hasDataSheetCounter() ? <div className="sheet__body__row__cell"
+                                                      style={{
+                                                          minWidth: '280px',
+                                                          maxHeight: getColumnMaxHeight()
+                                                      }}>
+                            {item[content.matchCounterDataSheetName]}
+                        </div> : ''}
+                        {hasRelationSheetCounter() ? <div className="sheet__body__row__cell"
+                                                          style={{
+                                                              minWidth: '280px',
+                                                              maxHeight: getColumnMaxHeight()
+                                                          }}>
+                            {item[content.matchCounterRelationSheetName]}
+                        </div> : ''}
+                    </div>
+                })}
             </div>
-
-            {rowsToRender.map((item, index) => {
-                return <div className="line line--tableRow"
-                           key={index}>
-                    {/* Columns */}
-                    {Object.entries(item).filter((_, index) => (outputSheetExportColumns[index] && outputSheetColumnsVisibility[index]))
-                        .map((item, index, array) => {
-                            const cellValue = item[1];
-
-                            return <div className="sheet__body__row__cell"
-                                        style={{
-                                            minWidth: getColumnMinWidth(),
-                                            maxHeight: getColumnMaxHeight()
-                                        }}
-                                        key={index}>
-                                {cellValue}
-                            </div>
-                    })}
-
-                    {/* Match counters */}
-                    {hasDataSheetCounter() ? <div className="sheet__body__row__cell"
-                                                  style={{
-                                                      minWidth: '280px',
-                                                      maxHeight: getColumnMaxHeight()
-                                                  }}>
-                        {item[content.matchCounterDataSheetName]}
-                    </div> : ''}
-                    {hasRelationSheetCounter() ? <div className="sheet__body__row__cell"
-                                                  style={{
-                                                      minWidth: '280px',
-                                                      maxHeight: getColumnMaxHeight()
-                                                  }}>
-                        {item[content.matchCounterRelationSheetName]}
-                    </div> : ''}
-                </div>
-            })}
         </div>
     </div>
 });

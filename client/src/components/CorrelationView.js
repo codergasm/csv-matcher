@@ -61,6 +61,7 @@ const CorrelationView = ({user}) => {
     const [relationSheetColumnsVisibility, setRelationSheetColumnsVisibility] = useState([]);
     const [outputSheetColumnsVisibility, setOutputSheetColumnsVisibility] = useState([]);
     const [numberOfMatches, setNumberOfMatches] = useState(-1);
+    const [temporaryNumberOfMatches, setTemporaryNumberOfMatches] = useState(-1);
     const [afterMatchClean, setAfterMatchClean] = useState(false);
     const [selectListIndicators, setSelectListIndicators] = useState([]);
 
@@ -72,12 +73,12 @@ const CorrelationView = ({user}) => {
     const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
 
     useEffect(() => {
-        if(numberOfMatches !== -1) {
+        if(temporaryNumberOfMatches !== -1) {
             setTimeout(() => {
-                setNumberOfMatches(-1);
+                setTemporaryNumberOfMatches(-1);
             }, 5500);
         }
-    }, [numberOfMatches]);
+    }, [temporaryNumberOfMatches]);
 
     useEffect(() => {
         if(currentSchemaId !== -1) {
@@ -85,7 +86,8 @@ const CorrelationView = ({user}) => {
         }
 
         if(indexesOfCorrelatedRows) {
-            setNumberOfMatches(indexesOfCorrelatedRows?.length);
+            setTemporaryNumberOfMatches(indexesOfCorrelatedRows.length);
+            setNumberOfMatches(indexesOfCorrelatedRows.length);
         }
     }, [indexesOfCorrelatedRows]);
 
@@ -1858,8 +1860,8 @@ const CorrelationView = ({user}) => {
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}
             </div>
 
-            {numberOfMatches > 0 ? <QuickBottomInfo time={5000}>
-                {content.matchesDone}: {numberOfMatches}
+            {temporaryNumberOfMatches > 0 ? <QuickBottomInfo time={5000}>
+                {content.matchesDone}: {temporaryNumberOfMatches}
             </QuickBottomInfo> : ''}
         </div>
     </ViewContext.Provider>

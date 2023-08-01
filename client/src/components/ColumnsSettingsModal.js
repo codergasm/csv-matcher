@@ -27,7 +27,7 @@ const ColumnsSettingsModal = ({closeModal, columnsNames, columns, setColumns,
         setColumns(prevState => (prevState.map(() => true)));
     }
 
-    return <div className="modal">
+    return <div className="modal modal--selectMenuSettings">
         <CloseModalButton onClick={closeModal} />
 
         <div className="modal__inner modal__inner--columnsSettings scroll">

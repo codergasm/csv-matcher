@@ -1087,12 +1087,15 @@ option {
     opacity: .7;
 }
 
-.sheet__header__cell__sort {
+.sheet__header__cell__sortAndSearchButtons {
     position: absolute;
     top: 0;
     right: 0;
     background: #fff;
     z-index: 10;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
 }
 
 .btn--removeSorting,
@@ -2943,6 +2946,10 @@ input[type=number] {
     margin-top: -250px;
 }
 
+.sheetWrapper--outputSheet .sheetInner .line--tableRow:nth-of-type(3) {
+    margin-top: 0;
+}
+
 .modal__header--marginTop {
     margin-top: 25px;
 }
@@ -2951,4 +2958,13 @@ input[type=number] {
     color: var(--primary);
     margin-top: 30px !important;
     font-size: 13px;
+}
+
+.sheet__header__cell__label > .input {
+    border: none;
+    border-bottom: 1px solid var(--primary);
+    padding-bottom: 4px;
+    font-size: 13px;
+    outline: none !important;
+    max-width: 92%;
 }

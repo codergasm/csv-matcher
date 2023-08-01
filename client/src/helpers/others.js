@@ -33,19 +33,23 @@ const sortByColumn = (sheet, column, type) => {
     }
 }
 
-const sortRelationColumn = (sheet, indexesOfCorrelatedRows, type) => {
+const sortRelationColumn = (sheet, indexesOfCorrelatedRows, type, sheetIndex) => {
+    let indexesToSearch = indexesOfCorrelatedRows.map((item) => (item[sheetIndex]));
+    const sortedSheet = [...sheet];
+
     if(type === 1) {
         // Matched rows first
-        const sortedSheet = [...sheet];
-
         return sortedSheet.sort((a, b) => {
-            const aIndex = sortedSheet.indexOf(a);
-            const bIndex = sortedSheet.indexOf(b);
+            const aIndex = sheet.indexOf(a);
+            const bIndex = sheet.indexOf(b);
 
-            if(indexesOfCorrelatedRows[aIndex] !== -1 && indexesOfCorrelatedRows[bIndex] === -1) {
+            const aIncludes = indexesToSearch.includes(aIndex);
+            const bIncludes = indexesToSearch.includes(bIndex);
+
+            if(aIncludes && !bIncludes) {
                 return 1;
             }
-            else if(indexesOfCorrelatedRows[bIndex] !== -1 && indexesOfCorrelatedRows[aIndex] === -1) {
+            else if(!aIncludes && bIncludes) {
                 return -1;
             }
             else {
@@ -55,16 +59,17 @@ const sortRelationColumn = (sheet, indexesOfCorrelatedRows, type) => {
     }
     else if(type === 2) {
         // Unmatched rows first
-        const sortedSheet = [...sheet];
-
         return sortedSheet.sort((a, b) => {
-            const aIndex = sortedSheet.indexOf(a);
-            const bIndex = sortedSheet.indexOf(b);
+            const aIndex = sheet.indexOf(a);
+            const bIndex = sheet.indexOf(b);
 
-            if(indexesOfCorrelatedRows[aIndex] !== -1 && indexesOfCorrelatedRows[bIndex] === -1) {
+            const aIncludes = indexesToSearch.includes(aIndex);
+            const bIncludes = indexesToSearch.includes(bIndex);
+
+            if(aIncludes && !bIncludes) {
                 return -1;
             }
-            else if(indexesOfCorrelatedRows[bIndex] !== -1 && indexesOfCorrelatedRows[aIndex] === -1) {
+            else if(!aIncludes && bIncludes) {
                 return 1;
             }
             else {
