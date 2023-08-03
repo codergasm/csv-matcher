@@ -84,6 +84,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [searchInputValues, setSearchInputValues] = useState([]);
     const [searchChanged, setSearchChanged] = useState(false);
     const [refreshSheetFiltering, setRefreshSheetFiltering] = useState(false);
+    const [columnWithMinWidth, setColumnWithMinWidth] = useState({});
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
 
@@ -417,9 +418,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const getColumnMinWidth = () => {
-        const numberOfColumns = columnsNames?.length;
+        const numberOfColumns = getNumberOfVisibleColumns();
 
-        if(numberOfColumns === 2) {
+        if(numberOfColumns === 1) {
+            return 'calc(100% - 400px)';
+        }
+        else if(numberOfColumns === 2) {
             return 'calc((100% - 400px) * 0.92)';
         }
         else if(numberOfColumns === 3) {
@@ -450,11 +454,19 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         return similarity >= 0 ? `${similarity} %` : '-';
     }
 
-    const columnWithMinWidth = () => {
-        return {
+    useEffect(() => {
+        setColumnWithMinWidth({
             minWidth: getColumnMinWidth()
+        });
+
+        if(currentSheetColumnsVisibility?.length && getNumberOfVisibleColumns() === 0) {
+            setCurrentSheetColumnsVisibility(prevState => {
+                return prevState.map((item, index) => {
+                    return index === 0;
+                });
+            });
         }
-    }
+    }, [currentSheetColumnsVisibility]);
 
     const addManualCorrelationWrapper = (e, item) => {
         let condition = sheetIndex === 0 ? ((indexesOfCorrelatedRowsSecondSheetIndexes.includes(item.relationRowIndex)) && (matchType !== 3) && (matchType !== 2)) :
@@ -574,6 +586,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         else {
             setCurrentSheetColumnsVisibility(temporaryColumnsVisibility);
         }
+    }
+
+    const getNumberOfVisibleColumns = () => {
+        return currentSheetColumnsVisibility.filter((item) => (item)).length;
     }
 
     return <div className="sheetWrapper" ref={ref}>
@@ -703,8 +719,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                     <div className="line line--noFlex line--columnsToCheck">
                         {temporaryColumnsVisibility.map((item, index) => {
                             if(currentSheetColumnsVisibility[index]) {
-                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
-                                            style={columnWithMinWidth()}
+                                return <div className={index === 0 && getNumberOfVisibleColumns() > 1 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                            style={columnWithMinWidth}
                                             key={index}>
                                     <button className={temporaryColumnsVisibility[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                             onClick={() => { handleTemporaryColumnsVisibilityChange(index); }}>
@@ -718,8 +734,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                     <div className="line line--noFlex line--columnsToCheck">
                         {showInSelectMenuColumnsCurrentSheet.map((item, index) => {
                             if(currentSheetColumnsVisibility[index]) {
-                                return <div className={index === 0 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
-                                            style={columnWithMinWidth()}
+                                return <div className={index === 0 && getNumberOfVisibleColumns() > 1 ? "check__cell check__cell--first check__cell--borderBottom" : "check__cell check__cell--borderBottom"}
+                                            style={columnWithMinWidth}
                                             key={index}>
                                     <button className={showInSelectMenuColumnsCurrentSheet[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                             onClick={() => { handleSelectMenuColumnsChange(index); }}>
@@ -733,9 +749,9 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                     <div className="line line--noFlex line--columnsToCheck">
                         {outputSheetExportColumns.map((item, index) => {
                             if(outputSheetExportColumnsVisibilityCondition(index)) {
-                                if(outputSheetExportColumnsVisibilityFirstColumnCondition(index)) {
+                                if(outputSheetExportColumnsVisibilityFirstColumnCondition(index) && getNumberOfVisibleColumns() > 1) {
                                     return <div className="check__cell check__cell--first"
-                                                style={columnWithMinWidth()}
+                                                style={columnWithMinWidth}
                                                 key={index}>
                                         <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                                 onClick={() => { handleExportColumnsChange(index); }}>
@@ -745,7 +761,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                 }
                                 else {
                                     return <div className="check__cell"
-                                                style={columnWithMinWidth()}
+                                                style={columnWithMinWidth}
                                                 key={index}>
                                         <button className={outputSheetExportColumns[index] ? "btn btn--check btn--check--selected" : "btn btn--check"}
                                                 onClick={() => { handleExportColumnsChange(index); }}>
@@ -853,7 +869,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                             const cellValue = item[1];
 
                             if(currentSheetColumnsVisibility[index]) {
-                                return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
+                                return <div className={index === 0 && getNumberOfVisibleColumns() > 1 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
                                             style={{
                                                 minWidth: getColumnMinWidth(),
                                                 maxHeight: getColumnMaxHeight()

@@ -66,10 +66,14 @@ const TableViewHeaderRow = ({columnsNames, columnsVisibility, getColumnMinWidth,
         });
     }
 
+    const getNumberOfVisibleColumns = () => {
+        return columnsVisibility.filter((item) => (item)).length;
+    }
+
     return <>
         {columnsNames.map((item, index) => {
             if(columnsVisibility[index]) {
-                return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
+                return <div className={index === 0 && getNumberOfVisibleColumns() > 1 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
                             style={{
                                 minWidth: getColumnMinWidth()
                             }}

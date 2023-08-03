@@ -173,13 +173,42 @@ const OutputSheetView = forwardRef((props, ref) => {
 
         if(exportFormat < 2) {
             // CSV file
+            const numberOfDataSheetColumns = Object.entries(dataSheet[0]).length;
+            const numberOfDataSheetColumnsInFinalExport = finalExportColumns.filter((item, index) => {
+                return item && index < numberOfDataSheetColumns;
+            }).length;
+
             const data = outputSheet.map((item) => {
                 return Object.fromEntries(Object.entries(item)
                     .filter((item, index) => (finalExportColumns[index])));
+            }).map((item) => {
+                return Object.fromEntries(Object.entries(item).map((item, index) => {
+                    if(index === 0) {
+                        return [content.dataSheetIndex, item[1]];
+                    }
+                    else if(index === numberOfDataSheetColumnsInFinalExport) {
+                        return [content.relationSheetIndex, item[1]];
+                    }
+                    else {
+                        return item;
+                    }
+                }));
             });
 
+            console.log(data);
+
             const csvData = Papa.unparse({
-                fields: Object.keys(data[0]),
+                fields: Object.keys(data[0]).map((item, index) => {
+                    if(index === 0) {
+                        return content.dataSheetIndex;
+                    }
+                    else if(index === numberOfDataSheetColumnsInFinalExport) {
+                        return content.relationSheetIndex;
+                    }
+                    else {
+                       return item;
+                    }
+                }),
                 data: data
             }, {
                 delimiter: exportFormat === 0 ? ',' : ';'

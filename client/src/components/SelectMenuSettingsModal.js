@@ -8,7 +8,7 @@ const SelectMenuSettingsModal = ({closeModal, columnsNames, columns, setColumns,
                                   visibleColumns, header, warning}) => {
     const { content } = useContext(TranslationContext);
 
-    const [showOnlyVisibleColumns, setShowOnlyVisibleColumns] = useState(false);
+    const [showOnlyVisibleColumns, setShowOnlyVisibleColumns] = useState(true);
     const [warningExist, setWarningExist] = useState(false);
 
     useCloseModalOnOutsideClick(closeModal);

@@ -104,6 +104,7 @@ const pl = {
     configureLater: 'Skonfiguruję później',
     noColumnsInSelectMenu: 'Żadne kolumny nie są wybrane do podpowiedzi!',
     checkColumnsForSelectMenu: 'Zaznacz, które kolumny mają być widoczne w podpowiedziach',
+    relationTypeDescriptions: ['Opis relacji jeden do jednego', 'Opis relacji jeden do wielu', 'Opis relacji wiele do jednego', 'Opis relacji wiele do wielu'],
 
     // Correlation table
     visibility: 'Widoczność',

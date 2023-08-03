@@ -3,6 +3,7 @@ import Select from "react-select";
 import {ViewContext} from "./CorrelationView";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
+import RelationTypeTooltip from "./RelationTypeTooltip";
 
 const MatchTypeSelect = () => {
     const { content } = useContext(TranslationContext);
@@ -58,6 +59,8 @@ const MatchTypeSelect = () => {
                 onChange={handleChoose}
                 isDisabled={apiRelationType !== -1}
                 isSearchable={true} />
+
+        <RelationTypeTooltip />
     </div>
 };
 

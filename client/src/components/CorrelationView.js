@@ -11,6 +11,7 @@ import QuickBottomInfo from "./QuickBottomInfo";
 import transposeMatrix from "../helpers/transposeMatrix";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
+import combineTwoSheets from "../helpers/combineTwoSheets";
 
 const ViewContext = React.createContext(null);
 
@@ -275,8 +276,8 @@ const CorrelationView = ({user}) => {
         for(const pair of indexesOfCorrelatedRows) {
             const dataRowIndex = pair[0];
             const relationRowIndex = pair[1];
-            let combined = {...dataSheet[dataRowIndex], ...relationSheet[relationRowIndex]};
 
+            let combined = combineTwoSheets(dataSheet[dataRowIndex], relationSheet[relationRowIndex]);
             result.push(combined);
         }
 
@@ -291,8 +292,7 @@ const CorrelationView = ({user}) => {
             const relationRowIndex = pair[1];
             const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length;
             let combined = {
-                ...dataSheet[dataRowIndex],
-                ...relationSheet[relationRowIndex],
+                ...combineTwoSheets(dataSheet[dataRowIndex], relationSheet[relationRowIndex]),
                 [content.matchCounterDataSheetName]: numberOfMatches
             };
 
@@ -310,8 +310,7 @@ const CorrelationView = ({user}) => {
             const relationRowIndex = pair[1];
             const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === relationRowIndex)).length;
             let combined = {
-                ...dataSheet[dataRowIndex],
-                ...relationSheet[relationRowIndex],
+                ...combineTwoSheets(dataSheet[dataRowIndex], relationSheet[relationRowIndex]),
                 [content.matchCounterRelationSheetName]: numberOfMatches
             };
 
@@ -330,8 +329,7 @@ const CorrelationView = ({user}) => {
             const numberOfMatchesDataSheet = indexesOfCorrelatedRows.filter((item) => (item[0] === dataRowIndex)).length;
             const numberOfMatchesRelationSheet = indexesOfCorrelatedRows.filter((item) => (item[1] === relationRowIndex)).length;
             let combined = {
-                ...dataSheet[dataRowIndex],
-                ...relationSheet[relationRowIndex],
+                ...combineTwoSheets(dataSheet[dataRowIndex], relationSheet[relationRowIndex]),
                 [content.matchCounterDataSheetName]: numberOfMatchesDataSheet,
                 [content.matchCounterRelationSheetName]: numberOfMatchesRelationSheet
             };
@@ -354,10 +352,7 @@ const CorrelationView = ({user}) => {
 
             if(relationRowIndexes?.length) {
                 for(const relationRowIndex of relationRowIndexes) {
-                    result.push({
-                        ...combined,
-                        ...relationSheet[relationRowIndex]
-                    });
+                    result.push(combineTwoSheets(combined, relationSheet[relationRowIndex]));
                 }
             }
             else {
@@ -365,7 +360,7 @@ const CorrelationView = ({user}) => {
                 const relationSheetEmptyObject = Object.fromEntries(relationSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...relationSheetEmptyObject});
+                result.push(combineTwoSheets(combined, relationSheetEmptyObject));
             }
         });
 
@@ -385,8 +380,7 @@ const CorrelationView = ({user}) => {
             if(relationRowIndexes?.length) {
                 for(const relationRowIndex of relationRowIndexes) {
                     result.push({
-                        ...combined,
-                        ...relationSheet[relationRowIndex],
+                        ...combineTwoSheets(combined, relationSheet[relationRowIndex]),
                         [content.matchCounterDataSheetName]: relationRowIndexes.length
                     });
                 }
@@ -396,7 +390,7 @@ const CorrelationView = ({user}) => {
                 const relationSheetEmptyObject = Object.fromEntries(relationSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...relationSheetEmptyObject});
+                result.push(combineTwoSheets(combined, relationSheetEmptyObject));
             }
         });
 
@@ -418,8 +412,7 @@ const CorrelationView = ({user}) => {
                     const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === relationRowIndex)).length;
 
                     result.push({
-                        ...combined,
-                        ...relationSheet[relationRowIndex],
+                        ...combineTwoSheets(combined, relationSheet[relationRowIndex]),
                         [content.matchCounterRelationSheetName]: numberOfMatches
                     });
                 }
@@ -429,7 +422,7 @@ const CorrelationView = ({user}) => {
                 const relationSheetEmptyObject = Object.fromEntries(relationSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...relationSheetEmptyObject});
+                result.push(combineTwoSheets(combined, relationSheetEmptyObject));
             }
         });
 
@@ -451,8 +444,7 @@ const CorrelationView = ({user}) => {
                     const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === relationRowIndex)).length;
 
                     result.push({
-                        ...combined,
-                        ...relationSheet[relationRowIndex],
+                        ...combineTwoSheets(combined, relationSheet[relationRowIndex]),
                         [content.matchCounterDataSheetName]: relationRowIndexes.length,
                         [content.matchCounterRelationSheetName]: numberOfMatches
                     });
@@ -463,7 +455,7 @@ const CorrelationView = ({user}) => {
                 const relationSheetEmptyObject = Object.fromEntries(relationSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...relationSheetEmptyObject});
+                result.push(combineTwoSheets(combined, relationSheetEmptyObject));
             }
         });
 
@@ -484,10 +476,7 @@ const CorrelationView = ({user}) => {
 
             if(dataRowIndexes?.length) {
                 for(const dataRowIndex of dataRowIndexes) {
-                    result.push({
-                        ...dataSheet[dataRowIndex],
-                        ...combined
-                    });
+                    result.push(combineTwoSheets(dataSheet[dataRowIndex], combined));
                 }
             }
             else {
@@ -495,7 +484,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...dataSheetEmptyObject, ...combined});
+                result.push(combineTwoSheets(dataSheetEmptyObject, combined));
             }
         });
 
@@ -515,8 +504,7 @@ const CorrelationView = ({user}) => {
             if(dataRowIndexes?.length) {
                 for(const dataRowIndex of dataRowIndexes) {
                     result.push({
-                        ...dataSheet[dataRowIndex],
-                        ...combined,
+                        ...combineTwoSheets(dataSheet[dataRowIndex], combined),
                         [content.matchCounterRelationSheetName]: dataRowIndexes.length
                     });
                 }
@@ -526,7 +514,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...dataSheetEmptyObject, ...combined});
+                result.push(combineTwoSheets(dataSheetEmptyObject, combined));
             }
         });
 
@@ -548,8 +536,7 @@ const CorrelationView = ({user}) => {
                     const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === dataRowIndex)).length;
 
                     result.push({
-                        ...dataSheet[dataRowIndex],
-                        ...combined,
+                        ...combineTwoSheets(dataSheet[dataRowIndex], combined),
                         [content.matchCounterDataSheetName]: numberOfMatches
                     });
                 }
@@ -559,7 +546,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...dataSheetEmptyObject, ...combined});
+                result.push(combineTwoSheets(dataSheetEmptyObject, combined));
             }
         });
 
@@ -581,8 +568,7 @@ const CorrelationView = ({user}) => {
                     const numberOfMatches = indexesOfCorrelatedRows.filter((item) => (item[1] === dataRowIndex)).length;
 
                     result.push({
-                        ...combined,
-                        ...relationSheet[relationRowIndex],
+                        ...combineTwoSheets(combined, relationSheet[relationRowIndex]),
                         [content.matchCounterRelationSheetName]: dataRowIndexes.length,
                         [content.matchCounterDataSheetName]: numberOfMatches
                     });
@@ -593,7 +579,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...dataSheetEmptyObject});
+                result.push(combineTwoSheets(combined, dataSheetEmptyObject));
             }
         });
 
@@ -621,7 +607,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -631,54 +617,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
-                    }
-
-                    columnIndex++;
-                }
-
-                result.push(combined);
-            }
-            else {
-                return null;
-            }
-        });
-
-        return result.filter((item) => (item));
-    }
-
-    const joinTwoSheetsMatchesSystemCommaOrSumFormatWithoutCounterManyToOne = (sum = false) => {
-        let result = [];
-
-        relationSheet.forEach((item, index) => {
-            let combined = {...item};
-            const relationRowIndex = index;
-            const dataRowIndexes = indexesOfCorrelatedRows
-                .filter((item) => (item[1] === relationRowIndex))
-                .map((item) => (item[0]));
-
-            if(dataRowIndexes?.length) {
-                let columnIndex = 0;
-
-                for(const columnName of Object.keys(dataSheet[0])) {
-                    if(sum && columnsToSum[columnIndex]) {
-                        let newColumn = 0;
-
-                        for(const dataRowIndex of dataRowIndexes) {
-                            newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
-                        }
-
-                        combined = {...{ [columnName]: newColumn }, ...combined}
-                    }
-                    else {
-                        let newColumn = '';
-
-                        for(const dataRowIndex of dataRowIndexes) {
-                            newColumn += `${relationSheet[relationRowIndex][columnName]}, `;
-                        }
-
-                        newColumn = newColumn.slice(0, -2);
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -716,7 +655,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -726,7 +665,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -767,7 +706,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -777,7 +716,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -818,7 +757,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -828,7 +767,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -868,7 +807,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -878,7 +817,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -891,7 +830,7 @@ const CorrelationView = ({user}) => {
                 const relationSheetEmptyObject = Object.fromEntries(relationSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...combined, ...relationSheetEmptyObject});
+                result.push(combineTwoSheets(combined, relationSheetEmptyObject));
             }
         });
 
@@ -919,7 +858,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(relationSheet[relationRowIndex][columnName]);
                         }
 
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
                     else {
                         let newColumn = '';
@@ -929,7 +868,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...combined, ...{ [columnName]: newColumn }}
+                        combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     }
 
                     columnIndex++;
@@ -946,8 +885,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
-                    ...relationSheetEmptyObject,
+                    ...combineTwoSheets(combined, relationSheetEmptyObject),
                     ...{ [content.matchCounterDataSheetName]: relationRowIndexes.length }
                 });
             }
@@ -992,11 +930,7 @@ const CorrelationView = ({user}) => {
                         newColumn = newColumn.slice(0, -2);
                     }
 
-                    combined = {
-                        ...combined,
-                        ...{ [columnName]: newColumn }
-                    }
-
+                    combined = combineTwoSheets(combined, { [columnName]: newColumn });
                     columnIndex++;
                 }
 
@@ -1011,8 +945,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
-                    ...relationSheetEmptyObject,
+                    ...combineTwoSheets(combined, relationSheetEmptyObject),
                     ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
             }
@@ -1057,10 +990,7 @@ const CorrelationView = ({user}) => {
                         newColumn = newColumn.slice(0, -2);
                     }
 
-                    combined = {
-                        ...combined,
-                        ...{ [columnName]: newColumn }
-                    }
+                    combined = combineTwoSheets(combined, { [columnName]: newColumn });
 
                     columnIndex++;
                 }
@@ -1077,8 +1007,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...combined,
-                    ...relationSheetEmptyObject,
+                    ...combineTwoSheets(combined, relationSheetEmptyObject),
                     ...{ [content.matchCounterDataSheetName]: 0 },
                     ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
@@ -1109,7 +1038,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets({ [columnName]: newColumn }, combined);
                     }
                     else {
                         let newColumn = '';
@@ -1119,7 +1048,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets({ [columnName]: newColumn }, combined);
                     }
 
                     columnIndex++;
@@ -1132,7 +1061,7 @@ const CorrelationView = ({user}) => {
                 const dataSheetEmptyObject = Object.fromEntries(dataSheetColumns.map((item) => {
                     return [item, ''];
                 }));
-                result.push({...dataSheetEmptyObject, ...combined});
+                result.push(combineTwoSheets(dataSheetEmptyObject, combined));
             }
         });
 
@@ -1160,7 +1089,7 @@ const CorrelationView = ({user}) => {
                             newColumn += parseFloat(dataSheet[dataRowIndex][columnName]);
                         }
 
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets({ [columnName]: newColumn }, combined);
                     }
                     else {
                         let newColumn = '';
@@ -1170,7 +1099,7 @@ const CorrelationView = ({user}) => {
                         }
 
                         newColumn = newColumn.slice(0, -2);
-                        combined = {...{ [columnName]: newColumn }, ...combined}
+                        combined = combineTwoSheets({ [columnName]: newColumn }, combined);
                     }
 
                     columnIndex++;
@@ -1187,8 +1116,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...dataSheetEmptyObject,
-                    ...combined,
+                    ...combineTwoSheets(dataSheetEmptyObject, combined),
                     ...{ [content.matchCounterRelationSheetName]: dataRowIndexes.length }
                 });
             }
@@ -1233,10 +1161,7 @@ const CorrelationView = ({user}) => {
                         newColumn = newColumn.slice(0, -2);
                     }
 
-                    combined = {
-                        ...{ [columnName]: newColumn },
-                        ...combined,
-                    }
+                    combined = combineTwoSheets({ [columnName]: newColumn }, combined);
 
                     columnIndex++;
                 }
@@ -1252,8 +1177,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...dataSheetEmptyObject,
-                    ...combined,
+                    ...combineTwoSheets(dataSheetEmptyObject, combined),
                     ...{ [content.matchCounterDataSheetName]: 0 }
                 });
             }
@@ -1298,11 +1222,7 @@ const CorrelationView = ({user}) => {
                         newColumn = newColumn.slice(0, -2);
                     }
 
-                    combined = {
-                        ...{ [columnName]: newColumn },
-                        ...combined
-                    }
-
+                    combined = combineTwoSheets({ [columnName]: newColumn }, combined);
                     columnIndex++;
                 }
 
@@ -1318,8 +1238,7 @@ const CorrelationView = ({user}) => {
                     return [item, ''];
                 }));
                 result.push({
-                    ...dataSheetEmptyObject,
-                    ...combined,
+                    ...combineTwoSheets(dataSheetEmptyObject, combined),
                     ...{ [content.matchCounterDataSheetName]: 0 },
                     ...{ [content.matchCounterRelationSheetName]: 0 }
                 });
