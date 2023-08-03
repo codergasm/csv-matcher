@@ -195,8 +195,6 @@ const OutputSheetView = forwardRef((props, ref) => {
                 }));
             });
 
-            console.log(data);
-
             const csvData = Papa.unparse({
                 fields: Object.keys(data[0]).map((item, index) => {
                     if(index === 0) {
@@ -315,7 +313,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     const checkScrollToBottom = (e) => {
         const { visibleHeight, scrollHeight, scrolled } = getScrollParams(e);
 
-        if(scrolled + visibleHeight >= scrollHeight) {
+        if(scrolled + visibleHeight + 2 >= scrollHeight) {
             if((page) * ROWS_PER_PAGE < outputSheet.length) {
                 fetchNextRows();
             }

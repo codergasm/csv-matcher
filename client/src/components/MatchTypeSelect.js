@@ -4,13 +4,18 @@ import {ViewContext} from "./CorrelationView";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import RelationTypeTooltip from "./RelationTypeTooltip";
+import ChangeMatchTypeModal from "./ChangeMatchTypeModal";
+import cleanCorrelationMatrix from "../helpers/cleanCorrelationMatrix";
 
 const MatchTypeSelect = () => {
     const { content } = useContext(TranslationContext);
-    const { apiRelationType } = useContext(ApiContext);
-    const { matchType, setMatchType } = useContext(ViewContext);
+    const { apiRelationType, dataSheet, relationSheet } = useContext(ApiContext);
+    const { matchType, setMatchType, indexesOfCorrelatedRows, setIndexesOfCorrelatedRows,
+         setAfterMatchClean, setManuallyCorrelatedRows, setCorrelationMatrix } = useContext(ViewContext);
 
     const [options, setOptions] = useState([]);
+    const [candidateValue, setCandidateValue] = useState(null);
+    const [alertModalVisible, setAlertModalVisible] = useState(false);
 
     let selectRef = useRef(null);
     let selectLabel = useRef(null);
@@ -41,11 +46,30 @@ const MatchTypeSelect = () => {
     }
 
     const handleChoose = (e) => {
-        setMatchType(e.value);
+        if(indexesOfCorrelatedRows.length) {
+            setAlertModalVisible(true);
+            setCandidateValue(e.value);
+        }
+        else {
+            setMatchType(e.value);
+        }
+    }
+
+    const confirmMatchTypeChange = () => {
+        setMatchType(candidateValue);
+        setAlertModalVisible(false);
+
+        setIndexesOfCorrelatedRows([]);
+        setManuallyCorrelatedRows([]);
+        setCorrelationMatrix(cleanCorrelationMatrix(dataSheet, relationSheet));
+        setAfterMatchClean(true);
     }
 
     return <div className="matchTypeSelectLabel"
                 ref={selectLabel}>
+        {alertModalVisible ? <ChangeMatchTypeModal closeModal={() => { setAlertModalVisible(false); }}
+                                                   handleSubmit={confirmMatchTypeChange} /> : ''}
+
         <span>
             {content.relationType}
         </span>

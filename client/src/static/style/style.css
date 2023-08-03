@@ -959,16 +959,21 @@ option {
 
 .disclaimer {
     white-space: normal;
-    position: relative;
-    padding: 0 10px;
+    position: absolute;
+    top: 250px;
+    right: 85px;
+    width: 400px;
+    padding: 0 15px;
     margin: 20px auto;
+    z-index: 9999;
 }
 
 .disclaimer > span {
     display: block;
     margin-top: 0;
-    color: red;
-    font-size: 14px;
+    color: #fff;
+    font-style: italic;
+    font-size: 12px;
     text-align: center;
     position: relative;
     z-index: 100;
@@ -2979,7 +2984,7 @@ input[type=number] {
     margin: auto;
     position: absolute;
     bottom: 0;
-    left: 220px;
+    right: -55px;
     background: var(--primary);
     border-radius: 25px;
     outline: 0;

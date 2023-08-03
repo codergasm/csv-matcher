@@ -639,13 +639,13 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
             </ButtonAutoMatch>
         </div>
 
-        {isShowInSelectMenuFromSecondSheetEmpty() ? <span className="disclaimer">
-            <span>
-                {content.noColumnsInSelectMenuAlert}
-            </span>
-        </span> : ''}
-
         {selectList?.length && !selectListLoading ? <div className="sheetInner">
+            {isShowInSelectMenuFromSecondSheetEmpty() && !isRelationColumnSelectAvailable() ? <span className="disclaimer">
+                <span>
+                    {content.noColumnsInSelectMenuAlert}
+                </span>
+            </span> : ''}
+
             {/* RELATION COLUMN SELECT */}
             {isRelationColumnSelectAvailable() ? <RelationColumnSelect n={numberOfRelationColumns}
                                                                        addRelationColumn={() => { setNumberOfRelationColumns(p => p+1); }}

@@ -105,6 +105,8 @@ const pl = {
     noColumnsInSelectMenu: 'Żadne kolumny nie są wybrane do podpowiedzi!',
     checkColumnsForSelectMenu: 'Zaznacz, które kolumny mają być widoczne w podpowiedziach',
     relationTypeDescriptions: ['Opis relacji jeden do jednego', 'Opis relacji jeden do wielu', 'Opis relacji wiele do jednego', 'Opis relacji wiele do wielu'],
+    changeRelationTypeAlert: 'Uwaga! zmiana rodzaju relacji ma wpływ na mechanizmy zabezpieczające zgodność relacji między danymi, tym samym wszystkie dotychczasowe przypisania zostaną usunięte, nawet jeśli spełniały zależności nowego wybranego typu relacji. Czy kontynuować?',
+    changeMatchType: 'Zmień',
 
     // Correlation table
     visibility: 'Widoczność',

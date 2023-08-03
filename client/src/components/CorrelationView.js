@@ -12,6 +12,7 @@ import transposeMatrix from "../helpers/transposeMatrix";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import combineTwoSheets from "../helpers/combineTwoSheets";
+import cleanCorrelationMatrix from "../helpers/cleanCorrelationMatrix";
 
 const ViewContext = React.createContext(null);
 
@@ -87,7 +88,6 @@ const CorrelationView = ({user}) => {
         }
 
         if(indexesOfCorrelatedRows) {
-            setTemporaryNumberOfMatches(indexesOfCorrelatedRows.length);
             setNumberOfMatches(indexesOfCorrelatedRows.length);
         }
     }, [indexesOfCorrelatedRows]);
@@ -196,11 +196,7 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(dataSheet?.length && relationSheet?.length) {
-            setCorrelationMatrix(relationSheet.map(() => {
-                return dataSheet.map(() => {
-                    return -1;
-                });
-            }));
+            setCorrelationMatrix(cleanCorrelationMatrix(dataSheet, relationSheet));
 
             if(currentSchemaId > 0) {
                 getSchemaById(currentSchemaId)
@@ -1482,6 +1478,8 @@ const CorrelationView = ({user}) => {
                     false, showInSelectMenuColumnsDataSheet,
                     dataSheet.length, relationSheet.length, selectListIndicators, api ? 'api' : '')
                     .then((res) => {
+                        setTemporaryNumberOfMatches(indexesOfCorrelatedRows.length);
+
                         if(res?.data) {
                             // Select list for relation sheet
                             if(relationSheetSelectList?.length) {
