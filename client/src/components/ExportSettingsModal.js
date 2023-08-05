@@ -65,7 +65,7 @@ const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
                            setSelectOption={setExportBuildSystem}
                            options={content.exportBuildSystemOptions} />
 
-            <div className="modal__label modal__label--select modal__label--toggle">
+            {matchType > 0 ? <div className="modal__label modal__label--select modal__label--toggle">
                  <span>
                     {content.includeColumnWithMatchCounterLabel}
                 </span>
@@ -74,7 +74,7 @@ const ExportSettingsModal = ({closeModal, columnsNames, exportOutputSheet}) => {
                               activeLabel={''}
                               value={includeColumnWithMatchCounter}
                               onToggle={(value) => { setIncludeColumnWithMatchCounter(!value); }} />
-            </div>
+            </div> : ''}
 
             <button className="btn btn--export"
                     onClick={exportOutputSheet}>

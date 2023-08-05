@@ -53,24 +53,36 @@ const OutputSheetView = forwardRef((props, ref) => {
     const [typeOfExport, setTypeOfExport] = useState(1);
 
     useEffect(() => {
-        setTemporaryColumnsVisibility(outputSheetColumnsVisibility);
-    }, [outputSheetColumnsVisibility]);
+        if(outputSheetColumnsVisibility.length !== temporaryColumnsVisibility.length) {
+            if(hasDataSheetCounter() && hasRelationSheetCounter()) {
+                setTemporaryColumnsVisibility([...outputSheetColumnsVisibility, false, false]);
+            }
+            else if(hasDataSheetCounter() || hasRelationSheetCounter()) {
+                setTemporaryColumnsVisibility([...outputSheetColumnsVisibility, false]);
+            }
+            else {
+                setTemporaryColumnsVisibility(outputSheetColumnsVisibility);
+            }
+        }
+    }, [outputSheetColumnsVisibility, outputSheet]);
 
     useEffect(() => {
-        if(hasDataSheetCounter() && hasRelationSheetCounter()) {
-            setFinalExportColumns([...outputSheetExportColumns, false, false]);
-        }
-        else if(hasDataSheetCounter() || hasRelationSheetCounter()) {
-            setFinalExportColumns([...outputSheetExportColumns, false]);
-        }
-        else {
-            setFinalExportColumns(outputSheetExportColumns);
-        }
+        if(outputSheetExportColumns.length !== finalExportColumns.length) {
+            if(hasDataSheetCounter() && hasRelationSheetCounter()) {
+                setFinalExportColumns([...outputSheetExportColumns, false, false]);
+            }
+            else if(hasDataSheetCounter() || hasRelationSheetCounter()) {
+                setFinalExportColumns([...outputSheetExportColumns, false]);
+            }
+            else {
+                setFinalExportColumns(outputSheetExportColumns);
+            }
 
-        setColumnsToSum(outputSheetExportColumns.map(() => {
-            return 0;
-        }));
-    }, [outputSheetExportColumns]);
+            setColumnsToSum(outputSheetExportColumns.map(() => {
+                return 0;
+            }));
+        }
+    }, [outputSheetExportColumns, outputSheet]);
 
     useEffect(() => {
         if(isDataSheetColumnTypeNumber?.length && isRelationSheetColumnTypeNumber?.length) {
@@ -169,6 +181,7 @@ const OutputSheetView = forwardRef((props, ref) => {
     }
 
     const exportOutputSheet = () => {
+        setExportSettingsModalVisible(false);
         setModalsBeforeReturnToExternalAppVisible(false);
 
         if(exportFormat < 2) {
@@ -178,15 +191,18 @@ const OutputSheetView = forwardRef((props, ref) => {
                 return item && index < numberOfDataSheetColumns;
             }).length;
 
+            const dataSheetIndexVisible = finalExportColumns[0];
+            const relationSheetIndexVisible = finalExportColumns[numberOfDataSheetColumns];
+
             const data = outputSheet.map((item) => {
                 return Object.fromEntries(Object.entries(item)
                     .filter((item, index) => (finalExportColumns[index])));
             }).map((item) => {
                 return Object.fromEntries(Object.entries(item).map((item, index) => {
-                    if(index === 0) {
+                    if(index === 0 && dataSheetIndexVisible) {
                         return [content.dataSheetIndex, item[1]];
                     }
-                    else if(index === numberOfDataSheetColumnsInFinalExport) {
+                    else if(index === numberOfDataSheetColumnsInFinalExport && relationSheetIndexVisible) {
                         return [content.relationSheetIndex, item[1]];
                     }
                     else {
@@ -195,18 +211,22 @@ const OutputSheetView = forwardRef((props, ref) => {
                 }));
             });
 
-            const csvData = Papa.unparse({
-                fields: Object.keys(data[0]).map((item, index) => {
-                    if(index === 0) {
+            const fields = Object.keys(outputSheet[0])
+                .filter((item, index) => (finalExportColumns[index]))
+                .map((item, index) => {
+                    if(index === 0 && dataSheetIndexVisible) {
                         return content.dataSheetIndex;
                     }
-                    else if(index === numberOfDataSheetColumnsInFinalExport) {
+                    else if(index === numberOfDataSheetColumnsInFinalExport && relationSheetIndexVisible) {
                         return content.relationSheetIndex;
                     }
                     else {
-                       return item;
+                        return item;
                     }
-                }),
+                });
+
+            const csvData = Papa.unparse({
+                fields: fields,
                 data: data
             }, {
                 delimiter: exportFormat === 0 ? ',' : ';'
@@ -395,6 +415,11 @@ const OutputSheetView = forwardRef((props, ref) => {
         setOutputSheetColumnsVisibility(temporaryColumnsVisibility);
     }
 
+    const closeWarningsAboutSchemaModal = () => {
+        setModalsBeforeReturnToExternalAppVisible(false);
+        setExportSettingsModalVisible(false);
+    }
+
     return <div className="sheetWrapper sheetWrapper--outputSheet" ref={ref}>
         {exportSettingsModalVisible ? <ExportSettingsModal closeModal={() => { setExportSettingsModalVisible(false); }}
                                                            exportOutputSheet={exportOutputSheetValidate}
@@ -414,11 +439,11 @@ const OutputSheetView = forwardRef((props, ref) => {
 
         {modalsBeforeReturnToExternalAppVisible
             && currentSchemaId === -1 ? <SchemaNotCreatedModal handleSubmit={typeOfExport === 2 ? saveAndReturnToExternalApp : exportOutputSheet}
-                                                               closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
+                                                               closeModal={closeWarningsAboutSchemaModal} /> : ''}
 
         {modalsBeforeReturnToExternalAppVisible
             && currentSchemaChangedAndNotSaved ? <SchemaChangedAndNotSavedModal handleSubmit={typeOfExport === 2 ? saveAndReturnToExternalApp : exportOutputSheet}
-                                                                                closeModal={() => { setModalsBeforeReturnToExternalAppVisible(false); }} /> : ''}
+                                                                                closeModal={closeWarningsAboutSchemaModal} /> : ''}
 
         <div className="btnExportWrapper center">
             {api ? <button className="btn btn--export"
@@ -496,6 +521,25 @@ const OutputSheetView = forwardRef((props, ref) => {
                                 </div>
                             }
                         })}
+
+                        {hasDataSheetCounter() ? <div className="check__cell"
+                                                      style={{
+                                                          minWidth: '280px'
+                                                      }}>
+                            <button className={temporaryColumnsVisibility[finalExportColumns.length-(hasRelationSheetCounter() ? 2 : 1)] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleTemporaryColumnsVisibilityChange(finalExportColumns.length - (hasRelationSheetCounter() ? 2 : 1)); }}>
+
+                            </button>
+                        </div> : ''}
+                        {hasRelationSheetCounter() ? <div className="check__cell"
+                                                          style={{
+                                                              minWidth: '280px'
+                                                          }}>
+                            <button className={temporaryColumnsVisibility[finalExportColumns.length-1] ? "btn btn--check btn--check--selected" : "btn btn--check"}
+                                    onClick={() => { handleTemporaryColumnsVisibilityChange(finalExportColumns.length - 1); }}>
+
+                            </button>
+                        </div> : ''}
                     </div>
 
                     <div className="line line--noFlex line--columnsToCheck">

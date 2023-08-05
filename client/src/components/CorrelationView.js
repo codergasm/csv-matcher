@@ -75,14 +75,6 @@ const CorrelationView = ({user}) => {
     const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
 
     useEffect(() => {
-        console.log(manuallyCorrelatedRows);
-    }, [manuallyCorrelatedRows]);
-
-    useEffect(() => {
-        console.log(schemaCorrelatedRows);
-    }, [schemaCorrelatedRows]);
-
-    useEffect(() => {
         if(temporaryNumberOfMatches !== -1) {
             setTimeout(() => {
                 setTemporaryNumberOfMatches(-1);
@@ -1388,7 +1380,7 @@ const CorrelationView = ({user}) => {
             if(duplicatedRecordsFormat === 0) {
                 // Duplicates
                 if(matchType === 0) {
-                    return joinTwoSheetsDataSystemDuplicatesFormatWithoutCounter();
+                    return joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter();
                 }
                 else if(matchType === 1) {
                     if(includeColumnWithMatchCounter) {

@@ -295,15 +295,12 @@ export class AppService {
     areRowsAvailableBasedOnOverrideSettings(dataRow, relationRow, overrideAllRows,
                                             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows) {
         if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
-            console.log('1');
             return true;
         }
         else if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
-            console.log('2');
             return manuallyCorrelatedRows.includes([dataRow, relationRow]);
         }
         else {
-            console.log('3');
             return false;
         }
     }

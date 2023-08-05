@@ -175,7 +175,7 @@ const pl = {
     duplicatedRecordsFormatLabel: 'Formatowanie zduplikowanych rekordów (w wyniku relacji wiele do...)',
     duplicatedRecordsFormatOptions: ['eksportuj duplikaty rekordów', 'zawsze separuj przecinkiem', 'sumuj wartości lub separuj przecinkiem'],
     exportBuildSystemLabel: 'Arkusz wyjściowy buduj z',
-    exportBuildSystemOptions: ['Tylko dopasowanych rekordów', 'Wszystkie rekordy z arkusza 1', 'Wszystkie rekordy z arkusz 2'],
+    exportBuildSystemOptions: ['Tylko dopasowanych rekordów', 'Wszystkie rekordy z arkusza 1', 'Wszystkie rekordy z arkusza 2'],
     includeColumnWithMatchCounterLabel: 'Dodaj kolumnę wskazującą ilość dopasowań dla danego rekordu',
     columnsToSumLabel: 'Wskaż kolumny, które należy sumować',
     apiModeSchemaNotCreatedAlert: 'Pamiętaj, że możesz stworzyć schemat i następnym razem skorelować dane szybciej',

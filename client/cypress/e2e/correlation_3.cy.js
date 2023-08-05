@@ -51,8 +51,6 @@ describe('Correlation', () => {
     cy.wait('@correlateRequest', {
       responseTimeout: 1000 * 60 * 60 // 1 hour
     }).then((interception) => {
-      console.log(interception);
-
       cy.get('.select__btn').first().click();
 
       cy.get('.btn--correlationViewPicker:nth-of-type(3)>.fileNameInfo').should('contain.text', `Liczba rekordów: ${numberOfExpectedMatches}`);

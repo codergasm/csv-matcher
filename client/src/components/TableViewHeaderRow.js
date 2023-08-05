@@ -70,6 +70,12 @@ const TableViewHeaderRow = ({columnsNames, columnsVisibility, getColumnMinWidth,
         return columnsVisibility.filter((item) => (item)).length;
     }
 
+    const removeFilteringOnEscapeClick = (e, index) => {
+        if(e.key === 'Escape') {
+            removeFiltering(index);
+        }
+    }
+
     return <>
         {columnsNames.map((item, index) => {
             if(columnsVisibility[index]) {
@@ -82,6 +88,7 @@ const TableViewHeaderRow = ({columnsNames, columnsVisibility, getColumnMinWidth,
                     {searchInputVisible[index] ? <label className="sheet__header__cell__label">
                         <input className="input"
                                value={searchInputValues[index]}
+                               onKeyDown={(e) => { removeFilteringOnEscapeClick(e, index); }}
                                onChange={(e) => { handleSearchValueChange(e, index); }}
                                placeholder={content.search} />
                     </label> : (item ?  <Tooltip title={item}

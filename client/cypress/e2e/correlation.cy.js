@@ -50,8 +50,6 @@ describe('Correlation', () => {
     cy.wait('@correlateRequest', {
       responseTimeout: 1000 * 60 * 60 // 1 hour
     }).then((interception) => {
-      console.log(interception);
-
       cy.get('.select__btn').first().click();
       cy.get('.select__menu__item__similarity').first().should('contain.text', '50 %');
     });
