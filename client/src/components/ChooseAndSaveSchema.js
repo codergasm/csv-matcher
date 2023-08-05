@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import Select from 'react-select';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
@@ -13,7 +13,7 @@ const ChooseAndSaveSchema = ({user}) => {
         dataSheetId, relationSheetId, setCurrentSchemaChangedAndNotSaved } = useContext(AppContext);
     const { api, apiUserId } = useContext(ApiContext);
     const { priorities, matchSchemaArray, showInSelectMenuColumnsDataSheet, showInSelectMenuColumnsRelationSheet,
-        outputSheetExportColumns, dataSheetColumnsVisibility,
+        outputSheetExportColumns, dataSheetColumnsVisibility, indexesOfCorrelatedRows,
         relationSheetColumnsVisibility, outputSheetColumnsVisibility, matchType, matchFunction } = useContext(ViewContext);
 
     const [name, setName] = useState('');
@@ -21,6 +21,8 @@ const ChooseAndSaveSchema = ({user}) => {
     const [notificationColor, setNotificationColor] = useState('');
     const [isCurrentSchemaTeam, setIsCurrentSchemaTeam] = useState(true);
     const [tooltip, setTooltip] = useState(false);
+
+    let schemaPickerContainer = useRef(null);
 
     useEffect(() => {
         setIsCurrentSchemaTeam(!availableForUserSchemas.includes(currentSchemaId));
@@ -70,6 +72,8 @@ const ChooseAndSaveSchema = ({user}) => {
     }
 
     const updateSchemaWrapper = () => {
+        schemaPickerContainer.current.style.zIndex = '99000';
+
         updateSchema(currentSchemaId, name, matchSchemaArray, priorities,
             getColumnsSettingsObject(), matchType, matchFunction,
             dataSheetId, relationSheetId, api ? 'api' : '')
@@ -77,10 +81,18 @@ const ChooseAndSaveSchema = ({user}) => {
                 setNotificationColor('#508345');
                 setNotificationText(content.schemaUpdated);
                 setCurrentSchemaChangedAndNotSaved(false);
+
+                setTimeout(() => {
+                    schemaPickerContainer.current.style.zIndex = '900';
+                }, 5000);
             })
             .catch(() => {
                 setNotificationText(content.error);
                 setNotificationColor('#ff0000');
+
+                setTimeout(() => {
+                    schemaPickerContainer.current.style.zIndex = '900';
+                }, 5000);
             });
     }
 
@@ -88,7 +100,7 @@ const ChooseAndSaveSchema = ({user}) => {
         setCurrentSchemaId(el.value);
     }
 
-    return <div className="schemaPicker">
+    return <div className="schemaPicker" ref={schemaPickerContainer}>
         {notificationText ? <BottomNotification text={notificationText}
                                                 background={notificationColor} /> : ''}
 
@@ -118,7 +130,8 @@ const ChooseAndSaveSchema = ({user}) => {
             </div>
 
             {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas || currentSchemaId === -1) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
-                                           onClick={createSchemaWrapper}>
+                                           onClick={createSchemaWrapper}
+                                           disabled={!indexesOfCorrelatedRows.length}>
                 {content.createAndSaveSchema}
             </button> : <button className="btn btn--saveSchema"
                                 onClick={updateSchemaWrapper}>

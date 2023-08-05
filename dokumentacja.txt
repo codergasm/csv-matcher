@@ -1,20 +1,30 @@
-1. dataSheet jest pierwszym wczytywanym arkuszem, relationSheet drugim, natomiast outputSheet - arkuszem wyjściowym
+========== DOKUMENTACJA FRONTENDU (REACT) ==========
+
+1. State dataSheet jest pierwszym wczytywanym arkuszem, relationSheet drugim, natomiast outputSheet - arkuszem wyjściowym.
+
 2. dataSheet i relationSheet są tablicami obiektów, gdzie i-ty element tablicy to i-ty wiersz w arkuszu, poszczególne
 klucze obiektu to nazwy kolumn, a wartości - wartości w tych kolumnach. dataSheet i relationSheet są
-niemutowalne po wczytaniu
-3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumnsDataSheet, natomiast informacje
-o eksporcie - w outputSheetExportColumns
+niemutowalne po wczytaniu.
+
+3. Informacje o pokazywaniu w podpowiadajce trzymane są w state showInSelectMenuColumnsDataSheet (dla pierwszego arkusza)
+oraz showInSelectMenuColumnsRelationSheet (dla drugiego arkusza), natomiast informacje o eksporcie
+- w outputSheetExportColumns.
+
 4. Informacja o korelacji między poszczególnymi rekordami dataSheet i relationSheet przechowywana jest w state
-indexesOfCorrelatedRows, gdzie i-ty element tej tablicy o wartości j, wskazuje, że i-ty wiersz z relationSheet
-powinien zostać skorelowany z j-tym wierszem w dataSheet, jeśli i-ty element tablicy jest równy -1 to znaczy, że i-ty
-wiersz z relationSheet nie znalazł odpowiadającego mu rekordu w dataSheet
-5. outputSheet jest zmieniany w momencie zmiany indexesOfCorrelatedRows
-6. indexesOfCorrelatedRows może zostać zmieniony tylko podczas automatycznej lub manualnej korelacji
-7. Aby zachować informacje o tym, które rekordy zostały manualnie skorelowane, w tablicy manuallyCorrelatedRows
-trzymane są indeksy wierszy z relationSheet, które zostały manualnie skorelowane z wierszami w dataSheet
-8. selectList jest stanem przechowującym tablicę, w której i-ty element jest tablicą zawierającą podobieństwa
-rekordów z dataSheet dla i-tego wiersza w relationSheet, posortowane malejąco, zawierające informacje o podobieństwie
-oraz wartości wyświetlanej w podpowiadajce (na podstawie zaznaczonych przez użytkownika kolumn).
+indexesOfCorrelatedRows, która jest tablicą dwuelementowych tablic oznaczających skorelowaną parę, gdzie pierwszy
+element tej tablicy to indeks z dataSheet, a drugi - indeks z relationSheet.
+
+5. outputSheet jest zmieniany w momencie zmiany indexesOfCorrelatedRows.
+
+6. indexesOfCorrelatedRows może zostać zmieniony tylko podczas automatycznej lub manualnej korelacji.
+
+7. Aby zachować informacje o tym, które rekordy zostały manualnie skorelowane, w tablicy manuallyCorrelatedRows trzymane
+są manualne korelacje w takiej samej formie, jak w indexesOfCorrelatedRows (dwuelementowe tablice).
+
+8. dataSheetSelectList i relationSheetSelectList są stanem przechowującym tablicę, w której i-ty element jest tablicą
+zawierającą podobieństwa rekordów z drugiego arkusza dla i-tego wiersza w aktualnym arkuszu, posortowane malejąco,
+zawierające informacje o podobieństwie oraz wartości wyświetlanej w podpowiadajce (na podstawie zaznaczonych
+przez użytkownika kolumn).
 
 Struktura pojedynczego elementu w tablicy to:
  [
@@ -27,28 +37,35 @@ Struktura pojedynczego elementu w tablicy to:
  ]
 
 Na starcie są to po prostu tablice rekordów z przypisanym similarity -1.
+
+9. State selectListIndicators to trzywymiarowa tablica, gdzie element [i, j] jest tablicą [priority, condition]
+wskazującą, który selectList powinien zostać wyświetlony dla i-tego rekordu w relationSheet i j-tego w dataSheet.
+Zmieniony zostaje tylko w momencie automatycznego korelowania. Domyślnie pobierany jest z backendu dla relationSheet,
+dla dataSheet uzyskiwany jest poprzez transponowanie macierzy.
+
 9. correlationMatrix to dwuwymiarowa tablica, gdzie i-ty element jest tablicą, w której j-ty element
-oznacza wartość podobieństwa miedzy i-tym wierszem w relationSheet i j-tym wierszem w dataSheet
-10. Do kontroli nad położeniem wierszy w drugim arkuszu użyty jest state indexesInRender, gdzie i-ty element tej tablicy
-oznacza indeks wiersza, który jest renderowany jako i-ty w relationSheet/selectList. relationSheet i selectList mają jedną kolejność (stałą),
+oznacza wartość podobieństwa miedzy i-tym wierszem w relationSheet i j-tym wierszem w dataSheet.
+
+10. Do kontroli nad położeniem wierszy w arkuszu użyty jest state indexesInRender, gdzie i-ty element tej tablicy
+oznacza indeks wiersza, który jest renderowany jako i-ty w arkuszu/selectList. Arkusz i selectList mają jedną kolejność (stałą),
 natomiast relationSheetSorted i rowsToRender drugą (zmienną w zależności od sortowania).
+
 11. matchSchemaArray przechowuje tablicę dwuelementowych tablic, gdzie pierwszy element tej tablicy to skrót wiersza
 z dataSheet, a drugi - skrót dopasowanego do niego wiersza z relationSheet. Skrót wiersza to pierwsze 50 znaków z każdej
 kolumny wiersza.
+
+12. currentSchema przechowuje indeks do tablicy schemas dla aktualnego schematu dopasowania, a currentSchemaId -
+id aktualnego schematu dopasowania.
+
+13. schemaCorrelatedRows to tablica o takiej samej strukturze jak manuallyCorreatedRows, która wskazuje rekody,
+które zostały skorelowane na podstawie schematu dopasowania.
+
+-----
+
+TODO:
 
 PRZYPISYWANIE PLIKÓW DO SCHEMATÓW DOPASOWANIA
 - w metodzie assignSheetsToSchema wstawiamy wiersz do tabeli match_schemas_sheets
 - wywołujemy metodę getNumberOfMatchedRows, która sprawdza ilość dopasowanych rekordów dla tych dwóch
     plików w tym schemacie dopasowania
 - wynik zapisujemy updatując rekord w tabeli match_schemas_sheets
-
-12. currentSchema przechowuje indeks do tablicy schemas dla aktualnego schematu dopasowania, a currentSchemaId -
-id aktualnego schematu dopasowania
-13. schemaCorrelatedRows to tablica dwuelementowa indeksu z dataSheet oraz indeksu z relationSheet,
-które zostały skorelowane na podstawie schematu dopasowania
-
-RELACJE X DO WIELU
-14. Dla relacji jeden do wielu, wiele do jednego i wiele do wielu correlationMatrix oraz selectList pozostają takie same,
-ponieważ przetrzymują tylko podobieństwa między rekordami
-15. Wszystko rozchodzi się o dodanie relacji między przypisanymi rekordami, zatem konieczna jest wymiana indexesOfCorrelatedRows.
-Zamiast tej zmiennej użyte będzie

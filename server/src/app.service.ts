@@ -8,6 +8,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import * as path from 'path';
 import getMaxValueFromArray from "./common/getMaxValueFromArray";
 import getMinValueFromArray from "./common/getMinValueFromArray";
+import convertStringToBoolean from "./common/convertStringToBoolean";
 
 @Injectable()
 export class AppService {
@@ -115,7 +116,13 @@ export class AppService {
                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
                       dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) {
       if(isCorrelationMatrixEmpty === 'true') {
-          return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
+          const relationSheetSelectList = this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
+          const dataSheetSelectList = this.transposeMatrix(relationSheetSelectList);
+
+          return {
+              relationSheetSelectList,
+              dataSheetSelectList
+          }
       }
       else {
           let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
@@ -285,6 +292,22 @@ export class AppService {
         return outputCorrelationMatrix;
     }
 
+    areRowsAvailableBasedOnOverrideSettings(dataRow, relationRow, overrideAllRows,
+                                            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows) {
+        if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
+            console.log('1');
+            return true;
+        }
+        else if(overrideAllRows && avoidOverrideForManuallyCorrelatedRows) {
+            console.log('2');
+            return manuallyCorrelatedRows.includes([dataRow, relationRow]);
+        }
+        else {
+            console.log('3');
+            return false;
+        }
+    }
+
     areRowsAvailableOneToOneRelation(dataRow, relationRow, indexesOfCorrelatedRows) {
         const dataRowAvailable = !indexesOfCorrelatedRows
             .map((item) => (item[0]))
@@ -307,7 +330,8 @@ export class AppService {
             .includes(dataRow);
     }
 
-    areRowsAvailableManyToManyRelation(_, __, ___) {
+    areRowsAvailableManyToManyRelation(dataRow, relationRow, indexesOfCorrelatedRows,
+                                       overrideAllRows, avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows) {
         return true;
     }
 
@@ -333,6 +357,8 @@ export class AppService {
   async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
                   priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
             avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId, matchType, relationTestRow) {
+      // indexesOfCorrelatedRows to tutaj tablica par, które są już skorelowane i których nie wolno nadpisać
+
       let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
       let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
 
@@ -433,9 +459,27 @@ export class AppService {
 
                   if(this.isPriorityFulfilled(currentPrioritySimilarities, currentPriorityMatchThresholds,
                       currentPriorityRequired, currentPriorityNumberOfRequiredConditions)) {
-
-                      if(areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows)) {
+                      if(areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows) || this.areRowsAvailableBasedOnOverrideSettings(
+                          dataRowIndex, relationRowIndex,
+                          convertStringToBoolean(overrideAllRows), convertStringToBoolean(avoidOverrideForManuallyCorrelatedRows), manuallyCorrelatedRows
+                      )) {
                           // Update indexesOfCorrelatedRows
+                          if(matchType === 0) {
+                              newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.filter((item) => {
+                                  return item[0] !== dataRowIndex && item[1] !== relationRowIndex;
+                              });
+                          }
+                          else if(matchType === 1) {
+                              newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.filter((item) => {
+                                  return item[1] !== relationRowIndex;
+                              });
+                          }
+                          else if(matchType === 2) {
+                              newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.filter((item) => {
+                                  return item[0] !== dataRowIndex;
+                              });
+                          }
+
                           newIndexesOfCorrelatedRows.push([dataRowIndex, relationRowIndex]);
 
                           const maxValueOfAllConditions = getMaxValueFromArray(currentPrioritySimilarities);

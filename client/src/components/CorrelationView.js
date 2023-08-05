@@ -75,6 +75,14 @@ const CorrelationView = ({user}) => {
     const [includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter] = useState(false);
 
     useEffect(() => {
+        console.log(manuallyCorrelatedRows);
+    }, [manuallyCorrelatedRows]);
+
+    useEffect(() => {
+        console.log(schemaCorrelatedRows);
+    }, [schemaCorrelatedRows]);
+
+    useEffect(() => {
         if(temporaryNumberOfMatches !== -1) {
             setTimeout(() => {
                 setTemporaryNumberOfMatches(-1);
@@ -1466,23 +1474,28 @@ const CorrelationView = ({user}) => {
         }
     }, [correlationStatus]);
 
+    const isCorrelationMatrixEmpty = () => {
+        return !correlationMatrix.length || correlationMatrix[0][0] === -1;
+    }
+
     useEffect(() => {
         // After correlation - get select list for each sheet row
         if(correlationMatrix[0]?.length) {
+
             setRelationSheetSelectListLoading(true);
             setDataSheetSelectListLoading(true);
 
             if(relationSheetSelectList?.length && !afterMatchClean) {
                 getSelectList(jobId, priorities, dataFile, relationFile,
                     dataDelimiter, relationDelimiter,
-                    false, showInSelectMenuColumnsDataSheet,
+                    isCorrelationMatrixEmpty(), showInSelectMenuColumnsDataSheet,
                     dataSheet.length, relationSheet.length, selectListIndicators, api ? 'api' : '')
                     .then((res) => {
                         setTemporaryNumberOfMatches(indexesOfCorrelatedRows.length);
 
                         if(res?.data) {
                             // Select list for relation sheet
-                            if(relationSheetSelectList?.length) {
+                            if(res?.data?.relationSheetSelectList?.length) {
                                 const newSelectList = res.data.relationSheetSelectList;
 
                                 const selectListToUpdate = relationSheetSelectList.map((item, index) => {
@@ -1501,7 +1514,7 @@ const CorrelationView = ({user}) => {
                             }
 
                             // Select list for data sheet
-                            if(dataSheetSelectList?.length) {
+                            if(res?.data?.dataSheetSelectList?.length) {
                                 const newSelectList = res.data.dataSheetSelectList;
 
                                 const selectListToUpdate = dataSheetSelectList.map((item, index) => {
@@ -1569,14 +1582,6 @@ const CorrelationView = ({user}) => {
         }
     }, [indexesOfCorrelatedRows]);
 
-    useEffect(() => {
-        if(manuallyCorrelatedRows?.length) {
-            // setSchemaCorrelatedRows(prevState => (prevState.filter((item) => {
-            //     return !manuallyCorrelatedRows.includes(item);
-            // })));
-        }
-    }, [manuallyCorrelatedRows]);
-
     const addManualCorrelation = (dataRowIndex, relationRowIndex) => {
         if(matchType === 0) {
             setIndexesOfCorrelatedRows(prevState => {
@@ -1626,13 +1631,33 @@ const CorrelationView = ({user}) => {
         }
     }
 
-    const areRowsAvailable = (dataRow, relationRow, indexesOfCorrelatedRows) => {
-        const dataRowAvailable = !indexesOfCorrelatedRows.map((item) => (item[0]))
+    const areRowsAvailable = (dataRow, relationRow, indexesTaken) => {
+        const dataRowAvailable = !indexesTaken.map((item) => (item[0]))
             .includes(dataRow);
-        const relationRowAvailable = !indexesOfCorrelatedRows.map((item) => (item[1]))
+        const relationRowAvailable = !indexesTaken.map((item) => (item[1]))
             .includes(relationRow);
 
         return dataRowAvailable && relationRowAvailable;
+    }
+
+    const removeAutoMatchRowsFromManuallyCorrelatedRows = (excludedRows) => {
+        const rowsToCheck = excludedRows.map((item) => (item.toString()));
+
+        setManuallyCorrelatedRows(prevState => {
+            return prevState.filter((item) => {
+                return !rowsToCheck.includes(item.toString());
+            });
+        });
+    }
+
+    const removeAutoMatchRowsFromSchemaCorrelatedRows = (excludedRows) => {
+        const rowsToCheck = excludedRows.map((item) => (item.toString()));
+
+        setSchemaCorrelatedRows(prevState => {
+            return prevState.filter((item) => {
+                return !rowsToCheck.includes(item.toString());
+            });
+        });
     }
 
     const correlate = () => {
@@ -1648,7 +1673,7 @@ const CorrelationView = ({user}) => {
         matching(jobIdTmp, priorities, correlationMatrix,
             dataFile, relationFile,
             dataDelimiter, relationDelimiter,
-            indexesOfCorrelatedRows,
+            overrideAllRows ? (avoidOverrideForManuallyCorrelatedRows ? manuallyCorrelatedRows : []) : indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
             manuallyCorrelatedRows, api ? apiUserId : user.id, matchType, api ? 'api' : '')
             .then((res) => {
@@ -1668,22 +1693,59 @@ const CorrelationView = ({user}) => {
                            return areRowsAvailable(item[0], item[1], prevIndexesOfCorrelatedRows);
                        });
 
-                       setIndexesOfCorrelatedRows(newIndexesOfCorrelatedRowsWithoutAlreadyMatchedRows);
-                   }
-                   else if(overrideAllRows && !avoidOverrideForManuallyCorrelatedRows) {
-                       // nadpisz wszystkie rekordy jeśli znajdziesz nowe dopasowanie
-                       setCorrelationMatrix(newCorrelationMatrix);
-                       setIndexesOfCorrelatedRows(newIndexesOfCorrelatedRows);
-                   }
-                   else {
-                       // nadpisz wszystkie automatycznie dopasowane rekordy jeśli znajdziesz nowe dopasowanie
-                       setCorrelationStatus(newCorrelationMatrix);
-
-                       const newIndexesOfCorrelatedRowsWithoutAlreadyMatchedManuallyRows = newIndexesOfCorrelatedRows.filter((item) => {
-                           return areRowsAvailable(item[0], item[1], manuallyCorrelatedRows);
+                       setIndexesOfCorrelatedRows(prevState => {
+                           return [
+                               ...newIndexesOfCorrelatedRowsWithoutAlreadyMatchedRows,
+                               ...prevState
+                           ]
                        });
+                   }
+                   else if(overrideAllRows) {
+                       // nadpisz (wszystkie/wszystkie automatyczne) rekordy jeśli znajdziesz nowe dopasowanie
+                       setCorrelationMatrix(newCorrelationMatrix);
 
-                       setIndexesOfCorrelatedRows(newIndexesOfCorrelatedRowsWithoutAlreadyMatchedManuallyRows);
+                       let allIndexesOfCorrelatedRows = [];
+                       let excludedIndexesOfCorrelatedRows = [];
+                       const correlatedDataSheetIndexes = newIndexesOfCorrelatedRows.map((item) => (item[0]));
+                       const correlatedRelationSheetIndexes = newIndexesOfCorrelatedRows.map((item) => (item[1]));
+
+                       if(matchType === 0) {
+                           allIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                                return !correlatedDataSheetIndexes.includes(item[0]) && !correlatedRelationSheetIndexes.includes(item[1]);
+                           }).concat(newIndexesOfCorrelatedRows);
+
+                           excludedIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                               return correlatedDataSheetIndexes.includes(item[0]) || correlatedRelationSheetIndexes.includes(item[1]);
+                           });
+                       }
+                       else if(matchType === 1) {
+                           allIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                               return !correlatedRelationSheetIndexes.includes(item[1]);
+                           }).concat(newIndexesOfCorrelatedRows);
+
+                           excludedIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                               return correlatedRelationSheetIndexes.includes(item[1]);
+                           });
+                       }
+                       else if(matchType === 2) {
+                           allIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                               return !correlatedDataSheetIndexes.includes(item[0]);
+                           }).concat(newIndexesOfCorrelatedRows);
+
+                           excludedIndexesOfCorrelatedRows = indexesOfCorrelatedRows.filter((item) => {
+                               return correlatedDataSheetIndexes.includes(item[0]);
+                           });
+                       }
+                       else {
+                           allIndexesOfCorrelatedRows = indexesOfCorrelatedRows.concat(newIndexesOfCorrelatedRows);
+                       }
+
+                       if(!avoidOverrideForManuallyCorrelatedRows) {
+                           removeAutoMatchRowsFromManuallyCorrelatedRows(excludedIndexesOfCorrelatedRows);
+                       }
+
+                       removeAutoMatchRowsFromSchemaCorrelatedRows(excludedIndexesOfCorrelatedRows);
+                       setIndexesOfCorrelatedRows(allIndexesOfCorrelatedRows);
                    }
                }
             })

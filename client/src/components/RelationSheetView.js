@@ -46,7 +46,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes, user}, ref) => {
     const { content } = useContext(TranslationContext);
     const { currentSchemaId } = useContext(AppContext);
-    const { outputSheetExportColumns, setOutputSheetExportColumns, priorities,
+    const { outputSheetExportColumns, setOutputSheetExportColumns, priorities, setManuallyCorrelatedRows,
         addManualCorrelation, setIndexesOfCorrelatedRows, indexesOfCorrelatedRows, matchType } = useContext(ViewContext);
 
     const [page, setPage] = useState(1);
@@ -411,6 +411,11 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                 return item[0] !== dataRowIndex || item[1] !== relationRowIndex;
             });
         });
+        setManuallyCorrelatedRows(prevState => {
+            return prevState.filter((item) => {
+                return item[0] !== dataRowIndex || item[1] !== relationRowIndex;
+            });
+        });
     }
 
     const getColumnMaxHeight = () => {
@@ -590,6 +595,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     const getNumberOfVisibleColumns = () => {
         return currentSheetColumnsVisibility.filter((item) => (item)).length;
+    }
+
+    const isLargerMatchAlertVisible = (isCorrelatedRowWithHighestSimilarity, correlatedRow) => {
+        return !isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex);
     }
 
     return <div className="sheetWrapper" ref={ref}>
@@ -826,7 +835,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
                     if(correlatedRow) {
                         isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
-                            || (manuallyCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)));
+                            || (manuallyCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)) || schemaCorrelatedRowsIndexes.includes(indexAfterFilterAndSort));
 
                         correlatedRowValue = Object.entries(secondSheet[sheetIndex === 0 ? correlatedRow.relationRowIndex : correlatedRow.dataRowIndex])
                             .filter((_, index) => (showInSelectMenuColumnsSecondSheet[index]))
@@ -906,7 +915,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                             background: getSimilarityColorForRelationSheet(correlatedRow.similarity, sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex),
                                             color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) || schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? '#fff' : '#000'
                                         }}>
-                                            {!isCorrelatedRowWithHighestSimilarity && !manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? <Tooltip title={content.rowWithLargerMatchAlert}
+                                            {isLargerMatchAlertVisible(isCorrelatedRowWithHighestSimilarity, correlatedRow) ? <Tooltip title={content.rowWithLargerMatchAlert}
                                                                                                                                                                                                                          followCursor={true}
                                                                                                                                                                                                                          size="small"
                                                                                                                                                                                                                          position="top">
@@ -915,7 +924,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                                 </span>
                                             </Tooltip> : ''}
 
-                                            {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (schemaCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) ? 'S' : '-')}
+                                            {correlatedRow.similarity >= 0 ? `${correlatedRow.similarity} %` : (getSimilarityColorForRelationSheet(0, sheetIndex === 0 ? correlatedRow.dataRowIndex : correlatedRow.relationRowIndex) === 'blue' ? 'S' : '-')}
                                         </span>
                                     </> : <RelationSelectionEmptyRow />}
                                 </span> : <input className="select__input"

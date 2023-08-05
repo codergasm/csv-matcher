@@ -123,7 +123,7 @@ const pl = {
     setVisibility: 'Ustaw widoczność',
     sortByUnmatched: 'Sortuj wg nieprzydzielonych',
     sortByMatched: 'Sortuj wg przydzielonych',
-    relationColumnHeaders: ['Rekord z ark. 1, z którym powiązano rekord', 'Rekord z ark. 1, z którym powiązano rekord'],
+    relationColumnHeaders: ['Rekord z ark. 2, z którym powiązano rekord', 'Rekord z ark. 1, z którym powiązano rekord'],
     turnOnColorOnStrings: 'Włącz zaznaczanie dopasowanych fragmentów',
     turnOffColorOnStrings: 'Wyłącz zaznaczanie dopasowanych fragmentów',
     matchCounterDataSheetName: 'ilość dopasowań ark1 do ark2',
@@ -164,7 +164,7 @@ const pl = {
     testingMatchNotFound: 'Nie znaleziono dopasowania powyżej wyznaczonego progu. Poniżej znajduje się lista dziesięciu najwyżej dopasowanych rekordów.',
     testingMatchFoundHeaderPart1: 'Znaleziono dopasowanie do wiersza nr ',
     testingMatchFoundHeaderPart2: 'z arkusza 2',
-    testingMatchFoundListHeader: 'Poniżej znajduje się lista pozostałych dziesiąciu najwyżej dopasowanych rekordów',
+    testingMatchFoundListHeader: 'Poniżej znajduje się lista pozostałych dziesięciu najwyżej dopasowanych rekordów',
     match: 'Dopasowanie',
     autoMatchProgress: ['Trwa przesyłanie wyników na serwer', 'Trwa korelowanie rekordów', 'Trwa przesyłanie wyników'],
 

@@ -34,17 +34,26 @@ describe('Correlation', () => {
     cy.contains('Przejdź do korelacji rekordów').click();
     cy.get('.btn--correlationViewPicker:nth-of-type(2)').click();
     cy.get('.btn--autoMatch').click();
-    cy.get('.modal__label').contains('Pokrycie wartości z ark. 1 w ark. 2').click();
     cy.get('.btn--addPriority').click();
 
     cy.get('.priorities__item__condition__select').first().select(dataSheetColumn);
     cy.get('.priorities__item__condition__select').last().select(relationSheetColumn);
+    cy.get('.select--matchFunction').select('Pokrycie wartości z ark. 1 w ark. 2');
 
     cy.get('.btn--startAutoMatch').click();
 
-    cy.wait(120000); // wait 2 minutes
+    cy.intercept({
+      method: 'POST',
+      url: 'http://localhost:5000/correlate'
+    }).as('correlateRequest')
 
-    cy.get('.select__btn').first().click();
-    cy.get('.select__menu__item__similarity').first().should('contain.text', '50 %');
+    cy.wait('@correlateRequest', {
+      responseTimeout: 1000 * 60 * 60 // 1 hour
+    }).then((interception) => {
+      console.log(interception);
+
+      cy.get('.select__btn').first().click();
+      cy.get('.select__menu__item__similarity').first().should('contain.text', '50 %');
+    });
   });
-})
+});

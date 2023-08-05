@@ -6,10 +6,12 @@ import {ApiContext} from "./LoggedUserWrapper";
 import RelationTypeTooltip from "./RelationTypeTooltip";
 import ChangeMatchTypeModal from "./ChangeMatchTypeModal";
 import cleanCorrelationMatrix from "../helpers/cleanCorrelationMatrix";
+import {AppContext} from "../pages/CorrelationPage";
 
 const MatchTypeSelect = () => {
     const { content } = useContext(TranslationContext);
-    const { apiRelationType, dataSheet, relationSheet } = useContext(ApiContext);
+    const { dataSheet, relationSheet } = useContext(AppContext);
+    const { apiRelationType } = useContext(ApiContext);
     const { matchType, setMatchType, indexesOfCorrelatedRows, setIndexesOfCorrelatedRows,
          setAfterMatchClean, setManuallyCorrelatedRows, setCorrelationMatrix } = useContext(ViewContext);
 
