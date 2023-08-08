@@ -547,8 +547,8 @@ const OutputSheetView = forwardRef((props, ref) => {
 
                     <div className="sheet__table">
                         <div className="line line--noFlex">
-                            {columnsNames.filter((_, index) => (outputSheetColumnsVisibility[index]))
-                                .map((item, index) => {
+                            {columnsNames.map((item, index) => {
+                                if(outputSheetColumnsVisibility[index]) {
                                     return <div className="sheet__header__cell"
                                                 style={{
                                                     minWidth: isCounterColumn(index) ? '280px' : getColumnMinWidth()
@@ -556,7 +556,8 @@ const OutputSheetView = forwardRef((props, ref) => {
                                                 key={index}>
                                         {item}
                                     </div>
-                                })}
+                                }
+                            })}
                         </div>
                     </div>
                 </div>
