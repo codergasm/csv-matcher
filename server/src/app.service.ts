@@ -125,6 +125,8 @@ export class AppService {
           }
       }
       else {
+          console.log('start getSelectList()');
+
           let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
           let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
 
@@ -135,10 +137,11 @@ export class AppService {
           // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
           let correlationMatrix;
 
-          // TODO: problem jesli nie mamy priorities - sama manualna korelacja
           if(JSON.parse(priorities)?.length) {
               correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
                   dataSheet, relationSheet,[], true);
+
+              console.log('got correlationMatrix again');
           }
           else {
             return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
@@ -150,6 +153,8 @@ export class AppService {
           await this.finishCorrelationJob(jobId, relationSheet.length);
 
           try {
+              console.log('try...');
+
               // Convert correlation matrix to array of arrays of objects
               const relationSheetSelectList = correlationMatrix.map((relationRowItem, relationRowIndex) => {
                   return this.sortBySimilarity(relationRowItem.map((dataRowItem, dataRowIndex) => {
@@ -231,6 +236,8 @@ export class AppService {
             await this.updateJobProgress(i, jobId, relationSheet.length, fromSelect);
         }
 
+        console.log('get similarity scores end');
+
         return allSimilarities;
     }
 
@@ -240,6 +247,7 @@ export class AppService {
 
     async updateJobProgress(i, jobId, relationSheetLength, fromSelect) {
         if(!(i % 20) && jobId) {
+            console.log(i);
             await this.correlationJobs
                 .createQueryBuilder()
                 .update({
@@ -278,6 +286,8 @@ export class AppService {
             correlationMatricesForAllPriorities.push(currentPriorityCorrelationMatrix);
         }
 
+        console.log('priorities end');
+
         // Convert array of correlation matrices to one huge correlationMatrix
         let outputCorrelationMatrix = [];
         for(let i=0; i<relationSheet.length; i++) {
@@ -288,6 +298,8 @@ export class AppService {
                 }));
             }
         }
+
+        console.log('return correlationMatrix');
 
         return outputCorrelationMatrix;
     }
@@ -439,6 +451,11 @@ export class AppService {
           areRowsAvailable = this.areRowsAvailableManyToManyRelation;
       }
 
+      console.log('going to check priorities fulfilled');
+
+      const overrideAllRowsBoolean = convertStringToBoolean(overrideAllRows);
+      const avoidOverrideForManuallyCorrelatedRowsBoolean = convertStringToBoolean(avoidOverrideForManuallyCorrelatedRows);
+
       for(let i=0; i<priorities.length; i++) {
           const currentPriority = priorities[i];
           const currentPriorityNumberOfRequiredConditions = currentPriority.requiredConditions;
@@ -458,8 +475,10 @@ export class AppService {
                       currentPriorityRequired, currentPriorityNumberOfRequiredConditions)) {
                       if(areRowsAvailable(dataRowIndex, relationRowIndex, newIndexesOfCorrelatedRows) || this.areRowsAvailableBasedOnOverrideSettings(
                           dataRowIndex, relationRowIndex,
-                          convertStringToBoolean(overrideAllRows), convertStringToBoolean(avoidOverrideForManuallyCorrelatedRows), manuallyCorrelatedRows
+                          overrideAllRowsBoolean, avoidOverrideForManuallyCorrelatedRowsBoolean, manuallyCorrelatedRows
                       )) {
+                          console.log('priority fulfilled ' + newIndexesOfCorrelatedRows.length);
+
                           // Update indexesOfCorrelatedRows
                           if(matchType === 0) {
                               newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.filter((item) => {
@@ -499,6 +518,7 @@ export class AppService {
                   dataRowIndex++;
               }
 
+              console.log(relationRowIndex);
               relationRowIndex++;
           }
       }
@@ -508,6 +528,8 @@ export class AppService {
               return item.slice(0, 2);
           });
       });
+
+      console.log('end correlate()');
 
       return {
           newIndexesOfCorrelatedRows,

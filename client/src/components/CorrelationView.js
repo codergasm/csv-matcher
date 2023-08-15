@@ -1669,6 +1669,8 @@ const CorrelationView = ({user}) => {
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
             manuallyCorrelatedRows, api ? apiUserId : user.id, matchType, api ? 'api' : '')
             .then((res) => {
+                console.log(res);
+
                if(res?.data) {
                    const { newIndexesOfCorrelatedRows, newCorrelationMatrix, newSelectListIndicators }
                     = res.data;
