@@ -3100,3 +3100,18 @@ input[type=number] {
 .bold--index {
     padding-right: 5px;
 }
+
+.relationColumnsScroll {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: sticky;
+    top: 0;
+    right: 0;
+}
+
+.relationColumnsScroll > .sheet__body__row__cell--relation {
+    position: relative;
+    top: unset;
+    right: unset;
+}
