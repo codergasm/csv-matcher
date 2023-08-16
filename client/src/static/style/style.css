@@ -205,6 +205,10 @@
     border: 1px solid var(--primary);
 }
 
+.sheetRelation {
+    overflow: hidden;
+}
+
 .sheetInner > .sheet {
     margin: 0;
 }
@@ -471,6 +475,15 @@ table .cell--legend {
     scrollbar-color: var(--primary) #C1DCFF;
 }
 
+.scrollbar-hidden {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+    width: 0 !important;
+}
+
 .scroll::-webkit-scrollbar {
     width: 15px;
     height: 15px;
@@ -560,7 +573,7 @@ table, table * {
 
 .modal {
     position: fixed;
-    z-index: 30005;
+    z-index: 999999;
     top: 0;
     left: 0;
     width: 100%;
@@ -2828,14 +2841,21 @@ input[type=number] {
 }
 
 .btn--addRelationColumn {
-    margin-left: 15px;
-    font-size: 14px;
     font-weight: 500;
-    text-decoration: underline;
+    position: absolute;
+    top: 116px;
+    right: 98px;
+    z-index: 99999;
+    background: #fff;
+    color: #313131;
+    font-size: 21px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
 }
 
 .btn--addRelationColumn:hover {
-    background: transparent !important;
+    background: #fff !important;
     opacity: .8;
 }
 
@@ -2952,7 +2972,7 @@ input[type=number] {
 }
 
 .sheetInner .line--tableRow:nth-of-type(3) {
-    margin-top: -250px;
+    /*margin-top: -250px; TODO */
 }
 
 .sheetWrapper--outputSheet .sheetInner .line--tableRow:nth-of-type(3) {
@@ -3101,11 +3121,12 @@ input[type=number] {
     padding-right: 5px;
 }
 
+/* ----------------- */
+
 .relationColumnsScroll {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    position: sticky;
     top: 0;
     right: 0;
 }
@@ -3114,4 +3135,57 @@ input[type=number] {
     position: relative;
     top: unset;
     right: unset;
+}
+
+.sheet__main.scroll,
+.sheet__relation.scroll {
+    overflow-x: scroll;
+    overflow-y: scroll;
+    height: 100%;
+}
+
+.sheet__main {
+    width: calc(100% - 415px);
+}
+
+.sheet__relation {
+    width: 415px;
+}
+
+.sheet__main--manyRelation {
+    width: calc(100% - 615px);
+}
+
+.sheet__relation--manyRelation {
+    width: 615px;
+}
+
+.sheetRelation {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.sheet__header__cell--relationWrapper {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    z-index: 10000;
+}
+
+.sheet__header__cell--relationWrapper .sheet__header__cell--relation {
+    position: relative !important;
+    top: unset !important;
+    left: unset !important;
+    right: unset !important;
+    transform: none !important;
+    width: 400px !important;
+    min-width: 400px !important;
+}
+
+.sheet__header__cell--relationWrapper .sheet__header__cell--relation:not(:last-child) {
+    border-right: 1px solid #dedede;
 }

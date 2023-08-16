@@ -40,14 +40,14 @@ const RelationColumnSelect = ({n, selectOption, setSelectOption, addRelationColu
         </span>
 
         <div className="flex">
-            <Select ref={selectRef}
-                    onMenuClose={menuClose}
-                    onMenuOpen={menuOpen}
-                    options={options}
-                    placeholder={'1'}
-                    value={options[selectOption]}
-                    onChange={handleChoose}
-                    isSearchable={false} />
+            {/*<Select ref={selectRef}*/}
+            {/*        onMenuClose={menuClose}*/}
+            {/*        onMenuOpen={menuOpen}*/}
+            {/*        options={options}*/}
+            {/*        placeholder={'1'}*/}
+            {/*        value={options[selectOption]}*/}
+            {/*        onChange={handleChoose}*/}
+            {/*        isSearchable={false} />*/}
 
             <button className="btn btn--addRelationColumn"
                     onClick={addRelationColumn}>
