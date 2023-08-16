@@ -156,7 +156,6 @@ const pl = {
     matchConditionRequiredOptions: ['wymagany', 'opcjonalny'],
     closeTesting: 'Zamknij testowanie',
     numberOfRow: 'numer wiersza',
-    selectRecordByColumnValueLabel: 'Wskaż rekord wg wartości w kolumnie',
     valueInColumnPlaceholder: 'Wartość w kolumnie',
     rowAnyNotFound: 'Nie znaleziono żadnego wiersza',
     rowNotFound: 'Nie ma takiego wiersza. Liczba wierszy w arkuszu: ',

@@ -51,7 +51,6 @@ const matching = (jobId, priorities, correlationMatrix,
                   indexesOfCorrelatedRows, overrideAllRows,
                   avoidOverrideForManuallyCorrelatedRows,
                   manuallyCorrelatedRows, userId, matchType, api, relationTestRow = -1) => {
-
     const formData = new FormData();
     const config = {
         headers: {
@@ -87,7 +86,7 @@ const matching = (jobId, priorities, correlationMatrix,
         formData.append('files', relationFile);
     }
 
-    return axios.post(`/correlate${api}`, formData, config);
+    return axios.post(`/correlate${api ? api : ''}`, formData, config);
 }
 
 const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {

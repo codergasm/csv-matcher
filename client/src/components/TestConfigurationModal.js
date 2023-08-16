@@ -22,8 +22,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
     const [testIndexesOfCorrelatedRows, setTestIndexesOfCorrelatedRows] = useState([]);
     const [joinStringOfColumnsFromRelationSheet, setJoinStringOfColumnsFromRelationSheet] = useState('');
     const [columnsNamesInConditions, setColumnsNamesInConditions] = useState([]);
-    const [columnToSearch, setColumnToSearch] = useState(0);
-    const [valueToSearch, setValueToSearch] = useState('');
+    const [valuesToSearch, setValuesToSearch] = useState([]);
 
     useCloseModalOnOutsideClick(closeModal);
     useActionOnEscapePress(closeModal);
@@ -39,20 +38,33 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
     }, [relationSheet]);
 
     useEffect(() => {
+        setValuesToSearch(relationSheetColumnsVisibility.map(() => ('')));
+    }, [relationSheetColumnsVisibility]);
+
+    useEffect(() => {
         setDataSheetColumnsNames(Object.entries(dataSheet[0]).map((item) => (item[0] === '0' ? content.index : item[0])))
     }, [dataSheet]);
 
     useEffect(() => {
         if(relationSheetColumnsNames?.length) {
-            if(valueToSearch) {
+            if(valuesToSearch) {
                 const indexFound = relationSheet.findIndex((item) => {
-                    return item[relationSheetColumnsNames[columnToSearch]]?.toLowerCase()?.includes(valueToSearch?.toLowerCase());
+                    const columnsValues = Object.values(item);
+
+                    return columnsValues.findIndex((item, index) => {
+                       if(item) {
+                           return !item.toLowerCase().includes(valuesToSearch[index]?.toLowerCase());
+                       }
+                       else {
+                           return false;
+                       }
+                    }) === -1;
                 });
 
                 setRelationSheetRowNumber(indexFound === -1 ? -1 : indexFound+1);
             }
         }
-    }, [valueToSearch, columnToSearch]);
+    }, [valuesToSearch]);
 
     useEffect(() => {
         setJoinStringOfColumnsFromRelationSheet(priorities.map((item) => {
@@ -80,7 +92,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
             dataDelimiter, relationDelimiter,
             indexesOfCorrelatedRows,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, user.id, matchType, relationSheetRowNumber-1)
+            manuallyCorrelatedRows, user.id, matchType, '', relationSheetRowNumber-1)
             .then((res) => {
                 if(res?.data) {
                     const { newIndexesOfCorrelatedRows, newSelectListIndicators }
@@ -91,7 +103,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                     getSelectList(jobIdTmp, priorities, dataFile, relationFile,
                         dataDelimiter, relationDelimiter,
                         false, showInSelectMenuColumnsDataSheet,
-                        dataSheet.length, relationSheet.length, newSelectListIndicators, relationSheetRowNumber-1)
+                        dataSheet.length, relationSheet.length, newSelectListIndicators, '', relationSheetRowNumber-1)
                         .then((res) => {
                             if(res?.data) {
                                 setTestSelectList(res?.data?.relationSheetSelectList[0]);
@@ -105,8 +117,20 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
     }
 
     const handleRelationSheetRowNumberInput = (e) => {
-        setValueToSearch('');
         setRelationSheetRowNumber(isNaN(parseInt(e.target.value)) ? '' : parseInt(e.target.value));
+    }
+
+    const handleValuesToSearchChange = (i, value) => {
+        setValuesToSearch(prevState => {
+            return prevState.map((item, index) => {
+                if(index === i) {
+                    return value;
+                }
+                else {
+                    return item;
+                }
+            });
+        });
     }
 
     return <div className="modal__inner modal__inner--testConfiguration scroll">
@@ -121,62 +145,59 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
             </h3>
         </div>
 
-        <div className="modal__line">
+        <div className="modal__line modal__line--test">
                 <span className="flex flex--start">
                     {content.sheet2} - {content.numberOfRow}: <input className="input input--number"
                                                      value={relationSheetRowNumber !== -1 ? relationSheetRowNumber : ''}
                                                      onChange={handleRelationSheetRowNumberInput} />
                 </span>
 
-            <span className="flex flex--start">
-                {content.selectRecordByColumnValueLabel}
-                <select className="priorities__item__condition__select"
-                        value={columnToSearch}
-                        onChange={(e) => { setColumnToSearch(e.target.value); }}>
+            <div className="container--scrollX scroll">
+                <div className="flex">
                     {relationSheetColumnsNames.map((item, index) => {
-                        return <option key={index}
-                                       value={index}>
-                            {item}
-                        </option>
+                        if(relationSheetColumnsVisibility[index]) {
+                            return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first sheet__header__cell--first--test" : "sheet__header__cell"}
+                                        style={{
+                                            minWidth: `300px`
+                                        }}
+                                        key={index}>
+                                {item}
+                            </div>
+                        }
                     })}
-                </select>
-            </span>
+                </div>
+                <div className="flex">
+                    {relationSheetColumnsNames.map((item, index) => {
+                        if(relationSheetColumnsVisibility[index]) {
+                            return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first sheet__header__cell--first--test" : "sheet__header__cell"}
+                                        style={{
+                                            minWidth: `300px`
+                                        }}
+                                        key={index}>
+                                <label className="priorities__item__condition__search priorities__item__condition__search--test"
+                                       key={index}>
+                                    <input className="input input--search input--valueToSearch"
+                                           value={valuesToSearch[index]}
+                                           onChange={(e) => { handleValuesToSearchChange(index, e.target.value); }}
+                                           placeholder={content.valueInColumnPlaceholder} />
+                                </label>
+                            </div>
+                        }
+                    })}
+                </div>
 
-            <span>
-                <label className="priorities__item__condition__search">
-                    <input className="input input--search input--valueToSearch"
-                           value={valueToSearch}
-                           onChange={(e) => { setValueToSearch(e.target.value); }}
-                           placeholder={content.valueInColumnPlaceholder} />
-                </label>
-            </span>
-
-            {(relationSheetRowNumber > relationSheet?.length) || relationSheetRowNumber === -1 ? <span className="red">
+                {(relationSheetRowNumber > relationSheet?.length) || relationSheetRowNumber === -1 ? <span className="red">
                     {relationSheetRowNumber === -1 ? content.rowAnyNotFound : <>
                         {content.rowNotFound}: {relationSheet?.length}
                     </>}
-                </span> : <div className="marginTop">
-                <div className="container--scrollX scroll">
-                    <div className="flex">
-                        {relationSheetColumnsNames.map((item, index) => {
-                            if(relationSheetColumnsVisibility[index]) {
-                                return <div className={index === 0 ? "sheet__header__cell sheet__header__cell--first" : "sheet__header__cell"}
-                                            style={{
-                                                minWidth: `300px`
-                                            }}
-                                            key={index}>
-                                    {item}
-                                </div>
-                            }
-                        })}
-                    </div>
-                    <div className="line line--tableRow">
+                </span> : <div>
+                    <div className="line line--tableRow line--tableRow--borderBottom">
                         {/* Relation sheet columns */}
                         {relationSheet[relationSheetRowNumber-1] ? Object.entries(relationSheet[relationSheetRowNumber-1]).map((item, index) => {
                             const cellValue = item[1];
 
                             if(relationSheetColumnsVisibility[index]) {
-                                return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first" : "sheet__body__row__cell"}
+                                return <div className={index === 0 ? "sheet__body__row__cell sheet__body__row__cell--first sheet__header__cell--first--test" : "sheet__body__row__cell"}
                                             style={{
                                                 minWidth: `300px`
                                             }}
@@ -186,8 +207,8 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                             }
                         }) : ''}
                     </div>
-                </div>
-            </div>}
+                </div>}
+            </div>
 
             <button className="btn btn--startAutoMatch btn--startAutoMatchTest"
                     disabled={!priorities?.length}
@@ -199,7 +220,7 @@ const TestConfigurationModal = ({closeModal, relationSheetColumnsVisibility, use
                 {testIndexesOfCorrelatedRows?.length ? <>
                     <p className="text-center">
                         {content.testingMatchFoundHeaderPart1}
-                        <b>{testSelectList[0].dataRowIndex}</b>
+                        <b className="bold--index">{testSelectList[0].dataRowIndex+1}</b>
                         {content.testingMatchFoundHeaderPart2}.
                     </p>
 

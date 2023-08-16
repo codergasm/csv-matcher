@@ -999,7 +999,7 @@ option {
 
 .sheet__header__cell--relation {
     overflow: visible !important;
-    z-index: 1002;
+    z-index: 9999;
 }
 
 .btn--notVisible {
@@ -1424,7 +1424,7 @@ input[type=number] {
 
 .modal__inner--testConfiguration .container--scrollX {
     max-width: 100%;
-    margin: 30px 0;
+    margin-top: 30px;
 }
 
 .modal__inner--testConfiguration .container--scrollX > .flex {
@@ -3071,4 +3071,32 @@ input[type=number] {
     border: 1px solid #313131;
     padding: 15px;
     font-size: 15px;
+}
+
+.priorities__item__condition__search--test {
+    width: 90%;
+}
+
+.sheet__header__cell--first--test {
+    max-width: 100px !important;
+    width: 100px !important;
+}
+
+.modal__line--test .red {
+    margin: auto;
+    width: 100%;
+    text-align: center;
+    display: block;
+    padding: 12px;
+    border-top: 1px solid var(--primary);
+    border-left: 1px solid var(--primary);
+    border-bottom: 1px solid var(--primary);
+}
+
+.line--tableRow--borderBottom {
+    border-bottom: 1px solid var(--primary);
+}
+
+.bold--index {
+    padding-right: 5px;
 }

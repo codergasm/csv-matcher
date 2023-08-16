@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState, forwardRef} from 'react';
+import React, {useContext, useEffect, useState, forwardRef, useRef} from 'react';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
@@ -84,6 +84,9 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [searchInputValues, setSearchInputValues] = useState([]);
     const [searchChanged, setSearchChanged] = useState(false);
     const [refreshSheetFiltering, setRefreshSheetFiltering] = useState(false);
+    const [zIndex, setZIndex] = useState(1001);
+
+    let selectInput = useRef(null);
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu);
 
@@ -156,7 +159,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
         if(showSelectMenu !== -1) {
             setCurrentSelectMenu(selectList[showSelectMenu]);
-            document.querySelector('.select__input').focus();
+
+            if(selectInput?.current) {
+                selectInput.current.focus();
+            }
         }
     }, [showSelectMenu]);
 
@@ -190,7 +196,14 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                     getSchemaById(currentSchemaId)
                         .then((res) => {
                             if(res?.data) {
-                                const columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).columnsVisibility[sheetIndex];
+                                let columnsVisibilityFromDatabase;
+
+                                if(sheetIndex === 0) {
+                                    columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).dataSheetColumnsVisibility;
+                                }
+                                else {
+                                    columnsVisibilityFromDatabase = JSON.parse(res.data.columns_settings_object).relationSheetColumnsVisibility;
+                                }
 
                                 if(columnsNames.length === columnsVisibilityFromDatabase.length) {
                                     setCurrentSheetColumnsVisibility(columnsVisibilityFromDatabase);
@@ -335,14 +348,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const changeZIndex = (i) => {
-        Array.from(document.querySelectorAll('.sheet__body__row__cell--relation')).forEach((item, index) => {
-            if(index === i) {
-                item.style.zIndex = '1001';
-            }
-            else {
-                item.style.zIndex = '1000';
-            }
-        });
+        const allCells = Array.from(document.querySelectorAll('.sheet__body__row__cell--relation'));
+
+        if(allCells[i]) {
+            allCells[i].style.zIndex = zIndex;
+            setZIndex(p => p+1);
+        }
     }
 
     useEffect(() => {
@@ -444,8 +455,9 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const showRelationSelectionDropdown = (e, index) => {
         e.stopPropagation();
         e.preventDefault();
-        changeZIndex(index);
-        setShowSelectMenu(prevState => (prevState === indexesInRender[index] ? prevState : indexesInRender[index]));
+        changeZIndex(indexesInRender.indexOf(index));
+
+        setShowSelectMenu(prevState => (prevState === index ? prevState : index));
     }
 
     const showFullRow = (e, value, joinString) => {
@@ -931,6 +943,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         </span>
                                     </> : <RelationSelectionEmptyRow />}
                                 </span> : <input className="select__input"
+                                                 ref={selectInput}
                                                  value={searchInputValue}
                                                  onChange={(e) => { setSearchInputValue(e.target.value); }} />}
 

@@ -458,8 +458,6 @@ const CorrelationView = ({user}) => {
         return result;
     }
 
-    ///
-
     const joinTwoSheetsRelationSystemDuplicatesFormatWithoutCounter = () => {
         let result = [];
 
