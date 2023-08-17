@@ -973,12 +973,12 @@ option {
 .disclaimer {
     white-space: normal;
     position: absolute;
-    top: 250px;
-    right: 85px;
+    bottom: 25px;
     width: 400px;
     padding: 0 15px;
     margin: 20px auto;
-    z-index: 9999;
+    z-index: 99999;
+    text-align: center;
 }
 
 .disclaimer > span {
@@ -2751,6 +2751,7 @@ input[type=number] {
 .flex--relationButtons {
     position: relative;
     overflow: visible;
+    z-index: 22000;
 }
 
 .flex--relationButtons:hover {
@@ -2769,6 +2770,7 @@ input[type=number] {
 
 .matchTypeSelectLabel {
     position: relative;
+    z-index: 100000 !important;
 }
 
 .matchTypeSelectLabel > span {
@@ -2843,8 +2845,8 @@ input[type=number] {
 .btn--addRelationColumn {
     font-weight: 500;
     position: absolute;
-    top: 116px;
-    right: 98px;
+    top: 12px;
+    right: 65px;
     z-index: 99999;
     background: #fff;
     color: #313131;
@@ -2969,6 +2971,11 @@ input[type=number] {
     top: 0;
     background: #fff;
     z-index: 1000;
+}
+
+.sheetInner {
+    position: relative;
+    z-index: 10;
 }
 
 .sheetInner .line--tableRow:nth-of-type(3) {
@@ -3192,4 +3199,13 @@ input[type=number] {
 
 .sheet__header__cell--name {
     height: 100%;
+}
+
+.btn--addRelationColumn--remove {
+    transform: translateX(35px);
+}
+
+.scroll--notX {
+    overflow-x: hidden !important;
+    border-bottom: 15px solid #efefef;
 }

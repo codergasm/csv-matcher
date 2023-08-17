@@ -1,14 +1,19 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Tooltip} from "react-tippy";
 import {ViewContext} from "./CorrelationView";
 import {TranslationContext} from "../App";
 
-const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort, key,
-                                              setDeleteMatchesModalVisible, sheetIndex}) => {
+const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort, id,
+                                              setDeleteMatchesModalVisible, sheetIndex, showDisclaimer}) => {
     const { content } = useContext(TranslationContext);
     const { selectList } = useContext(ViewContext);
 
-    return <div className="sheet__header__cell sheet__header__cell--relation" key={key}>
+    useEffect(() => {
+        console.log(showDisclaimer);
+    }, [showDisclaimer]);
+
+    return <div className="sheet__header__cell sheet__header__cell--relation"
+                key={id}>
         <span className="sheet__header__cell--relation__bigText">
             {content.relationColumnHeaders[sheetIndex]}
         </span>
@@ -35,6 +40,12 @@ const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationCo
                 ?
             </span>
         </Tooltip>
+
+        {showDisclaimer ? <span className="disclaimer">
+            <span>
+                {content.noColumnsInSelectMenuAlert}
+            </span>
+        </span> : ''}
     </div>
 };
 

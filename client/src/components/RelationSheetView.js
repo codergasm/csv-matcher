@@ -85,6 +85,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [refreshSheetFiltering, setRefreshSheetFiltering] = useState(false);
     const [zIndex, setZIndex] = useState(1001);
     const [rowsToRenderHeights, setRowsToRenderHeights] = useState([]);
+    const [showDisclaimerAboutEmptySelectList, setShowDisclaimerAboutEmptySelectList] = useState(false);
 
     const rowsToRenderRefs = useMemo(() => {
         return Array.from({length: rowsToRender?.length || 1}).map(() => (React.createRef()));
@@ -114,14 +115,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     useEffect(() => {
         if(indexesOfCorrelatedRowsLevels) {
-            setNumberOfRelationColumns(prevState => {
-                if(prevState < indexesOfCorrelatedRowsLevels?.length) {
-                    return indexesOfCorrelatedRowsLevels?.length;
-                }
-                else {
-                    return prevState;
-                }
-            });
+            setNumberOfRelationColumns(Math.max(1, indexesOfCorrelatedRowsLevels.length + 1));
         }
     }, [indexesOfCorrelatedRowsLevels]);
 
@@ -581,9 +575,9 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }
 
-    const isShowInSelectMenuFromSecondSheetEmpty = () => {
-        return showInSelectMenuColumnsSecondSheet.findIndex((item) => (item)) === -1;
-    }
+    useEffect(() => {
+        setShowDisclaimerAboutEmptySelectList(showInSelectMenuColumnsSecondSheet.findIndex((item) => (item)) === -1);
+    }, [showInSelectMenuColumnsSecondSheet]);
 
     const outputSheetExportColumnsVisibilityFirstColumnCondition = (i) => {
         if(sheetIndex === 0) {
@@ -703,6 +697,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }, [rowsToRenderRefs, cellsHeight]);
 
+    const removeRelationColumn = () => {
+
+    }
+
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
@@ -751,16 +749,15 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         </div>
 
         {selectList?.length && !selectListLoading ? <div className="sheetInner">
-            {isShowInSelectMenuFromSecondSheetEmpty() && !isRelationColumnSelectAvailable() ? <span className="disclaimer">
-                <span>
-                    {content.noColumnsInSelectMenuAlert}
-                </span>
-            </span> : ''}
+            {/*{isRelationColumnSelectAvailable() ? <button className="btn btn--addRelationColumn"*/}
+            {/*                                             onClick={() => { setNumberOfRelationColumns(p => p+1); }}>*/}
+            {/*    +*/}
+            {/*</button> : ''}*/}
 
-            {isRelationColumnSelectAvailable() ? <button className="btn btn--addRelationColumn"
-                                                         onClick={() => { setNumberOfRelationColumns(p => p+1); }}>
-                +
-            </button> : ''}
+            {/*{isRelationColumnSelectAvailable() && numberOfRelationColumns > 1 ? <button className="btn btn--addRelationColumn btn--addRelationColumn--remove"*/}
+            {/*                                                                            onClick={() => { setNumberOfRelationColumns(p => p-1); }}>*/}
+            {/*    -*/}
+            {/*</button> : ''}*/}
 
             {/* LEFT SIDEBAR WITH BUTTONS */}
             <div className="sheetInner__left">
@@ -932,15 +929,16 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                 </div>
 
                 {/* Relation columns */}
-                <div className={isRelationColumnSelectAvailable() ? "sheet__relation sheet__relation--manyRelation scroll" : "sheet__relation scroll"}
+                <div className={isRelationColumnSelectAvailable() ? "sheet__relation sheet__relation--manyRelation scroll" : "sheet__relation scroll scroll--notX"}
                      onScroll={handleRightBoxScroll}
                      ref={rightScrollBox}>
                     <div className="line line--tableRow sheet__header__cell--relationWrapper">
                         <div className="relationColumnsScroll">
-                            {Array.from(Array(numberOfRelationColumns).keys()).map((item, index) => {
+                            {(isRelationColumnSelectAvailable() ? Array.from(Array(numberOfRelationColumns).keys()) : [1]).map((item, index) => {
                                 return <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
                                                                          sheetIndex={sheetIndex}
-                                                                         key={index}
+                                                                         id={index}
+                                                                         showDisclaimer={showDisclaimerAboutEmptySelectList}
                                                                          setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
                                                                          sortRelationColumnByMatch={sortRelationColumnByMatch} />
                             })}
@@ -993,10 +991,14 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                         let correlatedRowValueArray = [];
                         let correlatedRowValueToDisplayArray = [];
 
+                        let relationIndex = 0;
+
                         for(const correlatedRow of correlatedRowArray) {
                             if(correlatedRow) {
-                                isCorrelatedRowWithHighestSimilarity = ((correlatedRow.similarity === currentSelectList[0]?.similarity)
-                                    || (manuallyCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)) || schemaCorrelatedRowsIndexes.includes(indexAfterFilterAndSort));
+                                isCorrelatedRowWithHighestSimilarity = ((matchType === 3) || (relationIndex > 0) ||
+                                                                        (correlatedRow.similarity === currentSelectList[0]?.similarity) ||
+                                                                        (manuallyCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)) ||
+                                                                        (schemaCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)));
                                 isCorrelatedRowWithHighestSimilarityArray.push(isCorrelatedRowWithHighestSimilarity);
 
                                 correlatedRowValue = Object.entries(secondSheet[sheetIndex === 0 ? correlatedRow.relationRowIndex : correlatedRow.dataRowIndex])
@@ -1009,6 +1011,8 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     correlatedRowValue : `${correlatedRowValue.substring(0, 50)}...`;
                                 correlatedRowValueToDisplayArray.push(correlatedRowValueToDisplay);
                             }
+
+                            relationIndex++;
                         }
 
                         let substringIndexesArray = [];
@@ -1049,7 +1053,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                     key={index}>
                             {/* Column with relation selection */}
                             <div className="relationColumnsScroll">
-                                {Array.from(Array(numberOfRelationColumns).keys()).map((item, index) => {
+                                {(isRelationColumnSelectAvailable() ? Array.from(Array(numberOfRelationColumns).keys()) : [1]).map((item, index) => {
                                     const substringIndexes = substringIndexesArray[index];
                                     const correlatedRow = correlatedRowArray[index];
                                     const correlatedRowValue = correlatedRowValueArray[index];
