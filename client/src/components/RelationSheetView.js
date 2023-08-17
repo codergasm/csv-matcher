@@ -265,7 +265,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }
 
     const setDefaultColumnsVisibility = () => {
-        setCurrentSheetColumnsVisibility(columnsNames.map(() => true));
+        setCurrentSheetColumnsVisibility(columnsNames.map((item, index) => (index < 10)));
     }
 
     const handleExportColumnsChange = (i) => {
