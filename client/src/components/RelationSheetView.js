@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState, forwardRef, useRef} from 'react';
+import React, {useContext, useEffect, useState, forwardRef, useRef, useMemo} from 'react';
 import {AppContext} from "../pages/CorrelationPage";
 import {ViewContext} from "./CorrelationView";
 import AutoMatchModal from "./AutoMatchModal";
@@ -85,7 +85,12 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [searchChanged, setSearchChanged] = useState(false);
     const [refreshSheetFiltering, setRefreshSheetFiltering] = useState(false);
     const [zIndex, setZIndex] = useState(1001);
+    const [rowsToRenderHeights, setRowsToRenderHeights] = useState([]);
 
+    const rowsToRenderRefs = useMemo(() => {
+        return Array.from({length: rowsToRender?.length || 1}).map(() => (React.createRef()));
+    }, [rowsToRender]);
+    const relationRowsToRenderRefs = useRef([]);
     let selectInput = useRef(null);
     let leftScrollBox = useRef(null);
     let rightScrollBox = useRef(null);
@@ -669,6 +674,36 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         }
     }, [matchType]);
 
+    useEffect(() => {
+        if(cellsHeight !== -1) {
+            setRowsToRenderHeights(rowsToRenderRefs.map(() => {
+                return cellsHeight;
+            }));
+
+            rowsToRenderRefs.forEach((item) => {
+                item.current.style.maxHeight = `${cellsHeight}px`;
+                item.current.style.minHeight = `${cellsHeight}px`;
+            });
+        }
+        else if(rowsToRenderRefs?.length) {
+            let heights = rowsToRenderRefs.map((item) => {
+                const height = item?.current?.clientHeight;
+
+                if(height) {
+                    item.current.style.minHeight = `${height}px`;
+                    item.current.style.maxHeight = `${height}px`;
+                }
+                else {
+                    return 50;
+                }
+
+                return item?.current?.clientHeight;
+            });
+
+            setRowsToRenderHeights(heights);
+        }
+    }, [rowsToRenderRefs, cellsHeight]);
+
     return <div className="sheetWrapper" ref={ref}>
         {autoMatchModalVisible ? <AutoMatchModal dataSheetColumns={sheetIndex === 0 ? columnsNames : secondSheetColumnsNames}
                                                  relationSheetColumns={sheetIndex === 0 ? secondSheetColumnsNames : columnsNames}
@@ -876,6 +911,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
                     {rowsToRender.map((item, index) => {
                         return <div className="line line--tableRow"
+                                    ref={rowsToRenderRefs[index]}
                                     key={index}>
                             {/* Normal sheet columns */}
                             {Object.entries(item).map((item, index) => {
@@ -902,9 +938,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                      ref={rightScrollBox}>
                     <div className="line line--tableRow sheet__header__cell--relationWrapper">
                         <div className="relationColumnsScroll">
-                            {Array.from(Array(numberOfRelationColumns).keys()).map(() => {
+                            {Array.from(Array(numberOfRelationColumns).keys()).map((item, index) => {
                                 return <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
                                                                          sheetIndex={sheetIndex}
+                                                                         key={index}
                                                                          setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
                                                                          sortRelationColumnByMatch={sortRelationColumnByMatch} />
                             })}
@@ -918,6 +955,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                         const indexAfterFilterAndSort = indexesInRender[index];
                         const currentSelectList = selectList[indexAfterFilterAndSort];
                         const currentIndexesOfCorrelatedRows = indexesOfCorrelatedRowsLevels[currentRelationColumnVisible];
+
 
                         if(currentSelectList?.length && currentIndexesOfCorrelatedRows?.length) {
                             if(sheetIndex === 0) {
@@ -981,6 +1019,10 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                         }
 
                         return <div className="line line--tableRow"
+                                    style={{
+                                        minHeight: `${rowsToRenderHeights[index] || 50}px`,
+                                        maxHeight: `${rowsToRenderHeights[index] || 50}px`
+                                    }}
                                     key={index}>
                             {/* Column with relation selection */}
                             <div className="relationColumnsScroll">

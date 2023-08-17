@@ -332,7 +332,7 @@ div.check__cell:first-of-type {
     border-bottom: none;
     align-items: stretch;
     width: 200px;
-    min-height: 45px;
+    min-height: 52px;
     white-space: normal;
     overflow: scroll;
     display: inline-flex;
@@ -3188,4 +3188,8 @@ input[type=number] {
 
 .sheet__header__cell--relationWrapper .sheet__header__cell--relation:not(:last-child) {
     border-right: 1px solid #dedede;
+}
+
+.sheet__header__cell--name {
+    height: 100%;
 }
