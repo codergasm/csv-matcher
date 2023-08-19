@@ -1777,7 +1777,7 @@ const CorrelationView = ({user}) => {
             }}>
         <div className="container container--correlation">
             <div className="homepage homepage--correlation">
-                <ChooseAndSaveSchema user={user} priorities={} />
+                <ChooseAndSaveSchema user={user} />
 
                 <div className="correlation__viewPicker flex">
                     <ButtonCorrelationViewPicker index={0}
