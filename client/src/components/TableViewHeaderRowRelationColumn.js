@@ -8,10 +8,6 @@ const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationCo
     const { content } = useContext(TranslationContext);
     const { selectList } = useContext(ViewContext);
 
-    useEffect(() => {
-        console.log(showDisclaimer);
-    }, [showDisclaimer]);
-
     return <div className="sheet__header__cell sheet__header__cell--relation"
                 key={id}>
         <span className="sheet__header__cell--relation__bigText">

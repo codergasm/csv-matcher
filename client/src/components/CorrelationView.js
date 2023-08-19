@@ -1660,6 +1660,8 @@ const CorrelationView = ({user}) => {
         const jobIdTmp = makeId(64);
         setJobId(jobIdTmp);
 
+        console.log('start matching');
+
         matching(jobIdTmp, priorities, correlationMatrix,
             dataFile, relationFile,
             dataDelimiter, relationDelimiter,
@@ -1775,7 +1777,7 @@ const CorrelationView = ({user}) => {
             }}>
         <div className="container container--correlation">
             <div className="homepage homepage--correlation">
-                <ChooseAndSaveSchema user={user} />
+                <ChooseAndSaveSchema user={user} priorities={} />
 
                 <div className="correlation__viewPicker flex">
                     <ButtonCorrelationViewPicker index={0}
