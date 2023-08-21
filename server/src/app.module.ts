@@ -16,6 +16,7 @@ import { SchemasModule } from './schemas/schemas.module';
 import {join} from "path";
 import { ApiModule } from './api/api.module';
 import {AuthModule} from "./auth/auth.module";
+import {CorrelationsEntity} from "./entities/correlations.entity";
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import {AuthModule} from "./auth/auth.module";
       autoLoadEntities: true, // models will be loaded automatically
       synchronize: false
     }),
-    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity]),
+    TypeOrmModule.forFeature([CorrelationJobsEntity, CorrelationsEntity, AddToTeamUsersRequestsEntity]),
       MailerModule.forRoot({
           transport: `smtp://${process.env.EMAIL_ADDRESS}:${process.env.EMAIL_PASSWORD}@${process.env.EMAIL_HOST}`,
           defaults: {

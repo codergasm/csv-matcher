@@ -7,9 +7,9 @@ const getProgressByJobId = (jobId) => {
     return axios.get(`/getProgress/${jobId}`, getConfigWithAuthHeader());
 }
 
-const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter, relationDelimiter,
+const getSelectList = (correlationId, jobId, priorities, dataFile, relationFile,
                        isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-                       dataSheetLength, relationSheetLength, selectListIndicators, api, relationTestRow = -1) => {
+                       dataSheetLength, relationSheetLength, api, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -18,15 +18,13 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
         }
     }
 
+    formData.append('correlationId', correlationId);
     formData.append('jobId', jobId);
     formData.append('priorities', JSON.stringify(priorities));
-    formData.append('dataDelimiter', dataDelimiter);
-    formData.append('relationDelimiter', relationDelimiter);
     formData.append('isCorrelationMatrixEmpty', isCorrelationMatrixEmpty ? 'true' : 'false');
     formData.append('showInSelectMenuColumnsDataSheet', JSON.stringify(showInSelectMenuColumnsDataSheet));
     formData.append('dataSheetLength', dataSheetLength);
     formData.append('relationSheetLength', relationSheetLength);
-    formData.append('selectListIndicators', JSON.stringify(selectListIndicators));
     formData.append('relationTestRow', relationTestRow.toString());
 
     if(typeof dataFile === 'string') {
@@ -46,11 +44,11 @@ const getSelectList = (jobId, priorities, dataFile, relationFile, dataDelimiter,
     return axios.post(`/getSelectList${api}`, formData, config);
 }
 
-const matching = (jobId, priorities, correlationMatrix,
-                  dataFile, relationFile, dataDelimiter, relationDelimiter,
-                  indexesOfCorrelatedRows, overrideAllRows,
-                  avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, userId, matchType, api, relationTestRow = -1) => {
+const matching = (correlationId, jobId, priorities,
+                  dataFile, relationFile,
+                  overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
+                  manuallyCorrelatedRows, userId,
+                  matchType, api, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -59,12 +57,9 @@ const matching = (jobId, priorities, correlationMatrix,
         }
     }
 
+    formData.append('correlationId', correlationId);
     formData.append('jobId', jobId);
-    formData.append('dataFileDelimiter', dataDelimiter);
-    formData.append('relationFileDelimiter', relationDelimiter);
-    formData.append('correlationMatrix', correlationMatrix);
     formData.append('priorities', JSON.stringify(priorities));
-    formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));
     formData.append('overrideAllRows', overrideAllRows);
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);

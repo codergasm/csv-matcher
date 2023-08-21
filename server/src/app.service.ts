@@ -9,12 +9,15 @@ import * as path from 'path';
 import getMaxValueFromArray from "./common/getMaxValueFromArray";
 import getMinValueFromArray from "./common/getMinValueFromArray";
 import convertStringToBoolean from "./common/convertStringToBoolean";
+import {CorrelationsEntity} from "./entities/correlations.entity";
 
 @Injectable()
 export class AppService {
     constructor(
         @InjectRepository(CorrelationJobsEntity)
-        private readonly correlationJobs: Repository<CorrelationJobsEntity>
+        private readonly correlationJobs: Repository<CorrelationJobsEntity>,
+        @InjectRepository(CorrelationsEntity)
+        private readonly correlationsRepository: Repository<CorrelationsEntity>
     ) {
         this.progressCount = 0;
     }
@@ -112,85 +115,15 @@ export class AppService {
         return arr.sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
     }
 
-  async getSelectList(jobId, priorities, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
+  async getSelectList(jobId, priorities, dataFile, relationFile,
                       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
                       dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) {
-      if(isCorrelationMatrixEmpty === 'true') {
-          const relationSheetSelectList = this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
-          const dataSheetSelectList = this.transposeMatrix(relationSheetSelectList);
+      const relationSheetSelectList = this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
+      const dataSheetSelectList = this.transposeMatrix(relationSheetSelectList);
 
-          return {
-              relationSheetSelectList,
-              dataSheetSelectList
-          }
-      }
-      else {
-          console.log('start getSelectList()');
-
-          let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
-          let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
-
-          if(relationTestRow !== -1) {
-             relationSheet = [relationSheet[relationTestRow]];
-          }
-
-          // Get correlation matrix ([[relation row 1 similarities], [relation row 2 similarities] ...])
-          let correlationMatrix;
-
-          if(JSON.parse(priorities)?.length) {
-              correlationMatrix = await this.getCorrelationMatrix(jobId, JSON.parse(priorities), null,
-                  dataSheet, relationSheet,[], true);
-
-              console.log('got correlationMatrix again');
-          }
-          else {
-            return this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
-          }
-
-          const correlationMatrixForDataSheet = this.transposeMatrix(correlationMatrix);
-          const selectListIndicatorsForDataSheet = this.transposeMatrix(selectListIndicators);
-
-          await this.finishCorrelationJob(jobId, relationSheet.length);
-
-          try {
-              console.log('try...');
-
-              // Convert correlation matrix to array of arrays of objects
-              const relationSheetSelectList = correlationMatrix.map((relationRowItem, relationRowIndex) => {
-                  return this.sortBySimilarity(relationRowItem.map((dataRowItem, dataRowIndex) => {
-                      const [priority, condition] = selectListIndicators[relationRowIndex][dataRowIndex];
-                      const similarity = parseInt(correlationMatrix[relationRowIndex][dataRowIndex][priority][condition].toFixed());
-
-                      return {
-                          dataRowIndex,
-                          relationRowIndex,
-                          similarity
-                      }
-                  }));
-              });
-
-              const dataSheetSelectList = correlationMatrixForDataSheet.map((dataRowItem, dataRowIndex) => {
-                  return this.sortBySimilarity(dataRowItem.map((relationRowItem, relationRowIndex) => {
-                      const [priority, condition] = selectListIndicatorsForDataSheet[dataRowIndex][relationRowIndex];
-
-                      const similarity = parseInt(correlationMatrixForDataSheet[dataRowIndex][relationRowIndex][priority][condition].toFixed());
-
-                      return {
-                          dataRowIndex,
-                          relationRowIndex,
-                          similarity
-                      }
-                  }));
-              });
-
-              return {
-                  relationSheetSelectList,
-                  dataSheetSelectList
-              }
-          }
-          catch(e) {
-              throw new HttpException(e, 500);
-          }
+      return {
+          relationSheetSelectList,
+          dataSheetSelectList
       }
   }
 
@@ -247,7 +180,6 @@ export class AppService {
 
     async updateJobProgress(i, jobId, relationSheetLength, fromSelect) {
         if(!(i % 20) && jobId) {
-            console.log(i);
             await this.correlationJobs
                 .createQueryBuilder()
                 .update({
@@ -363,10 +295,24 @@ export class AppService {
         return numberOfFulfilledConditions >= numberOfRequiredConditions;
     }
 
-  async correlate(jobId, dataFile, relationFile, dataFileDelimiter, relationFileDelimiter,
-                  priorities, correlationMatrix, indexesOfCorrelatedRows, overrideAllRows,
-            avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows, userId, matchType, relationTestRow) {
+  async correlate(correlationId, jobId, dataFile, relationFile,
+                  priorities, overrideAllRows,
+                  avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows,
+                  userId, matchType, relationTestRow) {
       // indexesOfCorrelatedRows to tutaj tablica par, które są już skorelowane i których nie wolno nadpisać
+      const row = await this.correlationsRepository.findOneBy({
+          id: correlationId
+      });
+
+      let prevIndexesOfCorrelatedRows = [];
+      let schemaCorrelatedRows = [];
+      let prevCorrelationMatrix = [[]];
+
+      if(row) {
+        prevIndexesOfCorrelatedRows = overrideAllRows ? (avoidOverrideForManuallyCorrelatedRows ? manuallyCorrelatedRows : []) : JSON.parse(row.indexes_of_correlated_rows);
+        prevCorrelationMatrix = JSON.parse(row.correlation_matrix);
+        schemaCorrelatedRows = JSON.parse(row.schema_correlated_rows);
+      }
 
       let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
       let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
@@ -378,11 +324,11 @@ export class AppService {
       await this.addNewCorrelationJob(jobId, userId, relationSheet.length);
 
       // Get correlation matrix
-      let newCorrelationMatrix = await this.getCorrelationMatrix(jobId, priorities, correlationMatrix,
+      let newCorrelationMatrix = await this.getCorrelationMatrix(jobId, priorities, prevCorrelationMatrix,
                                                                  dataSheet, relationSheet,
-                                                                 indexesOfCorrelatedRows, overrideAllRows);
+                                                                 prevIndexesOfCorrelatedRows, overrideAllRows);
       let i = 0;
-      let newIndexesOfCorrelatedRows = JSON.parse(indexesOfCorrelatedRows);
+      let newIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows;
 
       // [[priority, condition, isConstant]] - tablica wskazujaca, ktory selectList wyswietlic dla danych rekordow
       // wypelniamy nullami zeby moc potem zmieniac wartosci na pozycji [i][j]
@@ -518,25 +464,183 @@ export class AppService {
                   dataRowIndex++;
               }
 
-              console.log(relationRowIndex);
               relationRowIndex++;
           }
       }
 
-      const newSelectListIndicators = selectListIndicators.map((item) => {
+      selectListIndicators = selectListIndicators.map((item) => {
           return item.map((item) => {
               return item.slice(0, 2);
           });
       });
 
-      console.log('end correlate()');
+      await this.updateCorrelationIndexesOfCorrelatedRows(jobId, JSON.stringify(newIndexesOfCorrelatedRows));
+
+      // GET SELECT LIST PART
+      if(relationTestRow !== -1) {
+          relationSheet = [relationSheet[relationTestRow]];
+      }
+
+      const correlationMatrixForDataSheet = this.transposeMatrix(newCorrelationMatrix);
+      const selectListIndicatorsForDataSheet = this.transposeMatrix(selectListIndicators);
+
+      await this.finishCorrelationJob(jobId, relationSheet.length);
+
+      try {
+          console.log('try...');
+
+          // Convert correlation matrix to array of arrays of objects
+          const relationSheetSelectList = newCorrelationMatrix.map((relationRowItem, relationRowIndex) => {
+              return this.sortBySimilarity(relationRowItem.map((dataRowItem, dataRowIndex) => {
+                  const [priority, condition] = selectListIndicators[relationRowIndex][dataRowIndex];
+                  const similarity = parseInt(newCorrelationMatrix[relationRowIndex][dataRowIndex][priority][condition].toFixed());
+
+                  return {
+                      dataRowIndex,
+                      relationRowIndex,
+                      similarity
+                  }
+              }));
+          });
+
+          const dataSheetSelectList = correlationMatrixForDataSheet.map((dataRowItem, dataRowIndex) => {
+              return this.sortBySimilarity(dataRowItem.map((relationRowItem, relationRowIndex) => {
+                  const [priority, condition] = selectListIndicatorsForDataSheet[dataRowIndex][relationRowIndex];
+
+                  const similarity = parseInt(correlationMatrixForDataSheet[dataRowIndex][relationRowIndex][priority][condition].toFixed());
+
+                  return {
+                      dataRowIndex,
+                      relationRowIndex,
+                      similarity
+                  }
+              }));
+          });
+
+          await this.updateCorrelationSelectListDataSheet(jobId, JSON.stringify(dataSheetSelectList));
+          await this.updateCorrelationSelectListRelationSheet(jobId, JSON.stringify(relationSheetSelectList));
+      }
+      catch(e) {
+          throw new HttpException(e, 500);
+      }
+
+      // OVERRIDE PART
+      const checkIfRowsAvailable = (dataRow, relationRow, indexesTaken) => {
+          const dataRowAvailable = !indexesTaken.map((item) => (item[0]))
+              .includes(dataRow);
+          const relationRowAvailable = !indexesTaken.map((item) => (item[1]))
+              .includes(relationRow);
+
+          return dataRowAvailable && relationRowAvailable;
+      }
+
+      if(!overrideAllRows) {
+          // dopasuj tylko te, które jeszcze nie mają dopasowania
+          const newIndexesOfCorrelatedRowsWithoutAlreadyMatchedRows = newIndexesOfCorrelatedRows.filter((item) => {
+              return checkIfRowsAvailable(item[0], item[1], prevIndexesOfCorrelatedRows);
+          });
+
+          newIndexesOfCorrelatedRows = [
+              ...newIndexesOfCorrelatedRowsWithoutAlreadyMatchedRows,
+              prevIndexesOfCorrelatedRows
+          ]
+
+          await this.updateCorrelationIndexesOfCorrelatedRows(correlationId, JSON.stringify(newIndexesOfCorrelatedRows));
+      }
+      else if(overrideAllRows) {
+          // nadpisz (wszystkie/wszystkie automatyczne) rekordy jeśli znajdziesz nowe dopasowanie
+          let allIndexesOfCorrelatedRows = [];
+          let excludedIndexesOfCorrelatedRows = [];
+          const correlatedDataSheetIndexes = newIndexesOfCorrelatedRows.map((item) => (item[0]));
+          const correlatedRelationSheetIndexes = newIndexesOfCorrelatedRows.map((item) => (item[1]));
+
+          if(matchType === 0) {
+              allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return !correlatedDataSheetIndexes.includes(item[0]) && !correlatedRelationSheetIndexes.includes(item[1]);
+              }).concat(newIndexesOfCorrelatedRows);
+
+              excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return correlatedDataSheetIndexes.includes(item[0]) || correlatedRelationSheetIndexes.includes(item[1]);
+              });
+          }
+          else if(matchType === 1) {
+              allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return !correlatedRelationSheetIndexes.includes(item[1]);
+              }).concat(newIndexesOfCorrelatedRows);
+
+              excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return correlatedRelationSheetIndexes.includes(item[1]);
+              });
+          }
+          else if(matchType === 2) {
+              allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return !correlatedDataSheetIndexes.includes(item[0]);
+              }).concat(newIndexesOfCorrelatedRows);
+
+              excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
+                  return correlatedDataSheetIndexes.includes(item[0]);
+              });
+          }
+          else {
+              allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.concat(newIndexesOfCorrelatedRows);
+          }
+
+          if(!avoidOverrideForManuallyCorrelatedRows) {
+              // nadpisz wszystkie rekordy
+              manuallyCorrelatedRows = this.removeAutoMatchRowsFromManuallyCorrelatedRows(correlationId,
+                                                                                          excludedIndexesOfCorrelatedRows,
+                                                                                          manuallyCorrelatedRows);
+          }
+
+          await this.removeAutoMatchRowsFromSchemaCorrelatedRows(correlationId, excludedIndexesOfCorrelatedRows, schemaCorrelatedRows);
+
+          await this.updateCorrelationIndexesOfCorrelatedRows(correlationId, JSON.stringify(allIndexesOfCorrelatedRows));
+      }
 
       return {
-          newIndexesOfCorrelatedRows,
-          newSelectListIndicators,
-          newCorrelationMatrix
+          manuallyCorrelatedRows
       }
   }
+
+    removeAutoMatchRowsFromManuallyCorrelatedRows(id, excludedRows, manuallyCorrelatedRows) {
+        const rowsToCheck = excludedRows.map((item) => (item.toString()));
+
+        return manuallyCorrelatedRows.filter((item) => {
+            return !rowsToCheck.includes(item.toString());
+        });
+    }
+
+    async removeAutoMatchRowsFromSchemaCorrelatedRows(id, excludedRows, schemaCorrelatedRows) {
+        const rowsToCheck = excludedRows.map((item) => (item.toString()));
+
+        return this.correlationsRepository.save({
+            id,
+            schema_correlated_rows: schemaCorrelatedRows.filter((item) => {
+                return !rowsToCheck.includes(item.toString());
+            })
+        });
+    }
+
+  async updateCorrelationIndexesOfCorrelatedRows(id, indexes_of_correlated_rows) {
+        return this.correlationsRepository.save({
+            id,
+            indexes_of_correlated_rows
+        });
+  }
+
+  async updateCorrelationSelectListDataSheet(id, select_list_data_sheet) {
+      return this.correlationsRepository.save({
+          id,
+          select_list_data_sheet
+      });
+  }
+
+    async updateCorrelationSelectListRelationSheet(id, select_list_relation_sheet) {
+        return this.correlationsRepository.save({
+            id,
+            select_list_relation_sheet
+        });
+    }
 
   async addNewCorrelationJob(jobId, userId, relationSheetLength) {
       return this.correlationJobs.save({

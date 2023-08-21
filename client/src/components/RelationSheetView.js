@@ -40,7 +40,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                showInSelectMenuColumnsSecondSheet,
                                currentSheetColumnsVisibility, setCurrentSheetColumnsVisibility,
                                showInSelectMenuColumnsCurrentSheet, setShowInSelectMenuColumnsCurrentSheet,
-                               selectList, selectListLoading, selectListIndicators,
+                               selectList, selectListLoading,
                                manuallyCorrelatedRowsIndexes, schemaCorrelatedRowsIndexes,
                                indexesOfCorrelatedRowsIndexes, indexesOfCorrelatedRowsSecondSheetIndexes, user}, ref) => {
     const { content } = useContext(TranslationContext);

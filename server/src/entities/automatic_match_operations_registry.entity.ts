@@ -12,8 +12,17 @@ export class AutomaticMatchOperationsRegistryEntity {
     user_id: number;
 
     @Column()
-    team_id_of_user_at_time_of_this_action_happened: number;
+    team_id: number;
 
     @Column()
     automatic_matched_rows_value: number;
+
+    @Column()
+    analyzed_row_count_sheet1: number;
+
+    @Column()
+    analyzed_row_count_sheet2: number;
+
+    @Column()
+    matched_rows_count: number;
 }

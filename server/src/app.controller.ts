@@ -13,7 +13,7 @@ export class AppController {
   }
 
   async getSelectList(body, files) {
-    const { jobId, priorities, dataFilePath, relationFilePath, dataDelimiter, relationDelimiter, selectListIndicators,
+    const { jobId, priorities, dataFilePath, relationFilePath, selectListIndicators,
       isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet, dataSheetLength, relationSheetLength, relationTestRow } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
@@ -23,7 +23,6 @@ export class AppController {
 
     return this.appService.getSelectList(jobId, priorities,
         dataFile, relationFile,
-        dataDelimiter, relationDelimiter,
         isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
         dataSheetLength, relationSheetLength, selectListIndicatorsObject, relationTestRowToSend);
   }
@@ -44,8 +43,7 @@ export class AppController {
   }
 
   async correlate(body, files) {
-    const { jobId, priorities, correlationMatrix, dataFilePath, relationFilePath,
-      dataFileDelimiter, relationFileDelimiter, indexesOfCorrelatedRows,
+    const { correlationId, jobId, priorities, dataFilePath, relationFilePath,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
       manuallyCorrelatedRows, userId, relationTestRow, matchType } = body;
 
@@ -54,9 +52,8 @@ export class AppController {
     const prioritiesObject = JSON.parse(priorities);
     const relationTestRowToSend = !isNaN(relationTestRow) ? parseInt(relationTestRow) : -1;
 
-    return this.appService.correlate(jobId, dataFile, relationFile,
-        dataFileDelimiter, relationFileDelimiter,
-        prioritiesObject, correlationMatrix, indexesOfCorrelatedRows,
+    return this.appService.correlate(correlationId, jobId, dataFile, relationFile,
+        prioritiesObject,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
         manuallyCorrelatedRows, userId, parseInt(matchType), relationTestRowToSend);
   }
