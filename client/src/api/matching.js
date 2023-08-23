@@ -62,7 +62,7 @@ const matching = (correlationId, jobId, priorities,
     formData.append('priorities', JSON.stringify(priorities));
     formData.append('overrideAllRows', overrideAllRows);
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
-    formData.append('manuallyCorrelatedRows', manuallyCorrelatedRows);
+    formData.append('manuallyCorrelatedRows', JSON.stringify(manuallyCorrelatedRows));
     formData.append('userId', userId);
     formData.append('matchType', matchType);
     formData.append('relationTestRow', relationTestRow.toString());
@@ -88,5 +88,22 @@ const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {
     return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`, getConfigWithAuthHeader());
 }
 
+const getCorrelationArraysForDataSheet = (id, indexesToRender) => {
+    return axios.get(`/getCorrelationArraysForDataSheet/${id}/${indexesToRender?.length ? indexesToRender.join(',') : Array.from(Array(20).keys()).join(',')}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
+const getCorrelationArraysForRelationSheet = (id, indexesToRender) => {
+    return axios.get(`/getCorrelationArraysForRelationSheet/${id}/${indexesToRender?.length ? indexesToRender.join(',') : Array.from(Array(20).keys()).join(',')}`, {
+        headers: {
+            Authorization: getAuthHeader()
+        }
+    });
+}
+
 export { getSelectList, matching, getProgressByJobId,
-    correlateUsingSchema }
+    correlateUsingSchema, getCorrelationArraysForDataSheet,
+    getCorrelationArraysForRelationSheet }

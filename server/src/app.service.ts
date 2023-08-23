@@ -115,9 +115,7 @@ export class AppService {
         return arr.sort((a, b) => (parseInt(a.similarity) < parseInt(b.similarity)) ? 1 : -1);
     }
 
-  async getSelectList(jobId, priorities, dataFile, relationFile,
-                      isCorrelationMatrixEmpty, showInSelectMenuColumnsDataSheet,
-                      dataSheetLength, relationSheetLength, selectListIndicators, relationTestRow = -1) {
+  async getSelectList(dataSheetLength, relationSheetLength) {
       const relationSheetSelectList = this.getCorrelationMatrixWithEmptySimilarities(dataSheetLength, relationSheetLength);
       const dataSheetSelectList = this.transposeMatrix(relationSheetSelectList);
 
@@ -169,8 +167,6 @@ export class AppService {
             await this.updateJobProgress(i, jobId, relationSheet.length, fromSelect);
         }
 
-        console.log('get similarity scores end');
-
         return allSimilarities;
     }
 
@@ -218,8 +214,6 @@ export class AppService {
             correlationMatricesForAllPriorities.push(currentPriorityCorrelationMatrix);
         }
 
-        console.log('priorities end');
-
         // Convert array of correlation matrices to one huge correlationMatrix
         let outputCorrelationMatrix = [];
         for(let i=0; i<relationSheet.length; i++) {
@@ -230,8 +224,6 @@ export class AppService {
                 }));
             }
         }
-
-        console.log('return correlationMatrix');
 
         return outputCorrelationMatrix;
     }
@@ -397,8 +389,6 @@ export class AppService {
           areRowsAvailable = this.areRowsAvailableManyToManyRelation;
       }
 
-      console.log('going to check priorities fulfilled');
-
       const overrideAllRowsBoolean = convertStringToBoolean(overrideAllRows);
       const avoidOverrideForManuallyCorrelatedRowsBoolean = convertStringToBoolean(avoidOverrideForManuallyCorrelatedRows);
 
@@ -423,8 +413,6 @@ export class AppService {
                           dataRowIndex, relationRowIndex,
                           overrideAllRowsBoolean, avoidOverrideForManuallyCorrelatedRowsBoolean, manuallyCorrelatedRows
                       )) {
-                          console.log('priority fulfilled ' + newIndexesOfCorrelatedRows.length);
-
                           // Update indexesOfCorrelatedRows
                           if(matchType === 0) {
                               newIndexesOfCorrelatedRows = newIndexesOfCorrelatedRows.filter((item) => {
@@ -474,7 +462,7 @@ export class AppService {
           });
       });
 
-      await this.updateCorrelationIndexesOfCorrelatedRows(jobId, JSON.stringify(newIndexesOfCorrelatedRows));
+      await this.updateCorrelationIndexesOfCorrelatedRows(correlationId, JSON.stringify(newIndexesOfCorrelatedRows));
 
       // GET SELECT LIST PART
       if(relationTestRow !== -1) {
@@ -487,8 +475,6 @@ export class AppService {
       await this.finishCorrelationJob(jobId, relationSheet.length);
 
       try {
-          console.log('try...');
-
           // Convert correlation matrix to array of arrays of objects
           const relationSheetSelectList = newCorrelationMatrix.map((relationRowItem, relationRowIndex) => {
               return this.sortBySimilarity(relationRowItem.map((dataRowItem, dataRowIndex) => {
@@ -517,8 +503,8 @@ export class AppService {
               }));
           });
 
-          await this.updateCorrelationSelectListDataSheet(jobId, JSON.stringify(dataSheetSelectList));
-          await this.updateCorrelationSelectListRelationSheet(jobId, JSON.stringify(relationSheetSelectList));
+          await this.updateCorrelationSelectListDataSheet(correlationId, JSON.stringify(dataSheetSelectList));
+          await this.updateCorrelationSelectListRelationSheet(correlationId, JSON.stringify(relationSheetSelectList));
       }
       catch(e) {
           throw new HttpException(e, 500);
@@ -615,9 +601,9 @@ export class AppService {
 
         return this.correlationsRepository.save({
             id,
-            schema_correlated_rows: schemaCorrelatedRows.filter((item) => {
+            schema_correlated_rows: JSON.stringify(schemaCorrelatedRows.filter((item) => {
                 return !rowsToCheck.includes(item.toString());
-            })
+            }))
         });
     }
 
@@ -629,7 +615,7 @@ export class AppService {
   }
 
   async updateCorrelationSelectListDataSheet(id, select_list_data_sheet) {
-      return this.correlationsRepository.save({
+        return this.correlationsRepository.save({
           id,
           select_list_data_sheet
       });
@@ -665,4 +651,106 @@ export class AppService {
           })
           .execute();
   }
+
+  async getCorrelationArraysToRenderDataSheet(correlationId, indexesInRender) {
+      const correlation = await this.correlationsRepository.findOneBy({
+          id: correlationId
+      });
+
+      if (correlation) {
+          const indexesOfCorrelatedRows = JSON.parse(correlation.indexes_of_correlated_rows);
+          const schemaCorrelatedRows = JSON.parse(correlation.schema_correlated_rows);
+          const selectList = JSON.parse(correlation.select_list_data_sheet);
+
+          let indexesOfCorrelatedRowsToRender = [];
+          let schemaCorrelatedRowsToRender = [];
+          let selectListToRender = [];
+
+          for(const index of indexesInRender) {
+              let i = parseInt(index);
+
+            const newIndexesOfCorrelatedRowsToRender = indexesOfCorrelatedRows.find((item) => {
+                return item[0] === i;
+            });
+            const newSchemaCorrelatedRowsToRender = schemaCorrelatedRows.find((item) => {
+                return item[0] === i;
+            });
+            const newSelectListToRender = selectList.find((item) => {
+                return item[0].dataRowIndex === i && item[1].dataRowIndex === i;
+            });
+
+            if(newIndexesOfCorrelatedRowsToRender) {
+                indexesOfCorrelatedRowsToRender.push(newIndexesOfCorrelatedRowsToRender);
+            }
+            if(newSchemaCorrelatedRowsToRender) {
+                schemaCorrelatedRowsToRender.push(newSchemaCorrelatedRowsToRender);
+            }
+
+            selectListToRender.push(newSelectListToRender);
+          }
+
+          return {
+              newIndexesOfCorrelatedRows: indexesOfCorrelatedRowsToRender,
+              newSchemaCorrelatedRows: schemaCorrelatedRowsToRender,
+              newSelectList: selectListToRender
+          }
+      } else {
+          return {
+              newIndexesOfCorrelatedRows: null,
+              newSchemaCorrelatedRows: null,
+              newSelectList: null
+          }
+      }
+  }
+
+    async getCorrelationArraysToRenderRelationSheet(correlationId, indexesInRender) {
+        const correlation = await this.correlationsRepository.findOneBy({
+            id: correlationId
+        });
+
+        if (correlation) {
+            const indexesOfCorrelatedRows = JSON.parse(correlation.indexes_of_correlated_rows);
+            const schemaCorrelatedRows = JSON.parse(correlation.schema_correlated_rows);
+            const selectList = JSON.parse(correlation.select_list_relation_sheet);
+
+            let indexesOfCorrelatedRowsToRender = [];
+            let schemaCorrelatedRowsToRender = [];
+            let selectListToRender = [];
+
+            for(const index of indexesInRender) {
+                let i = parseInt(index);
+
+                const newIndexesOfCorrelatedRowsToRender = indexesOfCorrelatedRows.find((item) => {
+                    return item[1] === i;
+                });
+                const newSchemaCorrelatedRowsToRender = schemaCorrelatedRows.find((item) => {
+                    return item[1] === i;
+                });
+                const newSelectListToRender = selectList.find((item) => {
+                    return item[0].relationRowIndex === i && item[1].relationRowIndex === i;
+                });
+
+                if(newIndexesOfCorrelatedRowsToRender) {
+                    indexesOfCorrelatedRowsToRender.push(newIndexesOfCorrelatedRowsToRender);
+                }
+                if(newSchemaCorrelatedRowsToRender) {
+                    schemaCorrelatedRowsToRender.push(newSchemaCorrelatedRowsToRender);
+                }
+
+                selectListToRender.push(newSelectListToRender);
+            }
+
+            return {
+                newIndexesOfCorrelatedRows: indexesOfCorrelatedRowsToRender,
+                newSchemaCorrelatedRows: schemaCorrelatedRowsToRender,
+                newSelectList: selectListToRender
+            }
+        } else {
+            return {
+                newIndexesOfCorrelatedRows: null,
+                newSchemaCorrelatedRows: null,
+                newSelectList: null
+            }
+        }
+    }
 }

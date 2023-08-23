@@ -52,7 +52,7 @@ const CorrelationView = ({user}) => {
     const [dataSheetSelectList, setDataSheetSelectList] = useState([]);
     const [relationSheetSelectListLoading, setRelationSheetSelectListLoading] = useState(false);
     const [dataSheetSelectListLoading, setDataSheetSelectListLoading] = useState(false);
-    const [correlationId, setCorrelationId] = useState(null);
+    const [correlationId, setCorrelationId] = useState(makeId(64));
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
     const [dataSheetColumnsVisibility, setDataSheetColumnsVisibility] = useState([]);
@@ -1551,8 +1551,6 @@ const CorrelationView = ({user}) => {
         const jobIdTmp = makeId(64);
         setJobId(jobIdTmp);
 
-        console.log('start matching');
-
         matching(correlationIdTmp, jobIdTmp,
             priorities,
             dataFile, relationFile,
@@ -1561,6 +1559,7 @@ const CorrelationView = ({user}) => {
             .then((res) => {
                if(res) {
                    setManuallyCorrelatedRows(res?.data?.manuallyCorrelatedRows);
+                   setCorrelationStatus(2);
                }
             })
             .catch((err) => {
@@ -1593,7 +1592,8 @@ const CorrelationView = ({user}) => {
                 duplicatedRecordsFormat, setDuplicatedRecordsFormat,
                 columnsToSum, setColumnsToSum,
                 exportBuildSystem, setExportBuildSystem,
-                includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter
+                includeColumnWithMatchCounter, setIncludeColumnWithMatchCounter,
+                correlationId
             }}>
         <div className="container container--correlation">
             <div className="homepage homepage--correlation">
@@ -1618,35 +1618,27 @@ const CorrelationView = ({user}) => {
                                                          ref={dataSheetWrapper}
                                                          currentSheet={dataSheet}
                                                          secondSheet={relationSheet}
+                                                         defaultSelectList={dataSheetSelectList}
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[0]))}
-                                                         schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[0]))}
-                                                         indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[0]))}
-                                                         indexesOfCorrelatedRowsSecondSheetIndexes={indexesOfCorrelatedRows.map((item) => (item[1]))}
-                                                         selectList={dataSheetSelectList}
-                                                         selectListLoading={dataSheetSelectListLoading}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsDataSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsDataSheet}
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsRelationSheet}
                                                          currentSheetColumnsVisibility={dataSheetColumnsVisibility}
-                                                         user={user}
-                                                         setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility} /> : ''}
+                                                         setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility}
+                                                         user={user} /> : ''}
 
                 {currentSheet === 1 ? <RelationSheetView sheetIndex={1}
                                                          ref={relationSheetWrapper}
                                                          currentSheet={relationSheet}
                                                          secondSheet={dataSheet}
+                                                         defaultSelectList={relationSheetSelectList}
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[1]))}
-                                                         schemaCorrelatedRowsIndexes={schemaCorrelatedRows.map((item) => (item[1]))}
-                                                         indexesOfCorrelatedRowsIndexes={indexesOfCorrelatedRows.map((item) => (item[1]))}
-                                                         indexesOfCorrelatedRowsSecondSheetIndexes={indexesOfCorrelatedRows.map((item) => (item[0]))}
-                                                         selectList={relationSheetSelectList}
-                                                         selectListLoading={relationSheetSelectListLoading}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet}
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
                                                          currentSheetColumnsVisibility={relationSheetColumnsVisibility}
-                                                         user={user}
-                                                         setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility} /> : ''}
+                                                         setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility}
+                                                         user={user} /> : ''}
 
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}
             </div>
