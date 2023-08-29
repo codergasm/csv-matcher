@@ -36,17 +36,21 @@ export class AppController {
   async correlate(body, files) {
     const { correlationId, jobId, priorities, dataFilePath, relationFilePath,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
+      correlationMatrix, indexesOfCorrelatedRows,
       manuallyCorrelatedRows, userId, relationTestRow, matchType } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
     const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
     const prioritiesObject = JSON.parse(priorities);
     const relationTestRowToSend = !isNaN(relationTestRow) ? parseInt(relationTestRow) : -1;
+    const prevIndexesOfCorrelatedRows = JSON.parse(indexesOfCorrelatedRows);
+    const prevCorrelationMatrix = JSON.parse(correlationMatrix);
 
     return this.appService.correlate(correlationId, jobId, dataFile, relationFile,
         prioritiesObject,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        JSON.parse(manuallyCorrelatedRows), userId, parseInt(matchType), relationTestRowToSend);
+        JSON.parse(manuallyCorrelatedRows), userId, parseInt(matchType), prevIndexesOfCorrelatedRows,
+        prevCorrelationMatrix, relationTestRowToSend);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -62,22 +66,5 @@ export class AppController {
   async correlateApi(@UploadedFiles() files: Array<Express.Multer.File>,
                         @Body() body) {
     return this.correlate(body, files);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/getCorrelationArraysForDataSheet/:id/:indexesToRender')
-  async getCorrelationArraysToRenderDataSheet(@Param('id') id, @Param('indexesToRender') indexesToRender) {
-    console.log(`4 ${typeof indexesToRender}`);
-    console.log(`1 ${indexesToRender}`);
-    console.log(`2 ${indexesToRender.toString()}`);
-    console.log(`3 ${indexesToRender.toString().split(',')}`);
-
-    return this.appService.getCorrelationArraysToRenderDataSheet(id, indexesToRender.split(','));
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/getCorrelationArraysForRelationSheet/:id/:indexesToRender')
-  async getCorrelationArraysToRenderRelationSheet(@Param('id') id, @Param('indexesToRender') indexesToRender) {
-    return this.appService.getCorrelationArraysToRenderRelationSheet(id, indexesToRender.split(','));
   }
 }

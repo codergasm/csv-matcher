@@ -16,7 +16,7 @@ import { SchemasModule } from './schemas/schemas.module';
 import {join} from "path";
 import { ApiModule } from './api/api.module';
 import {AuthModule} from "./auth/auth.module";
-import {CorrelationsEntity} from "./entities/correlations.entity";
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import {CorrelationsEntity} from "./entities/correlations.entity";
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..'),
     }),
+    CacheModule.register(),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql', // type of our database
@@ -39,7 +40,7 @@ import {CorrelationsEntity} from "./entities/correlations.entity";
       autoLoadEntities: true, // models will be loaded automatically
       synchronize: false
     }),
-    TypeOrmModule.forFeature([CorrelationJobsEntity, CorrelationsEntity, AddToTeamUsersRequestsEntity]),
+    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity]),
       MailerModule.forRoot({
           transport: `smtp://${process.env.EMAIL_ADDRESS}:${process.env.EMAIL_PASSWORD}@${process.env.EMAIL_HOST}`,
           defaults: {

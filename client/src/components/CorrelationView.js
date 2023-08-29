@@ -11,6 +11,7 @@ import QuickBottomInfo from "./QuickBottomInfo";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import combineTwoSheets from "../helpers/combineTwoSheets";
+import transposeMatrix from "../helpers/transposeMatrix";
 
 const ViewContext = React.createContext(null);
 
@@ -61,6 +62,8 @@ const CorrelationView = ({user}) => {
     const [numberOfMatches, setNumberOfMatches] = useState(-1);
     const [temporaryNumberOfMatches, setTemporaryNumberOfMatches] = useState(-1);
     const [afterMatchClean, setAfterMatchClean] = useState(false);
+    const [dataSheetCorrelationMatrix, setDataSheetCorrelationMatrix] = useState([]);
+    const [relationSheetCorrelationMatrix, setRelationSheetCorrelationMatrix] = useState([]);
 
     // Export settings
     const [exportFormat, setExportFormat] = useState(0);
@@ -181,6 +184,20 @@ const CorrelationView = ({user}) => {
 
     useEffect(() => {
         if(dataSheet?.length && relationSheet?.length) {
+            if(!correlationMatrix[0]?.length) {
+                setDataSheetCorrelationMatrix(relationSheet.map(() => {
+                    return dataSheet.map(() => {
+                        return -1;
+                    });
+                }));
+
+                setRelationSheetCorrelationMatrix(dataSheet.map(() => {
+                    return relationSheet.map(() => {
+                        return -1;
+                    });
+                }));
+            }
+
             if(currentSchemaId > 0) {
                 getSchemaById(currentSchemaId)
                     .then((res) => {
@@ -1448,29 +1465,6 @@ const CorrelationView = ({user}) => {
     }, [correlationStatus]);
 
     useEffect(() => {
-        // Set default selectList with similarities = -1
-        setRelationSheetSelectList(relationSheet.map((relationRowItem, relationRowIndex) => {
-            return dataSheet.map((dataRowItem, dataRowIndex) => {
-                return {
-                    dataRowIndex,
-                    relationRowIndex,
-                    similarity: -1
-                }
-            });
-        }));
-
-        setDataSheetSelectList(dataSheet.map((dataRowItem, dataRowIndex) => {
-            return relationSheet.map((relationRowItem, relationRowIndex) => {
-                return {
-                    dataRowIndex,
-                    relationRowIndex,
-                    similarity: -1
-                }
-            });
-        }));
-    }, [correlationMatrix]);
-
-    useEffect(() => {
         setRelationSheetSelectListLoading(false);
     }, [relationSheetSelectList]);
 
@@ -1555,10 +1549,17 @@ const CorrelationView = ({user}) => {
             priorities,
             dataFile, relationFile,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, api ? apiUserId : user.id, matchType, api ? 'api' : '')
+            manuallyCorrelatedRows, api ? apiUserId : user.id, indexesOfCorrelatedRows,
+            relationSheetCorrelationMatrix, matchType,api ? 'api' : '')
             .then((res) => {
                if(res) {
+                   setIndexesOfCorrelatedRows(res?.data?.indexesOfCorrelatedRows);
                    setManuallyCorrelatedRows(res?.data?.manuallyCorrelatedRows);
+
+                   const matrix = res?.data?.correlationMatrix;
+                   setDataSheetCorrelationMatrix(transposeMatrix(matrix));
+                   setRelationSheetCorrelationMatrix(matrix);
+
                    setCorrelationStatus(2);
                }
             })
@@ -1625,6 +1626,7 @@ const CorrelationView = ({user}) => {
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsRelationSheet}
                                                          currentSheetColumnsVisibility={dataSheetColumnsVisibility}
                                                          setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility}
+                                                         correlationMatrix={dataSheetCorrelationMatrix}
                                                          user={user} /> : ''}
 
                 {currentSheet === 1 ? <RelationSheetView sheetIndex={1}
@@ -1638,6 +1640,7 @@ const CorrelationView = ({user}) => {
                                                          showInSelectMenuColumnsSecondSheet={showInSelectMenuColumnsDataSheet}
                                                          currentSheetColumnsVisibility={relationSheetColumnsVisibility}
                                                          setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility}
+                                                         correlationMatrix={relationSheetCorrelationMatrix}
                                                          user={user} /> : ''}
 
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}

@@ -48,7 +48,8 @@ const matching = (correlationId, jobId, priorities,
                   dataFile, relationFile,
                   overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
                   manuallyCorrelatedRows, userId,
-                  matchType, api, relationTestRow = -1) => {
+                  indexesOfCorrelatedRows,
+                  correlationMatrix, matchType,  api, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -66,6 +67,8 @@ const matching = (correlationId, jobId, priorities,
     formData.append('userId', userId);
     formData.append('matchType', matchType);
     formData.append('relationTestRow', relationTestRow.toString());
+    formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));
+    formData.append('correlationMatrix', JSON.stringify(correlationMatrix));
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));
@@ -88,22 +91,5 @@ const correlateUsingSchema = (dataSheetId, relationSheetId, matchSchemaId) => {
     return axios.get(`/schemas/correlateUsingSchema/${dataSheetId}/${relationSheetId}/${matchSchemaId}`, getConfigWithAuthHeader());
 }
 
-const getCorrelationArraysForDataSheet = (id, indexesToRender) => {
-    return axios.get(`/getCorrelationArraysForDataSheet/${id}/${indexesToRender?.length ? indexesToRender.join(',') : Array.from(Array(20).keys()).join(',')}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
-}
-
-const getCorrelationArraysForRelationSheet = (id, indexesToRender) => {
-    return axios.get(`/getCorrelationArraysForRelationSheet/${id}/${indexesToRender?.length ? indexesToRender.join(',') : Array.from(Array(20).keys()).join(',')}`, {
-        headers: {
-            Authorization: getAuthHeader()
-        }
-    });
-}
-
 export { getSelectList, matching, getProgressByJobId,
-    correlateUsingSchema, getCorrelationArraysForDataSheet,
-    getCorrelationArraysForRelationSheet }
+    correlateUsingSchema }
