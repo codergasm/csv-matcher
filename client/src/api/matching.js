@@ -49,7 +49,7 @@ const matching = (correlationId, jobId, priorities,
                   overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
                   manuallyCorrelatedRows, userId,
                   indexesOfCorrelatedRows,
-                  correlationMatrix, matchType,  api, relationTestRow = -1) => {
+                  correlationMatrix, schemaCorrelatedRows, matchType,  api, relationTestRow = -1) => {
     const formData = new FormData();
     const config = {
         headers: {
@@ -69,6 +69,7 @@ const matching = (correlationId, jobId, priorities,
     formData.append('relationTestRow', relationTestRow.toString());
     formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));
     formData.append('correlationMatrix', JSON.stringify(correlationMatrix));
+    formData.append('schemaCorrelatedRows', JSON.stringify(schemaCorrelatedRows));
 
     if(typeof dataFile === 'string') {
         formData.append('dataFilePath', dataFile.replace(settings.API_URL, '.'));

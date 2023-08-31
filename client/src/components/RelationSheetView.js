@@ -37,8 +37,8 @@ import areArraysEqual from "../helpers/areArraysEqual";
 import SelectMenuSettingsModal from "./SelectMenuSettingsModal";
 
 const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
-                               showInSelectMenuColumnsSecondSheet, defaultSelectList,
-                               currentSheetColumnsVisibility, setCurrentSheetColumnsVisibility,
+                               showInSelectMenuColumnsSecondSheet,
+                               currentSheetColumnsVisibility, setCurrentSheetColumnsVisibility, schemaCorrelatedRows,
                                showInSelectMenuColumnsCurrentSheet, setShowInSelectMenuColumnsCurrentSheet,
                                manuallyCorrelatedRowsIndexes, correlationMatrix, user}, ref) => {
     const { content } = useContext(TranslationContext);
@@ -52,9 +52,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const [currentSheetFiltered, setCurrentSheetFiltered] = useState([]);
 
     const [rowsToRender, setRowsToRender] = useState([]);
-    const [schemaCorrelatedRowsToRender, setSchemaCorrelatedRowsToRender] = useState([]);
-    const [selectListToRender, setSelectListToRender] = useState([]);
-
     const [indexesOfCorrelatedRowsSecondSheetIndexes, setIndexesOfCorrelatedRowsSecondSheetIndexes] = useState([]);
 
     const [secondSheetColumnsNames, setSecondSheetColumnsNames] = useState([]);
@@ -100,12 +97,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     let rightScrollBox = useRef(null);
 
     useCloseDropdownSelectMenu(showFullCellValue, setShowSelectMenu, setShowSelectMenuRelation);
-
-    useEffect(() => {
-        if(!selectListToRender?.length) {
-            setSelectListToRender(defaultSelectList);
-        }
-    }, [defaultSelectList]);
 
     useEffect(() => {
         if(columnsNames) {
@@ -317,7 +308,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
         if(manuallyCorrelatedRowsIndexes.includes(relationRow)) {
             return 'purple';
         }
-        else if(schemaCorrelatedRowsToRender.includes(relationRow)) {
+        else if(schemaCorrelatedRows.includes(relationRow)) {
             return 'blue';
         }
         else  {
@@ -327,8 +318,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
     useEffect(() => {
         // Sorting and filtering changed - fetch next rows from start
-        console.log('zmiana filtrowania');
-
         if(currentSheetFiltered?.length) {
             setRowsToRender([...currentSheetFiltered.slice(0, 20)]);
             setPage(1);
@@ -342,8 +331,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     }, [currentSheetFiltered]);
 
     const fetchNextRows = () => {
-        console.log('fetch next rows');
-
         setRowsToRender(prevState => {
             return [...prevState, ...currentSheetFiltered.slice(page * ROWS_PER_PAGE, page * ROWS_PER_PAGE + ROWS_PER_PAGE)];
         });
@@ -712,7 +699,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
 
             setRowsToRenderHeights(heights);
         }
-    }, [rowsToRenderRefs, cellsHeight]);
+    }, [rowsToRenderRefs, cellsHeight, schemaCorrelatedRows]);
 
     const createSelectList = (rowIndex) => {
         if(correlationMatrix[0]?.length) {
@@ -969,12 +956,13 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                     <div className="line line--tableRow sheet__header__cell--relationWrapper">
                         <div className="relationColumnsScroll">
                             {(isRelationColumnSelectAvailable() ? Array.from(Array(numberOfRelationColumns).keys()) : [1]).map((item, index) => {
-                                return <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
-                                                                         sheetIndex={sheetIndex}
-                                                                         id={index}
-                                                                         showDisclaimer={showDisclaimerAboutEmptySelectList}
-                                                                         setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
-                                                                         sortRelationColumnByMatch={sortRelationColumnByMatch} />
+                                return <React.Fragment key={index}>
+                                    <TableViewHeaderRowRelationColumn relationColumnSort={relationColumnSort}
+                                                                      sheetIndex={sheetIndex}
+                                                                      showDisclaimer={showDisclaimerAboutEmptySelectList}
+                                                                      setDeleteMatchesModalVisible={setDeleteMatchesModalVisible}
+                                                                      sortRelationColumnByMatch={sortRelationColumnByMatch} />
+                                </React.Fragment>
                             })}
                         </div>
                     </div>
@@ -986,8 +974,6 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                         let correlatedRowArray = [];
 
                         const indexAfterFilterAndSort = indexesInRender[index];
-                        // const currentSelectList = selectListToRender[indexAfterFilterAndSort];
-                        // const currentSelectList = selectListToRender[index];
 
                         const currentSelectList = createSelectList(indexAfterFilterAndSort);
 
@@ -1035,7 +1021,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                 isCorrelatedRowWithHighestSimilarity = ((matchType === 3) || (relationIndex > 0) ||
                                                                         (correlatedRow[2] === currentSelectList[0][2]) ||
                                                                         (manuallyCorrelatedRowsIndexes.includes(indexAfterFilterAndSort)) ||
-                                                                        (schemaCorrelatedRowsToRender.includes(indexAfterFilterAndSort)));
+                                                                        (schemaCorrelatedRows.includes(indexAfterFilterAndSort)));
                                 isCorrelatedRowWithHighestSimilarityArray.push(isCorrelatedRowWithHighestSimilarity);
 
                                 correlatedRowValue = Object.entries(secondSheet[sheetIndex === 0 ? correlatedRow[1] : correlatedRow[0]])
@@ -1121,7 +1107,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
                                         </span>
                                         <span className="select__menu__item__similarity" style={{
                                             background: getSimilarityColorForRelationSheet(correlatedRow[2], sheetIndex === 0 ? correlatedRow[0] : correlatedRow[1]),
-                                            color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow[0] : correlatedRow[1]) || schemaCorrelatedRowsToRender.includes(sheetIndex === 0 ? correlatedRow[0] : correlatedRow[1]) ? '#fff' : '#000'
+                                            color: manuallyCorrelatedRowsIndexes.includes(sheetIndex === 0 ? correlatedRow[0] : correlatedRow[1]) || schemaCorrelatedRows.includes(sheetIndex === 0 ? correlatedRow[0] : correlatedRow[1]) ? '#fff' : '#000'
                                         }}>
                                             {isLargerMatchAlertVisible(isCorrelatedRowWithHighestSimilarity, correlatedRow) ? <Tooltip title={content.rowWithLargerMatchAlert}
                                                                                                                                        followCursor={true}

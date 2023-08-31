@@ -6,6 +6,7 @@ import {saveSchema, updateSchema} from "../api/schemas";
 import BottomNotification from "./BottomNotification";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
+import Loader from "./Loader";
 
 const ChooseAndSaveSchema = ({user}) => {
     const { content } = useContext(TranslationContext);
@@ -21,6 +22,7 @@ const ChooseAndSaveSchema = ({user}) => {
     const [notificationColor, setNotificationColor] = useState('');
     const [isCurrentSchemaTeam, setIsCurrentSchemaTeam] = useState(true);
     const [tooltip, setTooltip] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     let schemaPickerContainer = useRef(null);
 
@@ -54,6 +56,8 @@ const ChooseAndSaveSchema = ({user}) => {
     }
 
     const createSchemaWrapper = () => {
+        setLoading(true);
+
         saveSchema(name, matchSchemaArray, priorities, getColumnsSettingsObject(),
             matchType, matchFunction,
             api ? null : user.email, api ? apiUserId : null,
@@ -64,14 +68,17 @@ const ChooseAndSaveSchema = ({user}) => {
                 setNotificationColor('#508345');
                 setNotificationText(content.schemaAdded);
                 setCurrentSchemaChangedAndNotSaved(false);
+                setLoading(false);
             })
             .catch(() => {
                 setNotificationText(content.error);
                 setNotificationColor('#ff0000');
+                setLoading(false);
             });
     }
 
     const updateSchemaWrapper = () => {
+        setLoading(true);
         schemaPickerContainer.current.style.zIndex = '99000';
 
         updateSchema(currentSchemaId, name, matchSchemaArray, priorities,
@@ -85,6 +92,8 @@ const ChooseAndSaveSchema = ({user}) => {
                 setTimeout(() => {
                     schemaPickerContainer.current.style.zIndex = '900';
                 }, 5000);
+
+                setLoading(false);
             })
             .catch(() => {
                 setNotificationText(content.error);
@@ -93,6 +102,8 @@ const ChooseAndSaveSchema = ({user}) => {
                 setTimeout(() => {
                     schemaPickerContainer.current.style.zIndex = '900';
                 }, 5000);
+
+                setLoading(false);
             });
     }
 
@@ -129,9 +140,11 @@ const ChooseAndSaveSchema = ({user}) => {
                             onChange={(e) => { setName(e.target.value); }} />}
             </div>
 
-            {(!isCurrentSchemaTeam || user.canEditTeamMatchSchemas || currentSchemaId === -1) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
-                                           onClick={createSchemaWrapper}
-                                           disabled={!indexesOfCorrelatedRows.length}>
+            {loading ? <div className="loader loader--schema">
+                <Loader width={30} />
+            </div>: (!isCurrentSchemaTeam || user.canEditTeamMatchSchemas || currentSchemaId === -1) ? (currentSchemaId === -1 ? <button className="btn btn--saveSchema"
+                                                                                                                                              onClick={createSchemaWrapper}
+                                                                                                                                              disabled={!indexesOfCorrelatedRows.length}>
                 {content.createAndSaveSchema}
             </button> : <button className="btn btn--saveSchema"
                                 onClick={updateSchemaWrapper}>

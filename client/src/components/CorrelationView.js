@@ -49,10 +49,6 @@ const CorrelationView = ({user}) => {
     const [schemaCorrelatedRows, setSchemaCorrelatedRows] = useState([]);
     const [overrideAllRows, setOverrideAllRows] = useState(false);
     const [avoidOverrideForManuallyCorrelatedRows, setAvoidOverrideForManuallyCorrelatedRows] = useState(false);
-    const [relationSheetSelectList, setRelationSheetSelectList] = useState([]);
-    const [dataSheetSelectList, setDataSheetSelectList] = useState([]);
-    const [relationSheetSelectListLoading, setRelationSheetSelectListLoading] = useState(false);
-    const [dataSheetSelectListLoading, setDataSheetSelectListLoading] = useState(false);
     const [correlationId, setCorrelationId] = useState(makeId(64));
     const [jobId, setJobId] = useState(null);
     const [progressCount, setProgressCount] = useState(0);
@@ -113,25 +109,9 @@ const CorrelationView = ({user}) => {
 
     const selectColumnWithMostContentInSheet = (sheet) => {
         const sheetSample = sheet.slice(0, 10);
-        const columnsContent = sheetSample.map((item) => {
+        return sheetSample.map((item) => {
             return Object.entries(item).map((item) => (item[1]));
         });
-
-        let columnWithMostContent = 0;
-        let maxLength = 0;
-
-        for(let i=0; i<columnsContent[0].length; i++) {
-            let currentColumnContentLength = columnsContent.reduce((prev, curr) => {
-                return prev + curr[i].length;
-            }, 0);
-
-            if(currentColumnContentLength > maxLength) {
-                maxLength = currentColumnContentLength;
-                columnWithMostContent = i;
-            }
-        }
-
-        return { columnsContent, columnWithMostContent }
     }
 
     useEffect(() => {
@@ -239,14 +219,12 @@ const CorrelationView = ({user}) => {
     }, [correlationStatus]);
 
     const setDefaultShowInSelectMenuColumnsDataSheet = () => {
-        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(dataSheet);
-        // setShowInSelectMenuColumnsDataSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        const columnsContent = selectColumnWithMostContentInSheet(dataSheet);
         setShowInSelectMenuColumnsDataSheet(columnsContent[0].map(() => false));
     }
 
     const setDefaultShowInSelectMenuColumnsRelationSheet = () => {
-        const { columnsContent, columnWithMostContent } = selectColumnWithMostContentInSheet(relationSheet);
-        // setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map((item, index) => (index === columnWithMostContent)));
+        const columnsContent = selectColumnWithMostContentInSheet(relationSheet);
         setShowInSelectMenuColumnsRelationSheet(columnsContent[0].map(() => false));
     }
 
@@ -1465,14 +1443,6 @@ const CorrelationView = ({user}) => {
     }, [correlationStatus]);
 
     useEffect(() => {
-        setRelationSheetSelectListLoading(false);
-    }, [relationSheetSelectList]);
-
-    useEffect(() => {
-        setDataSheetSelectListLoading(false);
-    }, [dataSheetSelectList]);
-
-    useEffect(() => {
         if(indexesOfCorrelatedRows) {
             setMatchSchemaArray(indexesOfCorrelatedRows.map((item) => {
                 return [
@@ -1550,11 +1520,12 @@ const CorrelationView = ({user}) => {
             dataFile, relationFile,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
             manuallyCorrelatedRows, api ? apiUserId : user.id, indexesOfCorrelatedRows,
-            relationSheetCorrelationMatrix, matchType,api ? 'api' : '')
+            relationSheetCorrelationMatrix, schemaCorrelatedRows, matchType,api ? 'api' : '')
             .then((res) => {
                if(res) {
                    setIndexesOfCorrelatedRows(res?.data?.indexesOfCorrelatedRows);
                    setManuallyCorrelatedRows(res?.data?.manuallyCorrelatedRows);
+                   setSchemaCorrelatedRows(res?.data?.schemaCorrelatedRows);
 
                    const matrix = res?.data?.correlationMatrix;
                    setDataSheetCorrelationMatrix(transposeMatrix(matrix));
@@ -1619,7 +1590,6 @@ const CorrelationView = ({user}) => {
                                                          ref={dataSheetWrapper}
                                                          currentSheet={dataSheet}
                                                          secondSheet={relationSheet}
-                                                         defaultSelectList={dataSheetSelectList}
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[0]))}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsDataSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsDataSheet}
@@ -1627,13 +1597,13 @@ const CorrelationView = ({user}) => {
                                                          currentSheetColumnsVisibility={dataSheetColumnsVisibility}
                                                          setCurrentSheetColumnsVisibility={setDataSheetColumnsVisibility}
                                                          correlationMatrix={dataSheetCorrelationMatrix}
+                                                         schemaCorrelatedRows={schemaCorrelatedRows.map((item) => (item[0]))}
                                                          user={user} /> : ''}
 
                 {currentSheet === 1 ? <RelationSheetView sheetIndex={1}
                                                          ref={relationSheetWrapper}
                                                          currentSheet={relationSheet}
                                                          secondSheet={dataSheet}
-                                                         defaultSelectList={relationSheetSelectList}
                                                          manuallyCorrelatedRowsIndexes={manuallyCorrelatedRows.map((item) => (item[1]))}
                                                          showInSelectMenuColumnsCurrentSheet={showInSelectMenuColumnsRelationSheet}
                                                          setShowInSelectMenuColumnsCurrentSheet={setShowInSelectMenuColumnsRelationSheet}
@@ -1641,6 +1611,7 @@ const CorrelationView = ({user}) => {
                                                          currentSheetColumnsVisibility={relationSheetColumnsVisibility}
                                                          setCurrentSheetColumnsVisibility={setRelationSheetColumnsVisibility}
                                                          correlationMatrix={relationSheetCorrelationMatrix}
+                                                         schemaCorrelatedRows={schemaCorrelatedRows.map((item) => (item[1]))}
                                                          user={user} /> : ''}
 
                 {currentSheet === 2 ? <OutputSheetView ref={outputSheetWrapper} /> : ''}

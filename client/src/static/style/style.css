@@ -2743,6 +2743,10 @@ input[type=number] {
     margin: 40px auto;
 }
 
+.loader--schema {
+    padding-left: 30px;
+}
+
 .flex--w {
     width: 80%;
     margin: auto;

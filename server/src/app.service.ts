@@ -119,6 +119,7 @@ export class AppService {
 
     async getSimilarityScores(jobId, conditions, correlationMatrix, dataSheet,
                               relationSheet, indexesOfCorrelatedRows, overrideAllRows, fromSelect) {
+        const jobFraction = 0.75;
         let allSimilarities = [];
         let i = 0;
 
@@ -156,7 +157,7 @@ export class AppService {
 
             i++;
             allSimilarities.push(relationRowSimilarities);
-            await this.updateJobProgress(i, jobId, relationSheet.length, fromSelect);
+            await this.updateJobProgress(Math.max(10, Math.round(i * jobFraction)), jobId);
         }
 
         return allSimilarities;
@@ -166,12 +167,12 @@ export class AppService {
         return (indexesOfCorrelatedRowsItem !== -1) && (!overrideAllRows) && correlationMatrix;
     }
 
-    async updateJobProgress(i, jobId, relationSheetLength, fromSelect) {
+    async updateJobProgress(i, jobId) {
         if(!(i % 20) && jobId) {
             await this.correlationJobs
                 .createQueryBuilder()
                 .update({
-                    rowCount: fromSelect ? ((relationSheetLength / 2) + (i / 2)) : (i / 2)
+                    rowCount: i
                 })
                 .where({
                     id: jobId
@@ -283,12 +284,10 @@ export class AppService {
                     priorities, overrideAllRows,
                     avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows,
                     userId, matchType, prevIndexesOfCorrelatedRows, prevCorrelationMatrix,
-                    relationTestRow = -1) {
+                    prevSchemaCorrelatedRows, relationTestRow = -1) {
         // indexesOfCorrelatedRows to tutaj tablica par, które są już skorelowane i których nie wolno nadpisać
         let newCorrelationMatrix, i, newIndexesOfCorrelatedRows, selectListIndicators;
         let relationSheetLength;
-
-        console.log(prevIndexesOfCorrelatedRows);
 
         let dataSheet = await this.convertFileToArrayOfObjects(dataFile);
         let relationSheet = await this.convertFileToArrayOfObjects(relationFile);
@@ -448,7 +447,7 @@ export class AppService {
             console.log(e);
         }
 
-        await this.finishCorrelationJob(jobId, relationSheetLength);
+        await this.updateJobProgress(Math.round(relationSheetLength * 0.83), jobId);
 
         let correlationMatrixToReturn = newCorrelationMatrix.map((relationRowItem, relationRowIndex) => {
             return relationRowItem.map((dataRowItem, dataRowIndex) => {
@@ -456,6 +455,8 @@ export class AppService {
                 return parseInt(dataRowItem[priority][condition].toFixed());
             });
         });
+
+        await this.updateJobProgress(Math.round(relationSheetLength * 0.99), jobId);
 
         // OVERRIDE PART
         const checkIfRowsAvailable = (dataRow, relationRow, indexesTaken) => {
@@ -466,6 +467,8 @@ export class AppService {
 
             return dataRowAvailable && relationRowAvailable;
         }
+
+        let newSchemaCorrelatedRows = prevSchemaCorrelatedRows;
 
         if(!overrideAllRows) {
             // dopasuj tylko te, które jeszcze nie mają dopasowania
@@ -493,6 +496,10 @@ export class AppService {
                 excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
                     return correlatedDataSheetIndexes.includes(item[0]) || correlatedRelationSheetIndexes.includes(item[1]);
                 });
+
+                newSchemaCorrelatedRows = prevSchemaCorrelatedRows.filter((item) => {
+                    return !correlatedDataSheetIndexes.includes(item[0]) && !correlatedRelationSheetIndexes.includes(item[1]);
+                });
             }
             else if(matchType === 1) {
                 allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
@@ -502,6 +509,10 @@ export class AppService {
                 excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
                     return correlatedRelationSheetIndexes.includes(item[1]);
                 });
+
+                newSchemaCorrelatedRows = prevSchemaCorrelatedRows.filter((item) => {
+                    return !correlatedRelationSheetIndexes.includes(item[1]);
+                });
             }
             else if(matchType === 2) {
                 allIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
@@ -510,6 +521,10 @@ export class AppService {
 
                 excludedIndexesOfCorrelatedRows = prevIndexesOfCorrelatedRows.filter((item) => {
                     return correlatedDataSheetIndexes.includes(item[0]);
+                });
+
+                newSchemaCorrelatedRows = prevSchemaCorrelatedRows.filter((item) => {
+                    return !correlatedDataSheetIndexes.includes(item[0]);
                 });
             }
             else {
@@ -526,9 +541,12 @@ export class AppService {
             newIndexesOfCorrelatedRows = allIndexesOfCorrelatedRows;
         }
 
+        await this.finishCorrelationJob(jobId, relationSheetLength);
+
         return {
             correlationMatrix: correlationMatrixToReturn,
             indexesOfCorrelatedRows: newIndexesOfCorrelatedRows,
+            schemaCorrelatedRows: newSchemaCorrelatedRows,
             manuallyCorrelatedRows
         }
     }

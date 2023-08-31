@@ -165,7 +165,7 @@ const pl = {
     testingMatchFoundHeaderPart2: 'z arkusza 2',
     testingMatchFoundListHeader: 'Poniżej znajduje się lista pozostałych dziesięciu najwyżej dopasowanych rekordów',
     match: 'Dopasowanie',
-    autoMatchProgress: ['Trwa przesyłanie wyników na serwer', 'Trwa korelowanie rekordów', 'Trwa przesyłanie wyników'],
+    autoMatchProgress: ['Trwa inicjowanie korelowania', 'Trwa korelowanie rekordów', 'Trwa przesyłanie wyników'],
 
     // Export settings modal
     exportSettings: 'Ustawienia eksportu',

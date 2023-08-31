@@ -1,15 +1,14 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import {Tooltip} from "react-tippy";
 import {ViewContext} from "./CorrelationView";
 import {TranslationContext} from "../App";
 
-const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort, id,
+const TableViewHeaderRowRelationColumn = ({sortRelationColumnByMatch, relationColumnSort,
                                               setDeleteMatchesModalVisible, sheetIndex, showDisclaimer}) => {
     const { content } = useContext(TranslationContext);
     const { selectList } = useContext(ViewContext);
 
-    return <div className="sheet__header__cell sheet__header__cell--relation"
-                key={id}>
+    return <div className="sheet__header__cell sheet__header__cell--relation">
         <span className="sheet__header__cell--relation__bigText">
             {content.relationColumnHeaders[sheetIndex]}
         </span>

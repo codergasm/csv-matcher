@@ -36,7 +36,7 @@ export class AppController {
   async correlate(body, files) {
     const { correlationId, jobId, priorities, dataFilePath, relationFilePath,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-      correlationMatrix, indexesOfCorrelatedRows,
+      correlationMatrix, indexesOfCorrelatedRows, schemaCorrelatedRows,
       manuallyCorrelatedRows, userId, relationTestRow, matchType } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
@@ -45,12 +45,13 @@ export class AppController {
     const relationTestRowToSend = !isNaN(relationTestRow) ? parseInt(relationTestRow) : -1;
     const prevIndexesOfCorrelatedRows = JSON.parse(indexesOfCorrelatedRows);
     const prevCorrelationMatrix = JSON.parse(correlationMatrix);
+    const prevSchemaCorrelatedRows = JSON.parse(schemaCorrelatedRows);
 
     return this.appService.correlate(correlationId, jobId, dataFile, relationFile,
         prioritiesObject,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
         JSON.parse(manuallyCorrelatedRows), userId, parseInt(matchType), prevIndexesOfCorrelatedRows,
-        prevCorrelationMatrix, relationTestRowToSend);
+        prevCorrelationMatrix, prevSchemaCorrelatedRows, relationTestRowToSend);
   }
 
   @UseGuards(JwtAuthGuard)
