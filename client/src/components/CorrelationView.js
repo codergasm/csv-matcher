@@ -165,14 +165,14 @@ const CorrelationView = ({user}) => {
     useEffect(() => {
         if(dataSheet?.length && relationSheet?.length) {
             if(!correlationMatrix[0]?.length) {
-                setDataSheetCorrelationMatrix(relationSheet.map(() => {
-                    return dataSheet.map(() => {
+                setDataSheetCorrelationMatrix(dataSheet.map(() => {
+                    return relationSheet.map(() => {
                         return -1;
                     });
                 }));
 
-                setRelationSheetCorrelationMatrix(dataSheet.map(() => {
-                    return relationSheet.map(() => {
+                setRelationSheetCorrelationMatrix(relationSheet.map(() => {
+                    return dataSheet.map(() => {
                         return -1;
                     });
                 }));

@@ -704,6 +704,7 @@ const RelationSheetView = forwardRef(({sheetIndex, currentSheet, secondSheet,
     const createSelectList = (rowIndex) => {
         if(correlationMatrix[0]?.length) {
             if(sheetIndex === 0) {
+
                 return correlationMatrix[rowIndex].map((item, index) => {
                     return [rowIndex, index, item];
                 })
