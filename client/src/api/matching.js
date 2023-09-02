@@ -47,7 +47,7 @@ const getSelectList = (correlationId, jobId, priorities, dataFile, relationFile,
 const matching = (correlationId, jobId, priorities,
                   dataFile, relationFile,
                   overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-                  manuallyCorrelatedRows, userId,
+                  manuallyCorrelatedRows, userId, teamId,
                   indexesOfCorrelatedRows,
                   correlationMatrix, schemaCorrelatedRows, matchType,  api, relationTestRow = -1) => {
     const formData = new FormData();
@@ -65,6 +65,7 @@ const matching = (correlationId, jobId, priorities,
     formData.append('avoidOverrideForManuallyCorrelatedRows', avoidOverrideForManuallyCorrelatedRows);
     formData.append('manuallyCorrelatedRows', JSON.stringify(manuallyCorrelatedRows));
     formData.append('userId', userId);
+    formData.append('teamId', teamId);
     formData.append('matchType', matchType);
     formData.append('relationTestRow', relationTestRow.toString());
     formData.append('indexesOfCorrelatedRows', JSON.stringify(indexesOfCorrelatedRows));

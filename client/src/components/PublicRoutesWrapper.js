@@ -6,6 +6,7 @@ import VerificationPage from "../pages/VerificationPage";
 import {authUser} from "../api/users";
 import LoadingPage from "../pages/LoadingPage";
 import redirectToHomepage from "../helpers/redirectToHomepage";
+import PlansPage from "../pages/PlansPage";
 
 const PublicRoutesWrapper = ({page}) => {
     const [render, setRender] = useState(null);
@@ -23,6 +24,9 @@ const PublicRoutesWrapper = ({page}) => {
                 break;
             case 4:
                 setRender(<VerificationPage />);
+                break;
+            case 5:
+                setRender(<PlansPage />);
                 break;
             default:
                 redirectToHomepage();

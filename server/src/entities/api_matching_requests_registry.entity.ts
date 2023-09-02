@@ -12,6 +12,9 @@ export class ApiMatchingRequestsRegistryEntity {
     user_id: number;
 
     @Column()
+    team_id: number;
+
+    @Column()
     output_endpoint: string;
 
     @Column()

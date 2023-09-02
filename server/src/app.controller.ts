@@ -37,7 +37,7 @@ export class AppController {
     const { correlationId, jobId, priorities, dataFilePath, relationFilePath,
       overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
       correlationMatrix, indexesOfCorrelatedRows, schemaCorrelatedRows,
-      manuallyCorrelatedRows, userId, relationTestRow, matchType } = body;
+      manuallyCorrelatedRows, userId, teamId, relationTestRow, matchType } = body;
 
     const dataFile = dataFilePath ? dataFilePath : files[0];
     const relationFile = relationFilePath ? relationFilePath : files[dataFilePath ? 0 : 1];
@@ -50,7 +50,7 @@ export class AppController {
     return this.appService.correlate(correlationId, jobId, dataFile, relationFile,
         prioritiesObject,
         overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-        JSON.parse(manuallyCorrelatedRows), userId, parseInt(matchType), prevIndexesOfCorrelatedRows,
+        JSON.parse(manuallyCorrelatedRows), userId, teamId, parseInt(matchType), prevIndexesOfCorrelatedRows,
         prevCorrelationMatrix, prevSchemaCorrelatedRows, relationTestRowToSend);
   }
 

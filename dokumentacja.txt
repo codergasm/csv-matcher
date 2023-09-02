@@ -59,13 +59,3 @@ id aktualnego schematu dopasowania.
 
 13. schemaCorrelatedRows to tablica o takiej samej strukturze jak manuallyCorreatedRows, która wskazuje rekody,
 które zostały skorelowane na podstawie schematu dopasowania.
-
------
-
-TODO:
-
-PRZYPISYWANIE PLIKÓW DO SCHEMATÓW DOPASOWANIA
-- w metodzie assignSheetsToSchema wstawiamy wiersz do tabeli match_schemas_sheets
-- wywołujemy metodę getNumberOfMatchedRows, która sprawdza ilość dopasowanych rekordów dla tych dwóch
-    plików w tym schemacie dopasowania
-- wynik zapisujemy updatując rekord w tabeli match_schemas_sheets

@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import LoggedUserWrapper from "./components/LoggedUserWrapper";
 import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 import getTranslationContent from "./static/translations/getTranslationContent";
+import AdminWrapper from "./components/AdminWrapper";
 
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
@@ -65,6 +66,20 @@ const App = () => {
       </Route>
       <Route path="/podglad-pliku">
         <LoggedUserWrapper page={7} />
+      </Route>
+      <Route path="/plany">
+        <LoggedUserWrapper page={8} />
+      </Route>
+      <Route path="/subskrypcja">
+        <LoggedUserWrapper page={9} />
+      </Route>
+      <Route path="/transakcje">
+        <LoggedUserWrapper page={10} />
+      </Route>
+
+      {/* Admin */}
+      <Route path="/admin">
+        <AdminWrapper page={1} />
       </Route>
     </Router>
   </TranslationContext.Provider>

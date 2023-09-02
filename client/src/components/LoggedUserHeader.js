@@ -47,7 +47,8 @@ const LoggedUserHeader = () => {
                     <img className="img" src={placeholderProfileImage} alt="profilowe" />
                 </button>
 
-                {!api ? <PageHeaderDropdownMenu visible={dropdownMenuVisible} /> : ''}
+                <PageHeaderDropdownMenu visible={dropdownMenuVisible}
+                                        api={api} />
             </div>
         </div>
     </header>

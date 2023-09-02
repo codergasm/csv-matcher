@@ -16,7 +16,8 @@ import { SchemasModule } from './schemas/schemas.module';
 import {join} from "path";
 import { ApiModule } from './api/api.module';
 import {AuthModule} from "./auth/auth.module";
-import { CacheModule } from '@nestjs/cache-manager';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match_operations_registry.entity";
 
 @Module({
   imports: [
@@ -28,7 +29,6 @@ import { CacheModule } from '@nestjs/cache-manager';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..'),
     }),
-    CacheModule.register(),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql', // type of our database
@@ -40,7 +40,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       autoLoadEntities: true, // models will be loaded automatically
       synchronize: false
     }),
-    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity]),
+    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity, AutomaticMatchOperationsRegistryEntity]),
       MailerModule.forRoot({
           transport: `smtp://${process.env.EMAIL_ADDRESS}:${process.env.EMAIL_PASSWORD}@${process.env.EMAIL_HOST}`,
           defaults: {
@@ -56,7 +56,8 @@ import { CacheModule } from '@nestjs/cache-manager';
     FilesModule,
     SchemasModule,
     ApiModule,
-    AuthModule
+    AuthModule,
+    SubscriptionsModule
   ],
   controllers: [AppController],
   providers: [AppService],

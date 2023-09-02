@@ -57,7 +57,8 @@ export class TeamsService {
                 creator_id: user.id,
                 name: name,
                 team_url: teamUrl,
-                owner_id: user.id
+                owner_id: user.id,
+                current_subscription_plan_id: 1
             });
 
             return this.usersRepository

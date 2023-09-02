@@ -170,6 +170,7 @@ export class ApiService {
             const apiMatchingRequest = await this.apiMatchingRequestsRegistryRepository.save({
                 create_datetime: new Date(),
                 user_id: userId,
+                team_id: teamId,
                 output_endpoint: outputEndpoint,
                 user_redirection_website: userRedirectionWebsite,
                 relation_type: relationType,

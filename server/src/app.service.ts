@@ -9,15 +9,15 @@ import * as path from 'path';
 import getMaxValueFromArray from "./common/getMaxValueFromArray";
 import getMinValueFromArray from "./common/getMinValueFromArray";
 import convertStringToBoolean from "./common/convertStringToBoolean";
-import {CACHE_MANAGER} from "@nestjs/cache-manager";
-import { Cache } from 'cache-manager';
+import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match_operations_registry.entity";
 
 @Injectable()
 export class AppService {
     constructor(
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         @InjectRepository(CorrelationJobsEntity)
-        private readonly correlationJobs: Repository<CorrelationJobsEntity>
+        private readonly correlationJobs: Repository<CorrelationJobsEntity>,
+        @InjectRepository(AutomaticMatchOperationsRegistryEntity)
+        private readonly automaticMatchOperationsRegistryRepository: Repository<AutomaticMatchOperationsRegistryEntity>
     ) {
         this.progressCount = 0;
     }
@@ -283,7 +283,7 @@ export class AppService {
     async correlate(correlationId, jobId, dataFile, relationFile,
                     priorities, overrideAllRows,
                     avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows,
-                    userId, matchType, prevIndexesOfCorrelatedRows, prevCorrelationMatrix,
+                    userId, teamId, matchType, prevIndexesOfCorrelatedRows, prevCorrelationMatrix,
                     prevSchemaCorrelatedRows, relationTestRow = -1) {
         // indexesOfCorrelatedRows to tutaj tablica par, które są już skorelowane i których nie wolno nadpisać
         let newCorrelationMatrix, i, newIndexesOfCorrelatedRows, selectListIndicators;
@@ -542,6 +542,15 @@ export class AppService {
         }
 
         await this.finishCorrelationJob(jobId, relationSheetLength);
+
+        await this.automaticMatchOperationsRegistryRepository.save({
+            created_datetime: new Date(),
+            user_id: userId,
+            team_id: teamId,
+            analyzed_row_count_sheet1: dataSheet.length,
+            analyzed_row_count_sheet2: relationSheet.length,
+            matched_rows_count: newIndexesOfCorrelatedRows.length - prevIndexesOfCorrelatedRows.length
+        });
 
         return {
             correlationMatrix: correlationMatrixToReturn,

@@ -107,7 +107,12 @@ const rejectJoinRequest = (userId, teamId) => {
     }, getConfigWithAuthHeader());
 }
 
+const getUserTeamPlan = () => {
+    const email = getLoggedUserEmail();
+    return axios.get(`/users/getUserTeamPlan/${email}`, getConfigWithAuthHeader());
+}
+
 export { registerUser, loginUser, verifyUser, authUser, getLoggedUserEmail, getUserWaitingJoinTeamRequest,
     getUserData, logout, changeUserPassword, getUserTeam, sendRequestToJoinTeam,
-    deleteJoinTeamRequest, updateUserRights, leaveTeam, acceptJoinRequest, rejectJoinRequest
+    deleteJoinTeamRequest, updateUserRights, leaveTeam, acceptJoinRequest, rejectJoinRequest, getUserTeamPlan
 }

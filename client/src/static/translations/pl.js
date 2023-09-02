@@ -240,7 +240,10 @@ const pl = {
     registerCheckbox: 'Wyrażam zgodę na przetwarzanie danych osobowych przez RowMatcher.com',
     registerEmailError: 'Podaj poprawny adres e-mail',
     accountVerified: 'Twoje konto zostało pomyślnie zweryfikowane',
-    registerSuccess: 'Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny. Kliknij w niego i korzystaj z RowMatcher.com!'
+    registerSuccess: 'Rejestracja przebiegła pomyślnie! Na Twój adres e-mail wysłaliśmy link aktywacyjny. Kliknij w niego i korzystaj z RowMatcher.com!',
+
+    // Subscriptions
+    planNames: ['Darmowy', 'Bronze', 'Silver', 'Gold'],
 }
 
 export default pl;

@@ -15,9 +15,6 @@ export class AutomaticMatchOperationsRegistryEntity {
     team_id: number;
 
     @Column()
-    automatic_matched_rows_value: number;
-
-    @Column()
     analyzed_row_count_sheet1: number;
 
     @Column()

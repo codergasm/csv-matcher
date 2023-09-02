@@ -17,7 +17,7 @@ const ViewContext = React.createContext(null);
 
 const CorrelationView = ({user}) => {
     const { content } = useContext(TranslationContext);
-    const { api, apiUserId } = useContext(ApiContext);
+    const { api, apiUserId, apiTeamId } = useContext(ApiContext);
     const { dataSheet, relationSheet, dataFile, relationFile, currentSchemaId,
         dataSheetId, relationSheetId, dataSheetName, relationSheetName,
         setCurrentSchemaChangedAndNotSaved } = useContext(AppContext);
@@ -1519,7 +1519,8 @@ const CorrelationView = ({user}) => {
             priorities,
             dataFile, relationFile,
             overrideAllRows, avoidOverrideForManuallyCorrelatedRows,
-            manuallyCorrelatedRows, api ? apiUserId : user.id, indexesOfCorrelatedRows,
+            manuallyCorrelatedRows, api ? apiUserId : user.id,
+            api ? apiTeamId : user.teamId, indexesOfCorrelatedRows,
             relationSheetCorrelationMatrix, schemaCorrelatedRows, matchType,api ? 'api' : '')
             .then((res) => {
                if(res) {
