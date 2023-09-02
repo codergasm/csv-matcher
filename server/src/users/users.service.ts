@@ -10,6 +10,7 @@ import {JwtService} from "@nestjs/jwt";
 import {UsersVerificationEntity} from "../entities/users_verification.entity";
 import accountVerificationMail from "../mails/accountVerificationMail";
 import createPasswordHash from "../common/createPasswordHash";
+import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,8 @@ export class UsersService {
         private readonly addToTeamUsersRequestsRepository: Repository<AddToTeamUsersRequestsEntity>,
         @InjectRepository(UsersVerificationEntity)
         private readonly usersVerificationRepository: Repository<UsersVerificationEntity>,
+        @InjectRepository(SubscriptionTypesEntity)
+        private readonly subscriptionTypesRepository: Repository<SubscriptionTypesEntity>,
         private readonly mailerService: MailerService,
         private readonly jwtTokenService: JwtService,
     ) {
@@ -234,27 +237,67 @@ export class UsersService {
             .execute();
     }
 
-    async acceptJoinRequest(user_id, team_id) {
-        await this.usersRepository
-            .createQueryBuilder()
-            .update({
-                team_id
-            })
-            .where({
-                id: user_id
-            })
-            .execute();
+    async checkIfNumberOfTeamMembersNotExceeded(team_id) {
+        // Check current team plan
+        const teamRow = await this.teamsRepository.findOneBy({
+            id: team_id
+        });
 
-        return this.addToTeamUsersRequestsRepository
-            .createQueryBuilder()
-            .update({
-                status: 'accept'
-            })
-            .where({
-                user_id,
-                team_id
-            })
-            .execute();
+        const subscriptionId = teamRow.current_subscription_plan_id;
+        const subscriptionDeadline = teamRow.current_subscription_plan_deadline;
+
+        const teamUsers = await this.usersRepository.findBy({
+            team_id
+        });
+
+        if(subscriptionDeadline > new Date()) {
+            // Get users_per_team limit for current team plan
+            const subscriptionRow = await this.subscriptionTypesRepository.findOneBy({
+                id: subscriptionId
+            });
+            const usersPerTeamLimit = subscriptionRow.users_per_team || 2;
+
+            return usersPerTeamLimit > teamUsers.length;
+        }
+        else {
+            // Subscription end - team has free plan
+            const subscriptionRow = await this.subscriptionTypesRepository.findOneBy({
+                id: 1
+            });
+            const usersPerTeamLimit = subscriptionRow.users_per_team || 2;
+
+            return usersPerTeamLimit > teamUsers.length;
+        }
+    }
+
+    async acceptJoinRequest(user_id, team_id) {
+        if(await this.checkIfNumberOfTeamMembersNotExceeded(team_id)) {
+            await this.usersRepository
+                .createQueryBuilder()
+                .update({
+                    team_id
+                })
+                .where({
+                    id: user_id
+                })
+                .execute();
+
+            return this.addToTeamUsersRequestsRepository
+                .createQueryBuilder()
+                .update({
+                    status: 'accept'
+                })
+                .where({
+                    user_id,
+                    team_id
+                })
+                .execute();
+        }
+        else {
+            return {
+                numberOfTeamMembersExceeded: true
+            }
+        }
     }
 
     async rejectJoinRequest(user_id, team_id) {

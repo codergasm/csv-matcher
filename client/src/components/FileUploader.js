@@ -5,6 +5,7 @@ import {saveSheet} from "../api/files";
 import ErrorInfo from "./ErrorInfo";
 import QuickBottomInfo from "./QuickBottomInfo";
 import {TranslationContext} from "../App";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const FileUploader = ({user, setUpdateFiles}) => {
     const { content } = useContext(TranslationContext);
@@ -12,6 +13,7 @@ const FileUploader = ({user, setUpdateFiles}) => {
     const [loading, setLoading] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [fileSavedModalVisible, setFileSavedModalVisible] = useState(false);
+    const [fileSaveError, setFileSaveError] = useState('');
 
     let fileInput = useRef(null);
 
@@ -30,8 +32,14 @@ const FileUploader = ({user, setUpdateFiles}) => {
         saveSheet(e.target.files[0], user.teamId, false)
             .then((res) => {
                 if(res?.status === 201) {
+                    if(res?.data?.error) {
+                        setFileSaveError(res.data.error);
+                    }
+                    else {
+                        setFileSavedModalVisible(true);
+                    }
+
                     setUpdateFiles(p => !p);
-                    setFileSavedModalVisible(true);
                 }
                 else {
                     setSaveError(content.error);
@@ -56,6 +64,9 @@ const FileUploader = ({user, setUpdateFiles}) => {
     }
 
     return <>
+        {fileSaveError ? <PermissionAlertModal closeModal={() => { setFileSaveError(''); }}
+                                               content={content.fileSaveError[fileSaveError]} /> : ''}
+
         {loading ? <div className="fileLoader">
             <Loader width={50} />
         </div> : <div className="btn btn--addNewFile"

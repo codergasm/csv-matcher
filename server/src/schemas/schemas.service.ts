@@ -1,12 +1,14 @@
 import {BadRequestException, HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {MatchSchemasEntity} from "../entities/match_schemas.entity";
-import {Repository} from "typeorm";
+import {In, Repository} from "typeorm";
 import {UsersEntity} from "../entities/users.entity";
 import {MatchSchemasSheetsEntity} from "../entities/match_schemas_sheets.entity";
 import {FilesEntity} from "../entities/files.entity";
 import * as fs from "fs";
 import * as papa from 'papaparse';
+import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
+import {TeamsEntity} from "../entities/teams.entity";
 
 @Injectable()
 export class SchemasService {
@@ -17,8 +19,12 @@ export class SchemasService {
         private readonly schemasSheetsRepository: Repository<MatchSchemasSheetsEntity>,
         @InjectRepository(UsersEntity)
         private readonly usersRepository: Repository<UsersEntity>,
+        @InjectRepository(TeamsEntity)
+        private readonly teamsRepository: Repository<TeamsEntity>,
         @InjectRepository(FilesEntity)
-        private readonly filesRepository: Repository<FilesEntity>
+        private readonly filesRepository: Repository<FilesEntity>,
+        @InjectRepository(SubscriptionTypesEntity)
+        private readonly subscriptionTypesRepository: Repository<SubscriptionTypesEntity>
     ) {
     }
 
@@ -50,40 +56,85 @@ export class SchemasService {
         }
     }
 
+    async getCurrentTeamSubscriptionDetails(team_id) {
+        const teamRow = await this.teamsRepository.findOneBy({
+            id: team_id
+        });
+
+        const subscriptionId = teamRow.current_subscription_plan_id;
+        const subscriptionDeadline = teamRow.current_subscription_plan_deadline;
+
+        if(subscriptionDeadline > new Date()) {
+            return this.subscriptionTypesRepository.findOneBy({
+                id: subscriptionId
+            });
+        }
+        else {
+            return this.subscriptionTypesRepository.findOneBy({
+                id: 1
+            });
+        }
+    }
+
+    async checkIfNumberOfSchemasPerTeamNotExceeded(team_id) {
+        const subscriptionRow = await this.getCurrentTeamSubscriptionDetails(team_id);
+
+        const teamUsers = await this.usersRepository.findBy({
+            team_id
+        });
+        const teamUsersIds = teamUsers.map((item) => (item.id));
+
+        const usersSchemas = await this.schemasRepository.findBy({
+            owner_user_id: In(teamUsersIds)
+        });
+        const teamSchemas = await this.schemasRepository.findBy({
+            owner_team_id: team_id
+        });
+
+        return subscriptionRow.schemas_per_team > usersSchemas.length + teamSchemas.length;
+    }
+
     async saveSchema(body) {
         const { name, matchedStringsArray, automaticMatcherSettingsObject, columnsSettingsObject,
             matchType, matchFunction, userId,
             email, teamOwner, dataSheetId, relationSheetId } = body;
         const user = await this.usersRepository.findOneBy(userId ? {id: userId} : {email});
 
-        if(user) {
-            try {
-               const schema = await this.schemasRepository.save({
-                    name,
-                    matched_strings_array: JSON.stringify(matchedStringsArray),
-                    automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
-                    columns_settings_object: JSON.stringify(columnsSettingsObject),
-                    owner_user_id: teamOwner ? null : user.id,
-                    owner_team_id: teamOwner ? user.team_id : null,
-                    created_datetime: new Date(),
-                    match_type: matchType,
-                    match_function: matchFunction
-                });
+        if(await this.checkIfNumberOfSchemasPerTeamNotExceeded(user.team_id)) {
+            if(user) {
+                try {
+                    const schema = await this.schemasRepository.save({
+                        name,
+                        matched_strings_array: JSON.stringify(matchedStringsArray),
+                        automatic_matcher_settings_object: JSON.stringify(automaticMatcherSettingsObject),
+                        columns_settings_object: JSON.stringify(columnsSettingsObject),
+                        owner_user_id: teamOwner ? null : user.id,
+                        owner_team_id: teamOwner ? user.team_id : null,
+                        created_datetime: new Date(),
+                        match_type: matchType,
+                        match_function: matchFunction
+                    });
 
-                if(dataSheetId && relationSheetId) {
-                    await this.assignSheetsToSchema(dataSheetId, relationSheetId, schema.id);
-                    return schema;
+                    if(dataSheetId && relationSheetId) {
+                        await this.assignSheetsToSchema(dataSheetId, relationSheetId, schema.id);
+                        return schema;
+                    }
+                    else {
+                        return schema;
+                    }
                 }
-                else {
-                    return schema;
+                catch(err) {
+                    throw new HttpException('Coś poszło nie tak... Prosimy spróbować później', 500);
                 }
             }
-            catch(err) {
-                throw new HttpException('Coś poszło nie tak... Prosimy spróbować później', 500);
+            else {
+                throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
             }
         }
         else {
-            throw new BadRequestException('Użytkownik o podanym adresie e-mail nie istnieje');
+            return {
+                numberOfSchemasPerTeamExceeded: true
+            }
         }
     }
 

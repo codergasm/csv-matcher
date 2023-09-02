@@ -8,6 +8,7 @@ import {AddToTeamUsersRequestsEntity} from "../entities/add_to_team_users_reques
 import {UsersVerificationEntity} from "../entities/users_verification.entity";
 import {JwtStrategy} from "../common/jwt.strategy";
 import {JwtModule} from "@nestjs/jwt";
+import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import {JwtModule} from "@nestjs/jwt";
         UsersEntity,
         TeamsEntity,
         AddToTeamUsersRequestsEntity,
-        UsersVerificationEntity
+        UsersVerificationEntity,
+        SubscriptionTypesEntity
     ]),
       JwtModule.register({
           secret: process.env.JWT_KEY,

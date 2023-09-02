@@ -4,6 +4,7 @@ import {getDateFromString} from "../helpers/others";
 import {acceptJoinRequest, rejectJoinRequest} from "../api/users";
 import Loader from "./Loader";
 import {TranslationContext} from "../App";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
     const { content } = useContext(TranslationContext);
@@ -11,6 +12,7 @@ const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
     const [joinRequests, setJoinRequests] = useState([]);
     const [updateRequestList, setUpdateRequestList] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [numberOfTeamMembersExceededModalVisible, setNumberOfTeamMembersExceededModalVisible] = useState(false);
 
     useEffect(() => {
         if(team) {
@@ -30,7 +32,11 @@ const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
     const acceptRequestWrapper = (userId, teamId) => {
         setLoading(true);
         acceptJoinRequest(userId, teamId)
-            .then(() => {
+            .then((res) => {
+                if(res?.data?.numberOfTeamMembersExceeded) {
+                    setNumberOfTeamMembersExceededModalVisible(true);
+                }
+
                 setUpdateRequestList(p => !p);
                 setUpdateTeamMembers(p => !p);
             })
@@ -51,6 +57,9 @@ const JoinTeamRequests = ({team, setUpdateTeamMembers}) => {
     }
 
     return <div className="joinRequests w">
+        {numberOfTeamMembersExceededModalVisible ? <PermissionAlertModal closeModal={() => { setNumberOfTeamMembersExceededModalVisible(false); }}
+                                                                         content={content.numberOfTeamMembersExceededModalContent} /> : ''}
+
         <h3 className="joinRequests__header">
             {content.joinTeamRequestsHeader}
         </h3>

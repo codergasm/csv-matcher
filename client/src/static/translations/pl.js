@@ -244,6 +244,23 @@ const pl = {
 
     // Subscriptions
     planNames: ['Darmowy', 'Bronze', 'Silver', 'Gold'],
+    numberOfTeamMembersExceededModalContent: `Twój zespół ma już maksymalną liczbę członków dla wykupionego przez 
+    Ciebie planu, zatem nie można dodać do niego kolejnego członka. Jeśli chcesz dodać nowego członka - usuń któregoś
+     z obecnych członków lub zmień plan na wyższy.`,
+    fileSaveError: {
+        sizePerTeamExceeded: `Nie możesz dodać tego pliku, ponieważ jego dodanie spowoduje przekroczenie limitu 
+        rozmiaru plików dla Twojego zespołu. Jeśli chcesz dodać plik, usuń pozostałe pliki lub zmień plan na wyższy.`,
+        sizePerFileExceeded: `Nie możesz dodać tego pliku, ponieważ przekracza on maksymalny dopuszczony rozmiar 
+        w Twoim planie. Jeśli chcesz dodać plik, zmień plan na wyższy.`,
+        numberOfColsPerFileExceeded: `Nie możesz dodać tego pliku, ponieważ przekracza on maksymalną dopuszczalną
+        liczbę kolumn w Twoim planie. Jeśli chcesz dodać plik, zmień plan na wyższy.`,
+        numberOfRowsPerFileExceeded: `Nie możesz dodać tego pliku, ponieważ przekracza on maksymalną dopuszczalną
+        liczbę wierszy w Twoim planie. Jeśli chcesz dodać plik, zmień plan na wyższy.`,
+        numberOfFilesPerTeamExceeded: `Nie możesz dodać tego pliku, ponieważ jego dodanie spowoduje przekroczenie limitu 
+        plików dla Twojego zespołu. Jeśli chcesz dodać plik, usuń pozostałe pliki lub zmień plan na wyższy.`
+    },
+    numberOfSchemasPerTeamExceeded: `Nie możesz zapisać tego schematu, bo osiągnąłeś już maksymalną liczbę schematów 
+    w Twoim planie. Aby zapisać schemat, usuń któryś z obecnych schematów lub przejdź na wyższy plan.`
 }
 
 export default pl;

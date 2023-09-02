@@ -17,6 +17,9 @@ export class FilesEntity {
     @Column()
     row_count: number;
 
+    @Column()
+    column_count: number;
+
     @Column({
         nullable: true
     })

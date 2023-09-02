@@ -1996,6 +1996,10 @@ input[type=number] {
     margin: 20px auto;
 }
 
+.img--padlock {
+    width: 150px;
+}
+
 .modal__header--text {
     text-align: center;
 }

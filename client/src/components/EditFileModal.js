@@ -7,6 +7,7 @@ import CloseModalButton from "./CloseModalButton";
 import useCloseModalOnOutsideClick from "../hooks/useCloseModalOnOutsideClick";
 import useActionOnEscapePress from "../hooks/useActionOnEscapePress";
 import {TranslationContext} from "../App";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const { content } = useContext(TranslationContext);
@@ -16,6 +17,7 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [updateFileError, setUpdateFileError] = useState('');
 
     const closeModalWrapper = () => {
         setUpdateFiles(p => !p);
@@ -35,12 +37,13 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
         setLoading(true);
         updateSheet(file, teamId, id, newName)
             .then((res) => {
-                if(res?.status === 200) {
-                    setSuccess(true);
+                if(res?.data?.error) {
+                    setUpdateFileError(res.data.error);
                 }
                 else {
-                    setError(content.error);
+                    setSuccess(true);
                 }
+
                 setLoading(false);
             })
             .catch(() => {
@@ -57,6 +60,9 @@ const EditFileModal = ({closeModal, teamId, id, name, setUpdateFiles}) => {
     }
 
     return <div className="modal modal--leaveTeam modal--editFile">
+        {updateFileError ? <PermissionAlertModal closeModal={() => { setUpdateFileError(''); closeModalWrapper(); }}
+                                               content={content.fileSaveError[updateFileError]} /> : ''}
+
         <CloseModalButton onClick={closeModalWrapper} />
 
         <div className="modal__inner">

@@ -7,6 +7,7 @@ import BottomNotification from "./BottomNotification";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import Loader from "./Loader";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const ChooseAndSaveSchema = ({user}) => {
     const { content } = useContext(TranslationContext);
@@ -23,6 +24,7 @@ const ChooseAndSaveSchema = ({user}) => {
     const [isCurrentSchemaTeam, setIsCurrentSchemaTeam] = useState(true);
     const [tooltip, setTooltip] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [numberOfSchemasExceeded, setNumberOfSchemasExceeded] = useState(false);
 
     let schemaPickerContainer = useRef(null);
 
@@ -63,10 +65,16 @@ const ChooseAndSaveSchema = ({user}) => {
             api ? null : user.email, api ? apiUserId : null,
             false, dataSheetId, relationSheetId, api ? 'api' : '')
             .then((res) => {
+                if(res?.data?.numberOfSchemasPerTeamExceeded) {
+                    setNumberOfSchemasExceeded(true);
+                }
+                else {
+                    setCurrentSchemaId(res?.data?.id);
+                    setNotificationColor('#508345');
+                    setNotificationText(content.schemaAdded);
+                }
+
                 setUpdateSchemas(p => !p);
-                setCurrentSchemaId(res?.data?.id);
-                setNotificationColor('#508345');
-                setNotificationText(content.schemaAdded);
                 setCurrentSchemaChangedAndNotSaved(false);
                 setLoading(false);
             })
@@ -112,6 +120,9 @@ const ChooseAndSaveSchema = ({user}) => {
     }
 
     return <div className="schemaPicker" ref={schemaPickerContainer}>
+        {numberOfSchemasExceeded ? <PermissionAlertModal content={content.numberOfSchemasPerTeamExceeded}
+                                                         closeModal={() => { setNumberOfSchemasExceeded(false); }} /> : ''}
+
         {notificationText ? <BottomNotification text={notificationText}
                                                 background={notificationColor} /> : ''}
 

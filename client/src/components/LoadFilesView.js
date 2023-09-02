@@ -11,6 +11,7 @@ import convertResponseToObject from "../helpers/convertResponseToObject";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import {getFilesByUserApiToken} from "../api/api";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const LoadFilesView = ({user}) => {
     const { content } = useContext(TranslationContext);
@@ -31,6 +32,7 @@ const LoadFilesView = ({user}) => {
     const [assignDataSheetOwnershipToTeam, setAssignDataSheetOwnershipToTeam] = useState(false);
     const [assignRelationSheetOwnershipToTeam, setAssignRelationSheetOwnershipToTeam] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [fileSaveError, setFileSaveError] = useState('');
 
     let selectRelationSheetRef = useRef(null);
     let selectDataSheetRef = useRef(null);
@@ -171,7 +173,12 @@ const LoadFilesView = ({user}) => {
             if(!dataSheetId) {
                 const newDataSheet = await saveSheet(dataFile, user.teamId, assignDataSheetOwnershipToTeam);
 
-                if(newDataSheet) {
+                if(newDataSheet.data.error) {
+                    setFileSaveError(newDataSheet.data.error);
+                    setLoading(false);
+                    return 0;
+                }
+                else {
                     setDataSheetId(newDataSheet.data.id);
                     setDataSheetName(newDataSheet.data.filename);
                     setDataFileSize(newDataSheet.data.filesize);
@@ -196,7 +203,12 @@ const LoadFilesView = ({user}) => {
             if(!relationSheetId) {
                 const newRelationSheet = await saveSheet(relationFile, user.teamId, assignRelationSheetOwnershipToTeam);
 
-                if(newRelationSheet) {
+                if(newRelationSheet.data.error) {
+                    setFileSaveError(newRelationSheet.data.error);
+                    setLoading(false);
+                    return 0;
+                }
+                else {
                     setRelationSheetId(newRelationSheet.data.id);
                     setRelationSheetName(newRelationSheet.data.filename);
                     setRelationFileSize(newRelationSheet.data.filesize);
@@ -228,6 +240,9 @@ const LoadFilesView = ({user}) => {
     }
 
     return <div className="container container--loadFiles w">
+        {fileSaveError ? <PermissionAlertModal closeModal={() => { setFileSaveError(''); }}
+                                               content={content.fileSaveError[fileSaveError]} /> : ''}
+
         <div className="homepage homepage--loadFiles">
             <h1 className="loadFiles__header">
                 {content.loadSheets}
