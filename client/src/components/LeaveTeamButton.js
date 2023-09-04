@@ -1,22 +1,66 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {Tooltip} from "react-tippy";
 import {TranslationContext} from "../App";
+import {checkIfUserCanLeaveTeam} from "../api/users";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const LeaveTeamButton = ({isOwner, isTeamEmpty,
                              setDeleteTeamModalVisible, setLeaveTeamModalVisible}) => {
     const { content } = useContext(TranslationContext);
 
+    const [limitsExceededModalContent, setLimitsExceededModalContent] = useState('');
+
+    const leaveTeamWrapper = () => {
+        checkIfUserCanLeaveTeam()
+            .then((res) => {
+               if(res?.data?.error) {
+                   setLimitsExceededModalContent(content.userLimitExceededWhileLeaving[res.data.error]);
+               }
+               else {
+                   setLeaveTeamModalVisible(true);
+               }
+            })
+            .catch(() => {
+                setLeaveTeamModalVisible(true);
+            });
+    }
+
+    const deleteTeamWrapper = () => {
+        checkIfUserCanLeaveTeam()
+            .then((res) => {
+                if(res?.data?.error) {
+                    setLimitsExceededModalContent(content.userLimitExceededWhileLeaving[res.data.error]);
+                }
+                else {
+                    setDeleteTeamModalVisible(true);
+                }
+            })
+            .catch(() => {
+                setDeleteTeamModalVisible(true);
+            });
+    }
+
     if(!isOwner) {
-        return <button className="btn btn--leaveTeam"
-                       onClick={() => { setLeaveTeamModalVisible(true); }}>
-            {content.leaveTeam}
-        </button>
+        return <>
+            {limitsExceededModalContent ? <PermissionAlertModal closeModal={() => { setLimitsExceededModalContent(''); }}
+                                                                content={limitsExceededModalContent} /> : ''}
+
+            <button className="btn btn--leaveTeam"
+                    onClick={leaveTeamWrapper}>
+                {content.leaveTeam}
+            </button>
+        </>
     }
     else if(isOwner && isTeamEmpty) {
-        return <button className="btn btn--leaveTeam"
-                       onClick={() => { setDeleteTeamModalVisible(true); }}>
-            {content.deleteTeam}
-        </button>
+        return <>
+            {limitsExceededModalContent ? <PermissionAlertModal closeModal={() => { setLimitsExceededModalContent(''); }}
+                                                                content={limitsExceededModalContent} /> : ''}
+
+            <button className="btn btn--leaveTeam"
+                    onClick={deleteTeamWrapper}>
+                {content.deleteTeam}
+            </button>
+        </>
     }
     else {
         return <Tooltip title={content.youCanNotLeaveTeam}
@@ -25,7 +69,7 @@ const LeaveTeamButton = ({isOwner, isTeamEmpty,
                         position="top">
             <button className="btn btn--leaveTeam"
                     disabled={true}
-                    onClick={() => { setLeaveTeamModalVisible(true); }}>
+                    onClick={leaveTeamWrapper}>
                 {content.leaveTeam}
             </button>
         </Tooltip>

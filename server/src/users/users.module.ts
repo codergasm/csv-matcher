@@ -9,12 +9,16 @@ import {UsersVerificationEntity} from "../entities/users_verification.entity";
 import {JwtStrategy} from "../common/jwt.strategy";
 import {JwtModule} from "@nestjs/jwt";
 import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
+import {FilesEntity} from "../entities/files.entity";
+import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
         UsersEntity,
         TeamsEntity,
+        FilesEntity,
+        MatchSchemasEntity,
         AddToTeamUsersRequestsEntity,
         UsersVerificationEntity,
         SubscriptionTypesEntity

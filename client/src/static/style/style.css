@@ -2002,6 +2002,7 @@ input[type=number] {
 
 .modal__header--text {
     text-align: center;
+    white-space: normal;
 }
 
 .btn--neutral {
@@ -3327,12 +3328,17 @@ input[type=number] {
 }
 
 .plansTable__cell {
-    height: 100px;
+    height: 120px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 0 20px;
+}
+
+.plansTable__cell .progressBar {
+    padding: 0;
+    width: 100px;
 }
 
 .plansTable__cell:nth-child(odd) {
@@ -3569,4 +3575,20 @@ input[type=number] {
     width: 100%;
     max-width: 500px;
     border-radius: 50px;
+}
+
+.plansTable__cell__tooltip {
+    margin-top: 15px;
+}
+
+.plansTable__cell__tooltip .progressBar--subscription {
+    margin-top: 5px;
+}
+
+.plansTable__cell__usage {
+    font-size: 13px;
+}
+
+.btn--deleteUser {
+    margin-left: 0;
 }

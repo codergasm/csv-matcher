@@ -14,6 +14,7 @@ const pl = {
     next: 'Dalej',
     close: 'Zamknij',
     use: 'Zastosuj',
+    choose: 'Wybierz',
     error: 'Coś poszło nie tak... Prosimy spróbować później',
 
     // Homepage
@@ -186,9 +187,12 @@ const pl = {
     yourTeam: 'Twój zespół',
     leaveTeam: 'Opuść zespół',
     deleteTeam: 'Usuń zespół',
+    deleteUser: 'Usuń członka',
     rightsUpdated: 'Prawa zostały zaktualizowane',
     leaveTeamModalAlert: 'Uwaga! odłączając się od zespołu - wszystkie pliki i schematy, które utworzyłeś i dodałeś jako dostępne dla zespołu pozostaną w nim i nie będą już dla Ciebie dostępne',
+    deleteUserModalAlert: 'Czy na pewno chcesz usunąć tego członka zespołu?',
     deleteTeamModalAlert: 'Uwaga! Usuwając zespół przypiszesz wszystkie pliki i schematy dopasowania z powrotem do Twojego profilu.',
+    deleteUserConfirmation: 'Członek został usunięty',
     teamIdInfo: 'Podaj ten numer członkom swojego zespołu, aby mogli się do niego dodać',
     teamTableHeader: ['Email', 'Pliki usera', 'Schematy dopasowania usera', 'Wykorzystanych auto dopasowań w tym miesiącu', 'Może edytować pliki zespołu', 'Może usuwać pliki zespołu', 'Może edytować schematy dopasowania zespołu', 'Może usuwać schematy dopasowania zespołu'],
     joinTeamRequestsHeader: 'Prośby dodania do zespołu',
@@ -260,7 +264,37 @@ const pl = {
         plików dla Twojego zespołu. Jeśli chcesz dodać plik, usuń pozostałe pliki lub zmień plan na wyższy.`
     },
     numberOfSchemasPerTeamExceeded: `Nie możesz zapisać tego schematu, bo osiągnąłeś już maksymalną liczbę schematów 
-    w Twoim planie. Aby zapisać schemat, usuń któryś z obecnych schematów lub przejdź na wyższy plan.`
+    w Twoim planie. Aby zapisać schemat, usuń któryś z obecnych schematów lub przejdź na wyższy plan.`,
+    yourPlan: 'Twój plan',
+    manageSubscription: 'Zarządzaj subskrypcją',
+    userLimitExceededWhileLeaving: {
+        numberOfFilesError: `Nie możesz opuścić zespołu, ponieważ Twoja liczba plików przekracza dozwolony limit dla
+         konta darmowego. Usuń pliki lub przypisz je do zespołu.`,
+        diskUsageError: `Nie możesz opuścić zespołu, ponieważ Twoje zużycie dysku przekracza dozwolony limit dla 
+        konta darmowego. Usuń pliki lub przypisz je do zespołu.`,
+        filesizeError: `Nie możesz opuścić zespołu, ponieważ rozmiar jednego z Twoich plików przekracza dozwolony limit
+         dla konta darmowego. Usuń największe pliki lub przypisz je do zespołu.`,
+        columnsInFileError: `Nie możesz opuścić zespołu, ponieważ liczba kolumn w jednym z Twoich plików przekracza 
+        dozwolony limit dla konta darmowego. Usuń największe pliki lub przypisz je do zespołu.`,
+        rowsInFileError: `Nie możesz opuścić zespołu, ponieważ liczba wierszy w jednym z Twoich plików przekracza 
+        dozwolony limit dla konta darmowego. Usuń największe pliki lub przypisz je do zespołu.`,
+        schemasError: `Nie możesz opuścić zespołu, ponieważ liczba schematów dopasowania przekracza dozwolony limit dla
+         konta darmowego. Usuń schematy lub przypisz je do zespołu.`
+    },
+    userLimitExceededWhileDeleting: {
+        numberOfFilesError: `Nie możesz usunąć tego członka zespołu, ponieważ jego liczba plików przekracza dozwolony limit dla
+         konta darmowego. Użytkownik musi usunąć te pliki lub przypisać je do zespołu.`,
+        diskUsageError: `Nie możesz usunąć tego członka zespołu, ponieważ jego zużycie dysku przekracza dozwolony limit dla 
+        konta darmowego. Użytkownik musi usunąć te pliki lub przypisać je do zespołu.`,
+        filesizeError: `Nie możesz usunąć tego członka zespołu, ponieważ rozmiar jednego z jego plików przekracza dozwolony limit
+         dla konta darmowego. Użytkownik musi usunąć największe pliki lub przypisać je do zespołu.`,
+        columnsInFileError: `Nie możesz usunąć tego członka zespołu, ponieważ liczba kolumn w jednym z jego plików przekracza 
+        dozwolony limit dla konta darmowego. Użytkownik musi usunąć największe pliki lub przypisać je do zespołu.`,
+        rowsInFileError: `Nie możesz usunąć tego członka zespołu, ponieważ liczba wierszy w jednym z jego plików przekracza 
+        dozwolony limit dla konta darmowego. Użytkownik musi usunąć największe pliki lub przypisać je do zespołu.`,
+        schemasError: `Nie możesz usunąć tego członka zespołu, ponieważ liczba jego schematów dopasowania przekracza dozwolony limit dla
+         konta darmowego. Użytkownik musi usunąć schematy lub przypisać je do zespołu.`
+    }
 }
 
 export default pl;

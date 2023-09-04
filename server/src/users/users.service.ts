@@ -11,6 +11,8 @@ import {UsersVerificationEntity} from "../entities/users_verification.entity";
 import accountVerificationMail from "../mails/accountVerificationMail";
 import createPasswordHash from "../common/createPasswordHash";
 import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
+import {FilesEntity} from "../entities/files.entity";
+import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 
 @Injectable()
 export class UsersService {
@@ -25,6 +27,10 @@ export class UsersService {
         private readonly usersVerificationRepository: Repository<UsersVerificationEntity>,
         @InjectRepository(SubscriptionTypesEntity)
         private readonly subscriptionTypesRepository: Repository<SubscriptionTypesEntity>,
+        @InjectRepository(FilesEntity)
+        private readonly filesRepository: Repository<FilesEntity>,
+        @InjectRepository(MatchSchemasEntity)
+        private readonly matchSchemasRepository: Repository<MatchSchemasEntity>,
         private readonly mailerService: MailerService,
         private readonly jwtTokenService: JwtService,
     ) {
@@ -346,5 +352,64 @@ export class UsersService {
         else {
             throw new HttpException('Nie znaleziono użytkownika o podanym id', 400);
         }
+    }
+
+    async checkIfUserCanLeaveTeam(email) {
+        const user = await this.usersRepository.findOneBy({
+            email
+        });
+        const userId = user.id;
+
+        const freePlan = await this.subscriptionTypesRepository.findOneBy({
+            is_default_and_free: true
+        });
+
+        const allUserFiles = await this.filesRepository.findBy({
+            owner_user_id: userId
+        });
+
+        const numberOfFiles = allUserFiles.length;
+        const diskUsage = allUserFiles.reduce((prev, curr) => {
+            return prev + curr.filesize;
+        }, 0);
+        const singleLargestFile = Math.max.apply(null, allUserFiles.map((item) => (item.filesize)));
+        const singleFileWithMostColumns = Math.max.apply(null, allUserFiles.map((item) => (item.column_count)));
+        const singleFileWithMostRows = Math.max.apply(null, allUserFiles.map((item) => (item.row_count)));
+
+        const allUserMatchSchemas = await this.matchSchemasRepository.findBy({
+           owner_user_id: userId
+        });
+
+        const numberOfSchemas = allUserMatchSchemas.length;
+
+        const numberOfFilesError = numberOfFiles > freePlan.files_per_team;
+        const diskUsageError = diskUsage > freePlan.size_per_team;
+        const filesizeError = singleLargestFile > freePlan.size_per_file;
+        const columnsInFileError = singleFileWithMostColumns > freePlan.columns_per_file;
+        const rowsInFileError = singleFileWithMostRows > freePlan.rows_per_file;
+        const schemasError = numberOfSchemas > freePlan.schemas_per_team;
+
+        let error = null;
+
+        if(numberOfFilesError) {
+            error = 'numberOfFilesError';
+        }
+        else if(diskUsageError) {
+            error = 'diskUsageError';
+        }
+        else if(filesizeError) {
+            error = 'filesizeError';
+        }
+        else if(columnsInFileError) {
+            error = 'columnsInFileError';
+        }
+        else if(rowsInFileError) {
+            error = 'rowsInFileError';
+        }
+        else if(schemasError) {
+            error = 'schemasError';
+        }
+
+        return { error }
     }
 }

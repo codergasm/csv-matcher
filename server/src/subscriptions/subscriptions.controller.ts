@@ -22,4 +22,9 @@ export class SubscriptionsController {
     getAutoMatchOperationsInCurrentMonth(@Param('id') id) {
         return this.subscriptionsService.getAutoMatchOperationsInCurrentMonth(id);
     }
+
+    @Get('/getTeamLimitsUsage/:id')
+    getTeamLimitsUsage(@Param('id') id) {
+        return this.subscriptionsService.getTeamLimitsUsage(id);
+    }
 }

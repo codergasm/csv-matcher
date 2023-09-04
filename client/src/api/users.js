@@ -75,9 +75,9 @@ const deleteJoinTeamRequest = () => {
         getConfigWithAuthHeader());
 }
 
-const leaveTeam = () => {
+const leaveTeam = (email = null) => {
     return axios.patch(`/users/leaveTeam`, {
-        email: getLoggedUserEmail()
+        email: email ? email : getLoggedUserEmail()
     }, getConfigWithAuthHeader());
 }
 
@@ -112,7 +112,12 @@ const getUserTeamPlan = () => {
     return axios.get(`/users/getUserTeamPlan/${email}`, getConfigWithAuthHeader());
 }
 
+const checkIfUserCanLeaveTeam = (email = null) => {
+    const userEmail = email ? email : getLoggedUserEmail();
+    return axios.get(`/users/checkIfUserCanLeaveTeam/${userEmail}`, getConfigWithAuthHeader());
+}
+
 export { registerUser, loginUser, verifyUser, authUser, getLoggedUserEmail, getUserWaitingJoinTeamRequest,
-    getUserData, logout, changeUserPassword, getUserTeam, sendRequestToJoinTeam,
+    getUserData, logout, changeUserPassword, getUserTeam, sendRequestToJoinTeam, checkIfUserCanLeaveTeam,
     deleteJoinTeamRequest, updateUserRights, leaveTeam, acceptJoinRequest, rejectJoinRequest, getUserTeamPlan
 }

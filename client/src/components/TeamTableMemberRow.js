@@ -2,9 +2,8 @@ import React from 'react';
 import yesIcon from "../static/img/yes.svg";
 import noIcon from "../static/img/no.svg";
 
-const TeamTableMemberRow = ({item, index}) => {
-    return <div className="line line--member"
-                key={index}>
+const TeamTableMemberRow = ({item}) => {
+    return <div className="line line--member">
         <div className="sheet__header__cell">
             {item.email}
         </div>

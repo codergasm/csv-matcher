@@ -35,6 +35,7 @@ const TeamView = ({team, setTeam, user}) => {
                             isOwner={isOwner} />
             <TeamViewTable members={members}
                            setMembers={setMembers}
+                           user={user}
                            isOwner={isOwner} />
 
             {isOwner ? <JoinTeamRequests team={team}

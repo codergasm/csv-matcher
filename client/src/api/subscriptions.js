@@ -12,4 +12,9 @@ const getNumberOfAutoMatchOperationsInCurrentMonth = (teamId) => {
     return axios.get(`/subscriptions/getNumberOfAutoMatchOperationsInCurrentMonth/${teamId}`);
 }
 
-export { getAllSubscriptionPlans, getPlanById, getNumberOfAutoMatchOperationsInCurrentMonth }
+const getTeamLimitsUsage = (teamId) => {
+    return axios.get(`/subscriptions/getTeamLimitsUsage/${teamId}`);
+}
+
+export { getAllSubscriptionPlans, getPlanById, getTeamLimitsUsage,
+    getNumberOfAutoMatchOperationsInCurrentMonth }

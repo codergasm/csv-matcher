@@ -15,7 +15,7 @@ const PageHeaderDropdownMenu = ({visible, api}) => {
         <a href="/plany"
            className="dropdownMenu__item">
             <img className="img" src={subscriptionIcon} alt="subskrypcja" />
-            Zarządzaj subskrypcją
+            {content.manageSubscription}
         </a>
 
         {!api ? <>

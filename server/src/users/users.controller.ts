@@ -110,4 +110,10 @@ export class UsersController {
     getUserTeamPlan(@Param('email') email) {
         return this.usersService.getUserTeamPlan(email);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/checkIfUserCanLeaveTeam/:email')
+    checkIfUserCanLeaveTeam(@Param('email') email) {
+        return this.usersService.checkIfUserCanLeaveTeam(email);
+    }
 }

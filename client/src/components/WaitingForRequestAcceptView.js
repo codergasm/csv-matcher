@@ -36,7 +36,7 @@ const WaitingForRequestAcceptView = ({requestedTeamId}) => {
         <div className="homepage">
             <h3 className="waitingForRequestAccept__header">
                 {content.joinTeamRequestHeaderPart1}
-                <span className="green">{requestedTeamName}</span>
+                <span className="green"> {requestedTeamName} </span>
                 {content.joinTeamRequestHeaderPart2}.
             </h3>
             <h4 className="waitingForRequestAccept__subheader">
