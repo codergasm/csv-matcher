@@ -1699,6 +1699,17 @@ input[type=number] {
     transform: scale(1.05);
 }
 
+.header__right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100px;
+}
+
+.header__right .header__profileImage {
+    margin-left: 20px;
+}
+
 .header__profileImage {
     width: 35px;
     height: 35px;
@@ -3591,4 +3602,48 @@ input[type=number] {
 
 .btn--deleteUser {
     margin-left: 0;
+}
+
+.languageSwitcher {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+}
+
+.languageSwitcher__btn {
+    width: 30px;
+    height: auto;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.languageSwitcher__dropdownMenu {
+    position: absolute;
+    z-index: 100;
+    bottom: -10px;
+    right: -10px;
+    transform: translate(0, 100%);
+    width: auto;
+    height: auto;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px;
+}
+
+.languageSwitcher__dropdownMenu__btn {
+    width: 30px;
+    height: auto;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
 }

@@ -7,6 +7,7 @@ import LoggedUserWrapper from "./components/LoggedUserWrapper";
 import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 import getTranslationContent from "./static/translations/getTranslationContent";
 import AdminWrapper from "./components/AdminWrapper";
+import {getLanguages} from "./api/languages";
 
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
@@ -15,20 +16,40 @@ const TranslationContext = React.createContext({});
 
 const App = () => {
   const [content, setContent] = useState({});
-  const [lang, setLang] = useState('pl');
+  const [languages, setLanguages] = useState([]);
+  const [lang, setLang] = useState(localStorage.getItem('lang') || 'pl');
+  const [currency, setCurrency] = useState('PLN');
 
   useEffect(() => {
-    setLang(localStorage.getItem('lang') || 'pl');
+    getLanguages()
+        .then((res) => {
+          if(res?.data) {
+            setLanguages(res?.data);
+          }
+        });
   }, []);
 
   useEffect(() => {
     if(lang) {
       setContent(getTranslationContent(lang));
+      localStorage.setItem('lang', lang);
     }
   }, [lang]);
 
+  useEffect(() => {
+    if(lang && languages?.length) {
+      const currentLanguage = languages.find((item) => {
+        return item.shortcut === lang;
+      });
+
+      if(currentLanguage) {
+        setCurrency(currentLanguage.currency);
+      }
+    }
+  }, [languages, lang]);
+
   return <TranslationContext.Provider value={{
-    content, lang, setLang
+    content, lang, setLang, languages, currency
   }}>
     <Router>
       {/* Public */}

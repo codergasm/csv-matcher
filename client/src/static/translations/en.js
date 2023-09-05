@@ -1,4 +1,4 @@
-const pl = {
+const en = {
     // General
     edit: 'Edytuj',
     delete: 'Usuń',
@@ -18,7 +18,7 @@ const pl = {
     error: 'Coś poszło nie tak... Prosimy spróbować później',
 
     // Homepage
-    topMenu: ['Home', 'Moje pliki', 'Moje schematy', 'Nowe dopasowanie', 'Zespół'],
+    topMenu: ['Home', 'My files', 'My schemas', 'New match', 'Team'],
     topDropdownMenu: ['Zmień hasło', 'Wyloguj się'],
     mainMenu: ['Moje pliki', 'Moje schematy dopasowania', 'Utwórz nowe dopasowanie', 'Zarządzaj zespołem i użytkownikami'],
 
@@ -300,4 +300,4 @@ const pl = {
     przyszłego miesiąca.`
 }
 
-export default pl;
+export default en;

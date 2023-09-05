@@ -18,6 +18,9 @@ import { ApiModule } from './api/api.module';
 import {AuthModule} from "./auth/auth.module";
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match_operations_registry.entity";
+import {TeamsEntity} from "./entities/teams.entity";
+import {SubscriptionTypesEntity} from "./entities/subscription_types.entity";
+import {LanguagesEntity} from "./entities/languages.entity";
 
 @Module({
   imports: [
@@ -40,7 +43,8 @@ import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match
       autoLoadEntities: true, // models will be loaded automatically
       synchronize: false
     }),
-    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity, AutomaticMatchOperationsRegistryEntity]),
+    TypeOrmModule.forFeature([CorrelationJobsEntity, AddToTeamUsersRequestsEntity,
+      AutomaticMatchOperationsRegistryEntity, TeamsEntity, LanguagesEntity, SubscriptionTypesEntity]),
       MailerModule.forRoot({
           transport: `smtp://${process.env.EMAIL_ADDRESS}:${process.env.EMAIL_PASSWORD}@${process.env.EMAIL_HOST}`,
           defaults: {

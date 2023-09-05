@@ -6,6 +6,7 @@ import useActionOnMouseClick from "../hooks/useActionOnMouseClick";
 import HeaderMenuLink from "./HeaderMenuLink";
 import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const topMenuLinks = ['/home', '/pliki', '/schematy-dopasowania', '/edytor-dopasowania', '/zespol'];
 
@@ -42,13 +43,17 @@ const LoggedUserHeader = () => {
                     </HeaderMenuLink>
                 }) : ''}
 
-                <button className="header__profileImage"
-                        onClick={toggleDropdownMenu}>
-                    <img className="img" src={placeholderProfileImage} alt="profilowe" />
-                </button>
+                <div className="header__right">
+                    <LanguageSwitcher />
 
-                <PageHeaderDropdownMenu visible={dropdownMenuVisible}
-                                        api={api} />
+                    <button className="header__profileImage"
+                            onClick={toggleDropdownMenu}>
+                        <img className="img" src={placeholderProfileImage} alt="profilowe" />
+                    </button>
+
+                    <PageHeaderDropdownMenu visible={dropdownMenuVisible}
+                                            api={api} />
+                </div>
             </div>
         </div>
     </header>

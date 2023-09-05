@@ -7,6 +7,11 @@ import {JwtAuthGuard} from "./common/jwt-auth.guard";
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Get('/getLanguages')
+  async getLanguages() {
+    return this.appService.getLanguages();
+  }
+
   @Get('/getProgress/:id')
   async getProgressByJobId(@Param('id') id) {
     return this.appService.getProgressByJobId(id);

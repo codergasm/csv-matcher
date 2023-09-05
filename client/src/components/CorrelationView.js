@@ -12,6 +12,7 @@ import {TranslationContext} from "../App";
 import {ApiContext} from "./LoggedUserWrapper";
 import combineTwoSheets from "../helpers/combineTwoSheets";
 import transposeMatrix from "../helpers/transposeMatrix";
+import PermissionAlertModal from "./PermissionAlertModal";
 
 const ViewContext = React.createContext(null);
 
@@ -60,6 +61,7 @@ const CorrelationView = ({user}) => {
     const [afterMatchClean, setAfterMatchClean] = useState(false);
     const [dataSheetCorrelationMatrix, setDataSheetCorrelationMatrix] = useState([]);
     const [relationSheetCorrelationMatrix, setRelationSheetCorrelationMatrix] = useState([]);
+    const [matchingLimitsExceededError, setMatchingLimitsExceededError] = useState(false);
 
     // Export settings
     const [exportFormat, setExportFormat] = useState(0);
@@ -1524,15 +1526,21 @@ const CorrelationView = ({user}) => {
             relationSheetCorrelationMatrix, schemaCorrelatedRows, matchType,api ? 'api' : '')
             .then((res) => {
                if(res) {
-                   setIndexesOfCorrelatedRows(res?.data?.indexesOfCorrelatedRows);
-                   setManuallyCorrelatedRows(res?.data?.manuallyCorrelatedRows);
-                   setSchemaCorrelatedRows(res?.data?.schemaCorrelatedRows);
+                   if(res?.data?.error) {
+                       setMatchingLimitsExceededError(true);
+                       setCorrelationStatus(2);
+                   }
+                   else {
+                       setIndexesOfCorrelatedRows(res?.data?.indexesOfCorrelatedRows);
+                       setManuallyCorrelatedRows(res?.data?.manuallyCorrelatedRows);
+                       setSchemaCorrelatedRows(res?.data?.schemaCorrelatedRows);
 
-                   const matrix = res?.data?.correlationMatrix;
-                   setDataSheetCorrelationMatrix(transposeMatrix(matrix));
-                   setRelationSheetCorrelationMatrix(matrix);
+                       const matrix = res?.data?.correlationMatrix;
+                       setDataSheetCorrelationMatrix(transposeMatrix(matrix));
+                       setRelationSheetCorrelationMatrix(matrix);
 
-                   setCorrelationStatus(2);
+                       setCorrelationStatus(2);
+                   }
                }
             })
             .catch((err) => {
@@ -1569,6 +1577,9 @@ const CorrelationView = ({user}) => {
                 correlationId
             }}>
         <div className="container container--correlation">
+            {matchingLimitsExceededError ? <PermissionAlertModal closeModal={() => { setMatchingLimitsExceededError(false); }}
+                                                                 content={content.matchingLimitsExceededError} /> : ''}
+
             <div className="homepage homepage--correlation">
                 <ChooseAndSaveSchema user={user} />
 

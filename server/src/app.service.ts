@@ -10,12 +10,21 @@ import getMaxValueFromArray from "./common/getMaxValueFromArray";
 import getMinValueFromArray from "./common/getMinValueFromArray";
 import convertStringToBoolean from "./common/convertStringToBoolean";
 import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match_operations_registry.entity";
+import {TeamsEntity} from "./entities/teams.entity";
+import {SubscriptionTypesEntity} from "./entities/subscription_types.entity";
+import {LanguagesEntity} from "./entities/languages.entity";
 
 @Injectable()
 export class AppService {
     constructor(
         @InjectRepository(CorrelationJobsEntity)
         private readonly correlationJobs: Repository<CorrelationJobsEntity>,
+        @InjectRepository(LanguagesEntity)
+        private readonly languagesRepository: Repository<LanguagesEntity>,
+        @InjectRepository(TeamsEntity)
+        private readonly teamsRepository: Repository<TeamsEntity>,
+        @InjectRepository(SubscriptionTypesEntity)
+        private readonly subscriptionTypesRepository: Repository<SubscriptionTypesEntity>,
         @InjectRepository(AutomaticMatchOperationsRegistryEntity)
         private readonly automaticMatchOperationsRegistryRepository: Repository<AutomaticMatchOperationsRegistryEntity>
     ) {
@@ -23,6 +32,10 @@ export class AppService {
     }
 
     private progressCount: number;
+
+    async getLanguages() {
+        return this.languagesRepository.find();
+    }
 
     async getProgressByJobId(jobId) {
         return this.correlationJobs.findOneBy({
@@ -285,6 +298,12 @@ export class AppService {
                     avoidOverrideForManuallyCorrelatedRows, manuallyCorrelatedRows,
                     userId, teamId, matchType, prevIndexesOfCorrelatedRows, prevCorrelationMatrix,
                     prevSchemaCorrelatedRows, relationTestRow = -1) {
+        if(!await this.checkIfNumberOfOperationsNotExceeded(teamId, userId)) {
+            return {
+                error: true
+            }
+        }
+
         // indexesOfCorrelatedRows to tutaj tablica par, które są już skorelowane i których nie wolno nadpisać
         let newCorrelationMatrix, i, newIndexesOfCorrelatedRows, selectListIndicators;
         let relationSheetLength;
@@ -543,7 +562,7 @@ export class AppService {
 
         await this.finishCorrelationJob(jobId, relationSheetLength);
 
-        await this.automaticMatchOperationsRegistryRepository.save({
+        const newOperationRegistryRow = await this.automaticMatchOperationsRegistryRepository.save({
             created_datetime: new Date(),
             user_id: userId,
             team_id: teamId,
@@ -552,12 +571,74 @@ export class AppService {
             matched_rows_count: newIndexesOfCorrelatedRows.length - prevIndexesOfCorrelatedRows.length
         });
 
-        return {
-            correlationMatrix: correlationMatrixToReturn,
-            indexesOfCorrelatedRows: newIndexesOfCorrelatedRows,
-            schemaCorrelatedRows: newSchemaCorrelatedRows,
-            manuallyCorrelatedRows
+        if(await this.checkIfNumberOfOperationsNotExceeded(teamId, userId)) {
+            return {
+                correlationMatrix: correlationMatrixToReturn,
+                indexesOfCorrelatedRows: newIndexesOfCorrelatedRows,
+                schemaCorrelatedRows: newSchemaCorrelatedRows,
+                manuallyCorrelatedRows
+            }
         }
+        else {
+            await this.automaticMatchOperationsRegistryRepository.delete({
+                id: newOperationRegistryRow.id
+            });
+
+            return {
+                error: true
+            }
+        }
+    }
+
+    async getTeamSubscriptionId(teamId) {
+        const teamRow = await this.teamsRepository.findOneBy({
+            id: teamId
+        });
+        return teamRow.current_subscription_plan_deadline > new Date() ? teamRow.current_subscription_plan_id : null;
+    }
+
+    async checkIfNumberOfOperationsNotExceeded(teamId, userId) {
+        const currentMonth = new Date().getMonth();
+        let allMatchOperations = [];
+        let allMatchOperationsCurrentMonth = [];
+        let subscriptionRow: SubscriptionTypesEntity;
+
+        if(teamId) {
+            allMatchOperations = await this.automaticMatchOperationsRegistryRepository.findBy({
+                team_id: teamId
+            });
+
+            const subscriptionId = await this.getTeamSubscriptionId(teamId);
+
+            if(subscriptionId) {
+                subscriptionRow = await this.subscriptionTypesRepository.findOneBy({
+                    id: subscriptionId
+                });
+            }
+            else {
+                subscriptionRow = await this.subscriptionTypesRepository.findOneBy({
+                    is_default_and_free: true
+                });
+            }
+        }
+        else {
+            allMatchOperations = await this.automaticMatchOperationsRegistryRepository.findBy({
+                user_id: userId
+            });
+
+            subscriptionRow = await this.subscriptionTypesRepository.findOneBy({
+                is_default_and_free: true
+            });
+        }
+
+        allMatchOperationsCurrentMonth = allMatchOperations.filter((item) => {
+            return item.created_datetime.getMonth() === currentMonth;
+        });
+        const numberOfAutoMatchedRowsCurrentMonth = allMatchOperationsCurrentMonth.reduce((prev, curr) => {
+            return prev + curr.matched_rows_count;
+        }, 0);
+
+        return subscriptionRow.matches_per_month >= numberOfAutoMatchedRowsCurrentMonth;
     }
 
     removeAutoMatchRowsFromManuallyCorrelatedRows(id, excludedRows, manuallyCorrelatedRows) {
