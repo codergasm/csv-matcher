@@ -3500,10 +3500,6 @@ input[type=number] {
     max-height: 400px;
 }
 
-.homepage__subscription {
-
-}
-
 .subscription__inner {
     padding: 30px;
     flex-direction: column;
@@ -3528,7 +3524,7 @@ input[type=number] {
     background: transparent;
     height: 30px;
     padding: 3px 15px;
-    margin: 20px auto 30px;
+    margin: 20px 2px;
     border-radius: 30px;
     color: #313131;
     font-size: 13px;
@@ -3554,7 +3550,7 @@ input[type=number] {
 
 .subscription__inner__planName {
     padding: 30px;
-    background: #efefef;
+    color: #fff;
     border-radius: 10px;
     font-size: 19px;
     font-weight: 700;
@@ -3646,4 +3642,145 @@ input[type=number] {
     border: none;
     outline: none;
     cursor: pointer;
+}
+
+.react-date-picker__inputGroup__input.react-date-picker__inputGroup__year {
+    width: 45px !important;
+}
+
+.react-date-picker__wrapper {
+    padding: 5px 10px;
+}
+
+.react-date-picker__clear-button {
+    display: none !important;
+}
+
+.subscription__inner__plans {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 0 auto 20px;
+    width: 450px;
+}
+
+.subscription__inner__plans__item {
+    width: 200px;
+}
+
+.subscription__inner__plans__item * {
+    max-width: 100%;
+    min-width: 200px;
+}
+
+.subscription__inner__plans__item__header {
+    font-size: 15px;
+}
+
+.subscription__inner--conversion .subscription__inner__dateSelector {
+    margin-bottom: 15px;
+}
+
+.subscription__inner--new .subscription__inner__dateSelector {
+    margin: 10px auto;
+}
+
+.subscription__inner__dateSelector__header {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.subscription__inner__data {
+    margin-bottom: 25px;
+}
+
+.subscription__inner__data__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px;
+}
+
+.subscription__inner__data__item--marginTop {
+    margin-top: 15px;
+}
+
+.subscription__inner__data__item__key {
+    width: 75%;
+    font-size: 15px;
+    padding: 3px 10px;
+    border-right: 2px solid #313131;
+    text-align: left;
+}
+
+.subscription__inner__data__item__value {
+    width: 23%;
+    text-align: left;
+    font-weight: 600;
+}
+
+.subscription__inner--conversion .subscription__inner__right {
+    padding-top: 30px;
+}
+
+.subscription__inner__left {
+    margin-top: 30px;
+    padding-right: 20px;
+    margin-right: 40px;
+    border-right: 2px solid #313131;
+}
+
+.subscription__inner--conversion .subscription__inner__header {
+    margin-bottom: 20px;
+}
+
+.subscription__inner__dateSelector__content {
+    padding: 10px 25px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid var(--primary);
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.subscription__inner__data__item:last-child {
+    border-top: 1px solid #313131;
+    margin-top: 10px;
+    padding-top: 5px;
+}
+
+.btn--makePayment--white {
+    background: #fff;
+    color: var(--primary);
+    margin-top: 15px;
+    border: 2px solid var(--primary);
+    font-size: 16px;
+}
+
+.btn--makePayment--white:hover {
+    background: #efefef;
+}
+
+.activePageButtons {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.btn--activePage {
+    width: 300px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    color: #313131;
+    font-size: 19px;
+    text-align: center;
+    font-weight: 700;
+    margin: 0 15px;
+}
+
+.btn--activePage--current {
+    border-bottom: 3px solid var(--primary);
 }

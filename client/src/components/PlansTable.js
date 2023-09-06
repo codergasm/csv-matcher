@@ -1,17 +1,20 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import PlansTableLegend from "./PlansTableLegend";
 import PlansTableItem from "./PlansTableItem";
 import { plansColors } from "../static/constans";
+import {TranslationContext} from "../App";
 
 const PlansTable = ({plans}) => {
+    const { content } = useContext(TranslationContext);
+
     return <div className="plansTable w-small flex">
         <div className="plansTable__left">
             <div className="plansTable__left__heading">
                 <h3 className="plansTable__left__header">
-                    Nasze plany
+                    {content.ourPlans}
                 </h3>
                 <p className="plansTable__left__text">
-                    Wybierz odpowiedni plan dla Twojego zespołu
+                    {content.ourPlansSubheader}
                 </p>
             </div>
 

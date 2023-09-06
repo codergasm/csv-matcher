@@ -1,9 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import PayPlanWindow from "../components/PayPlanWindow";
 import getUrlParam from "../helpers/getUrlParam";
 import {getAllSubscriptionPlans} from "../api/subscriptions";
+import PlanConversionWindow from "../components/PlanConversionWindow";
+import {SubscriptionContext} from "../components/LoggedUserWrapper";
 
-const SubscriptionPage = () => {
+const SubscriptionPage = ({user}) => {
+    const { planDeadline, planId } = useContext(SubscriptionContext);
+
     const [isConversion, setIsConversion] = useState(false);
     const [plans, setPlans] = useState([]);
     const [planToPay, setPlanToPay] = useState({});
@@ -22,10 +26,11 @@ const SubscriptionPage = () => {
             const planIdParam = getUrlParam('id');
 
             if(planIdParam) {
-                const planId = parseInt(planIdParam);
+                const planIdInt = parseInt(planIdParam);
+                setIsConversion(planIdInt !== planId && planDeadline > new Date());
 
                 setPlanToPay(plans.find((item) => {
-                    return item.id === planId;
+                    return item.id === planIdInt;
                 }));
             }
         }
@@ -34,7 +39,9 @@ const SubscriptionPage = () => {
     return  <div className="container">
         <div className="homepage">
             <div className="homepage__subscription center w">
-                {isConversion ? '' : <PayPlanWindow plan={planToPay} />}
+                {isConversion ? <PlanConversionWindow plan={planToPay}
+                                                      user={user} /> : <PayPlanWindow plan={planToPay}
+                                                                                      user={user} />}
             </div>
         </div>
     </div>

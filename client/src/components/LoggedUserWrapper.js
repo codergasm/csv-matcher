@@ -198,7 +198,7 @@ const LoggedUserWrapper = ({page}) => {
                 setRender(<PlansPage user={userTmp} />);
                 break;
             case 9:
-                setRender(<SubscriptionPage />);
+                setRender(<SubscriptionPage user={userTmp} />);
                 break;
             default:
                 redirectToHomepage();
@@ -213,7 +213,7 @@ const LoggedUserWrapper = ({page}) => {
         apiOutputEndpoint, apiUserRedirectionWebsite
     }}>
         <SubscriptionContext.Provider value={{
-            planId, setPlanId, currentPlan,
+            planId, currentPlan,
             planDeadline, setPlanDeadline,
             isUserTeamOwner,
             teamId: user.teamId

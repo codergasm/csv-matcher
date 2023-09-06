@@ -1,20 +1,18 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {TranslationContext} from "../App";
 
 const PlansPageInfo = () => {
+    const { content } = useContext(TranslationContext);
+
     return <div className="plans__info">
         <h4 className="plans__info__header">
-            Tylko administrator zespołu może wykupić plan abonamentowy
+            {content.plansPageInfo[0]}
         </h4>
         <p className="plans__info__text">
-            Możesz w każdym momencie zmienić plan na wyższy lub niższy. Jeżeli
-            zapragniesz wrócić do darmowej wersji - to Twój wcześniej zakupiony
-            plan płatny będzie aktywny aż do momentu, do którego był opłacony.
+            {content.plansPageInfo[1]}
         </p>
         <p className="plans__info__text">
-            Każdorazowo limity obowiązują cały zespół, jak i każdego użytkownika z osobna.
-            Limity wliczają się, tym samym jeśli użytkownicy posiadają przykładowo 10MB danych
-            dostępnych tylko dla siebie, oraz 20MB udostępnionych zespołowi - to łączna
-            wartość zużycia wynosi 50MB.
+            {content.plansPageInfo[2]}
         </p>
     </div>
 };

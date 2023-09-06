@@ -45,7 +45,7 @@ const PlansTableItem = ({item, index, color}) => {
 
     const choosePlan = () => {
         if(isUserTeamOwner) {
-            window.location = `/subskrypcja?id=${planId}`;
+            window.location = `/subskrypcja?id=${item.id}`;
         }
         else if(teamId) {
             setAlertNotTeamOwnerVisible(true);

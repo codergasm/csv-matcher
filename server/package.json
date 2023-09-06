@@ -34,6 +34,7 @@
     "@nestjs/serve-static": "^3.0.1",
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "9.1.6",
+    "axios": "^1.5.0",
     "big-json": "^3.2.0",
     "cache-manager": "^5.2.3",
     "csvtojson": "^2.0.10",

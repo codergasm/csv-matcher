@@ -1,12 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, PrimaryColumn} from 'typeorm';
 
 @Entity('transactions')
 export class TransactionsEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    id: string;
 
     @Column()
-    create_datetime: number;
+    create_datetime: Date;
 
     @Column()
     user_id: number;
@@ -31,9 +31,38 @@ export class TransactionsEntity {
     @Column()
     is_invoice_applicable: boolean;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
+    invoice_number: string;
+
+    @Column({
+        nullable: true
+    })
     invoice_buyer_name: string;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     invoice_nip: string;
+
+    @Column({
+        nullable: true
+    })
+    payment_token: string;
+
+    @Column()
+    amount: number;
+
+    @Column()
+    currency: string;
+
+    @Column()
+    team_id: number;
+
+    @Column()
+    plan_id: number;
+
+    @Column()
+    plan_deadline: Date;
 }

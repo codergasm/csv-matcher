@@ -7,13 +7,15 @@ import {AutomaticMatchOperationsRegistryEntity} from "../entities/automatic_matc
 import {UsersEntity} from "../entities/users.entity";
 import {FilesEntity} from "../entities/files.entity";
 import {MatchSchemasEntity} from "../entities/match_schemas.entity";
+import {TransactionsEntity} from "../entities/transactions.entity";
+import {TeamsEntity} from "../entities/teams.entity";
 
 @Module({
   providers: [SubscriptionsService],
   controllers: [SubscriptionsController],
   imports: [TypeOrmModule.forFeature(
       [SubscriptionTypesEntity, AutomaticMatchOperationsRegistryEntity,
-        UsersEntity, FilesEntity, MatchSchemasEntity]
+        UsersEntity, FilesEntity, MatchSchemasEntity, TransactionsEntity, TeamsEntity]
   )]
 })
 
