@@ -21,6 +21,7 @@ import {AutomaticMatchOperationsRegistryEntity} from "./entities/automatic_match
 import {TeamsEntity} from "./entities/teams.entity";
 import {SubscriptionTypesEntity} from "./entities/subscription_types.entity";
 import {LanguagesEntity} from "./entities/languages.entity";
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -61,7 +62,8 @@ import {LanguagesEntity} from "./entities/languages.entity";
     SchemasModule,
     ApiModule,
     AuthModule,
-    SubscriptionsModule
+    SubscriptionsModule,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [AppService],

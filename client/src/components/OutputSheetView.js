@@ -22,6 +22,7 @@ import areArraysEqual from "../helpers/areArraysEqual";
 import checkIcon from "../static/img/check.svg";
 import checkAllIcon from "../static/img/select-all.svg";
 import uncheckAllIcon from "../static/img/unselect-all.svg";
+import downloadFile from "../helpers/downloadFile";
 
 const OutputSheetView = forwardRef((props, ref) => {
     const { content } = useContext(TranslationContext);
@@ -313,16 +314,6 @@ const OutputSheetView = forwardRef((props, ref) => {
         }
 
         return JSON.stringify(json);
-    }
-
-    const downloadFile = (blob, filename) => {
-        const link = document.createElement("a");
-
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", filename);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
     }
 
     const fetchNextRows = () => {

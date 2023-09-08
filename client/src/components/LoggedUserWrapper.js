@@ -16,6 +16,7 @@ import convertRelationTypeStringToNumber from "../helpers/convertRelationTypeStr
 import PlansPage from "../pages/PlansPage";
 import SubscriptionPage from "../pages/SubscriptionPage";
 import {getAllSubscriptionPlans} from "../api/subscriptions";
+import TyPage from "../pages/TyPage";
 
 const SubscriptionContext = React.createContext({});
 const ApiContext = React.createContext({});
@@ -199,6 +200,9 @@ const LoggedUserWrapper = ({page}) => {
                 break;
             case 9:
                 setRender(<SubscriptionPage user={userTmp} />);
+                break;
+            case 11:
+                setRender(<TyPage />);
                 break;
             default:
                 redirectToHomepage();

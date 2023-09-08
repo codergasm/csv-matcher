@@ -16,6 +16,8 @@ const pl = {
     use: 'Zastosuj',
     choose: 'Wybierz',
     error: 'Coś poszło nie tak... Prosimy spróbować później',
+    from: 'od',
+    to: 'do',
 
     // Homepage
     topMenu: ['Home', 'Moje pliki', 'Moje schematy', 'Nowe dopasowanie', 'Zespół'],
@@ -336,6 +338,7 @@ const pl = {
     plans: 'Plany',
     transactions: 'Transakcje',
     transactionsTableHeader: ['data', 'przedmiot transakcji', 'wartość', 'status', 'potwierdzenie'],
+    adminTransactionsTableHeader: ['data', 'przedmiot transakcji', 'wartość', 'status', 'numer faktury', 'e-mail', 'team', 'potwierdzenie'],
     paymentStatuses: ['niepotwierdzone', 'wykonane'],
     showConfirmation: 'Wyświetl potwierdzenie',
     transactionTitle: 'opłata licencji',
@@ -385,7 +388,22 @@ const pl = {
                                        dnia uruchomienia danego pakietu.`,
             large: true
         }
-    ]
+    ],
+    invoiceCheckbox: 'Chcę otrzymać fakturę VAT',
+    companyName: 'Nazwa firmy',
+    companyNIP: 'NIP',
+    companyStreetName: 'Ulica',
+    companyStreetNumber: 'Nr lokalu',
+    companyPostalCode: 'Kod pocztowy',
+    invoiceError: 'Uzupełnij wszystkie pola',
+    tyHeader: 'Twoja subskrypcja została pomyślnie przedłużona!',
+
+    // Admin panel
+    onlyConfirmed: 'tylko opłacone',
+    onlyInvoice: 'z fakturą',
+    onlyReceipt: 'z paragonem',
+    filterByDate: 'Filtruj wg daty',
+    exportCurrentViewToCsv: 'Eksportuj aktualny widok do csv'
 }
 
 export default pl;

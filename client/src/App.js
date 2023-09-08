@@ -8,6 +8,7 @@ import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 import getTranslationContent from "./static/translations/getTranslationContent";
 import AdminWrapper from "./components/AdminWrapper";
 import {getLanguages} from "./api/languages";
+import AdminTransactionsPage from "./pages/AdminTransactionsPage";
 
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
@@ -94,13 +95,16 @@ const App = () => {
       <Route path="/subskrypcja">
         <LoggedUserWrapper page={9} />
       </Route>
-      <Route path="/transakcje">
-        <LoggedUserWrapper page={10} />
+      <Route path="/subskrypcja-przedluzona">
+        <LoggedUserWrapper page={11} />
       </Route>
 
       {/* Admin */}
       <Route path="/admin">
         <AdminWrapper page={1} />
+      </Route>
+      <Route path="/transakcje">
+        <AdminTransactionsPage />
       </Route>
     </Router>
   </TranslationContext.Provider>

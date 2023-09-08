@@ -8,6 +8,7 @@ import Loader from "./Loader";
 import {SubscriptionContext} from "./LoggedUserWrapper";
 import {addTrailingZero} from "../helpers/others";
 import BottomNotification from "./BottomNotification";
+import addDaysToDate from "../helpers/addDaysToDate";
 
 const PlanConversionWindow = ({plan, user}) => {
     const { content, currency } = useContext(TranslationContext);
@@ -55,7 +56,12 @@ const PlanConversionWindow = ({plan, user}) => {
     }, [valueOfPaidDaysLeft, newPlanCostPerDay]);
 
     useEffect(() => {
-        setNewPlanDeadline(addDaysToCurrentDate(numberOfFreeDays));
+        if(planDeadline > new Date()) {
+            setNewPlanDeadline(addDaysToDate(planDeadline, numberOfFreeDays));
+        }
+        else {
+            setNewPlanDeadline(addDaysToCurrentDate(numberOfFreeDays));
+        }
     }, [numberOfFreeDays]);
 
     useEffect(() => {
@@ -71,7 +77,7 @@ const PlanConversionWindow = ({plan, user}) => {
     const convertAndBuyLongerDeadline = () => {
         setLoading(true);
 
-        convertSubscription(user.team_id, plan.id, newPlanDeadline)
+        convertSubscription(user.teamId, plan.id, newPlanDeadline)
             .then(() => {
                 window.location = `/subskrypcja?id=${plan.id}`;
             });
@@ -80,7 +86,7 @@ const PlanConversionWindow = ({plan, user}) => {
     const convert = () => {
         setLoading(true);
 
-        convertSubscription(user.team_id, plan.id, newPlanDeadline)
+        convertSubscription(user.teamId, plan.id, newPlanDeadline)
             .then((res) => {
                 if(res) {
                     setConversionStatus(1);

@@ -479,6 +479,11 @@ table .cell--legend {
     scrollbar-color: var(--primary) #C1DCFF;
 }
 
+.subscription__inner.scroll {
+    height: 620px;
+    overflow-y: scroll !important;
+}
+
 .scrollbar-hidden {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
@@ -3502,10 +3507,11 @@ input[type=number] {
 
 .subscription__inner {
     padding: 30px;
+    height: 700px;
     flex-direction: column;
 }
 
-.subscription__inner * {
+.subscription__inner *:not(input) {
     text-align: center;
 }
 
@@ -3515,7 +3521,7 @@ input[type=number] {
 
 .subscription__inner__buttons {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     gap: 10px;
 }
@@ -3556,6 +3562,7 @@ input[type=number] {
     font-weight: 700;
     margin: 20px auto;
     min-width: 300px;
+    max-width: 300px;
 }
 
 .subscription__inner__amountToPay {
@@ -3579,6 +3586,7 @@ input[type=number] {
 .btn--makePayment {
     margin: 20px auto 0;
     height: 50px;
+    min-height: 50px;
     width: 100%;
     max-width: 500px;
     border-radius: 50px;
@@ -3771,6 +3779,7 @@ input[type=number] {
 }
 
 .btn--activePage {
+    background: #fff;
     width: 300px;
     border: none;
     border-bottom: 1px solid #ddd;
@@ -3778,9 +3787,127 @@ input[type=number] {
     font-size: 19px;
     text-align: center;
     font-weight: 700;
-    margin: 0 15px;
+    padding-bottom: 15px;
+    margin: 35px 15px 0;
 }
 
 .btn--activePage--current {
     border-bottom: 3px solid var(--primary);
 }
+
+.btn--activePage:hover {
+    background: #fff;
+}
+
+.invoiceForm {
+    margin: 20px auto;
+    padding: 10px 0 0;
+}
+
+.label--invoice {
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0;
+}
+
+.label--invoice > .btn--check {
+    margin-right: 8px;
+}
+
+.invoiceForm__inner {
+    margin-top: 20px;
+}
+
+.transactionsPage {
+    padding-top: 40px;
+    min-height: 1000px;
+}
+
+.line--header * {
+    font-weight: 700 !important;
+}
+
+.btn--payAgain {
+    width: 130px;
+    height: 35px;
+    border-radius: 35px;
+    color: #fff;
+    background: var(--primary);
+    padding: 5px;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: .2s all;
+}
+
+.btn--payAgain:hover {
+    background: var(--hover);
+}
+
+.img--no {
+    width: 15px;
+}
+
+.sheet__table--adminTransactions {
+    border-left: 1px solid var(--primary);
+    border-right: 1px solid var(--primary);
+}
+
+.adminFilter {
+    margin: 0 0 50px;
+}
+
+.adminFilter--date {
+    position: relative;
+    z-index: 100;
+    min-height: 80px;
+    overflow: visible;
+}
+
+.adminFilter--date span {
+    padding-right: 15px;
+}
+
+.adminFilter--date .subscription__inner__dateSelector:first-child {
+    margin-right: 25px;
+}
+
+.adminFilter--buttons {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.adminFilter--buttons .label--invoice:not(:last-child) {
+    margin-right: 20px;
+}
+
+.transactionsTableWrapper {
+    min-height: 600px;
+}
+
+.transactionsTableWrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.label--invoice--center {
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+.label--invoice--center > .btn--check {
+    margin-left: 0 !important;
+}
+
+.btn--exportTransactions {
+    margin-bottom: 40px;
+}
+
+

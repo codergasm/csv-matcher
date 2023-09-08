@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {SubscriptionTypesEntity} from "../entities/subscription_types.entity";
 import {In, Repository} from "typeorm";
@@ -11,6 +11,7 @@ import axios from 'axios';
 import * as crypto from 'crypto';
 import {TransactionsEntity} from "../entities/transactions.entity";
 import {TeamsEntity} from "../entities/teams.entity";
+import {TeamsInvoicesDataEntity} from "../entities/teams_invoices_data.entity";
 
 @Injectable()
 export class SubscriptionsService {
@@ -19,6 +20,8 @@ export class SubscriptionsService {
         private readonly subscriptionTypesRepository: Repository<SubscriptionTypesEntity>,
         @InjectRepository(TransactionsEntity)
         private readonly transactionsRepository: Repository<TransactionsEntity>,
+        @InjectRepository(TeamsInvoicesDataEntity)
+        private readonly teamsInvoicesDataRepository: Repository<TeamsInvoicesDataEntity>,
         @InjectRepository(UsersEntity)
         private readonly usersRepository: Repository<UsersEntity>,
         @InjectRepository(TeamsEntity)
@@ -143,11 +146,39 @@ export class SubscriptionsService {
         });
     }
 
+    async getTeamInvoiceData(teamId) {
+        return this.teamsInvoicesDataRepository.findOneBy({
+            team_id: teamId
+        });
+    }
+
+    async generateInvoiceNumber() {
+        const addTrailingZero = (n) => {
+            if(n < 10) return `0${n}`;
+            return n;
+        }
+
+        const allInvoices = await this.transactionsRepository
+            .createQueryBuilder('t')
+            .where(`t.invoice_number IS NOT NULL`)
+            .getMany();
+
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        const newNumber = allInvoices.filter((item) => {
+            return item.create_datetime.getMonth() === currentMonth;
+        }).length + 1;
+
+        return `${newNumber}/${addTrailingZero(currentMonth)}/${currentYear}`;
+    }
+
     async registerPayment(body) {
-        const { amount, currency, email, userId, teamId, planId, planDeadline } = body;
+        const { amount, currency, email, userId, teamId,
+            planId, planDeadline, invoice } = body;
 
         const CLIENT_ID = process.env.PRZELEWY24_CLIENT_ID;
-        const CRC = process.env.PRZELEWY24_CRC;
+        const CRC = process.env.PRZELEWY24_CRC_KEY;
 
         let hash, data, gen_hash;
         const sessionId = await uuid();
@@ -171,48 +202,62 @@ export class SubscriptionsService {
             sign: gen_hash
         };
 
-        const res = await axios.post(`https://sandbox.przelewy24.pl/api/v1/transaction/register`, postData, {
-            headers: {
-                Authorization: `Basic ${process.env.PRZELEWY24_AUTH_HEADER}`
-            }
-        });
-
-        if(res) {
-            console.log(res);
-            console.log(res.data);
-
-            let token = res.data.token;
-
-            await this.transactionsRepository.save({
-                id: sessionId,
-                create_datetime: new Date(),
-                user_id: userId,
-                status: 'pending',
-                payment_operator_token: '',
-                invoice_row_id: 0,
-                payment_operator_name: 'Przelewy24',
-                payment_operator_unit_id: null,
-                is_invoice_applicable: false,
-                invoice_number: null,
-                invoice_buyer_name: null,
-                invoice_nip: null,
-                payment_token: token,
-                amount: amount,
-                currency: currency,
-                team_id: teamId,
-                plan_id: planId,
-                plan_deadline: planDeadline
+        try {
+            const res = await axios.post(`https://sandbox.przelewy24.pl/api/v1/transaction/register`, postData, {
+                headers: {
+                    Authorization: `Basic ${process.env.PRZELEWY24_AUTH_HEADER}`
+                }
             });
 
-            return {
-                token: token,
-                sign: gen_hash
+            if(res) {
+                let token = res.data.data.token;
+
+                await this.transactionsRepository.save({
+                    id: sessionId,
+                    create_datetime: new Date(),
+                    user_id: userId,
+                    status: 'pending',
+                    payment_operator_token: '',
+                    payment_operator_name: 'Przelewy24',
+                    payment_operator_unit_id: null,
+                    is_invoice_applicable: !!invoice,
+                    invoice_number: null,
+                    invoice_name: invoice ? invoice.name : null,
+                    invoice_nip: invoice ? invoice.nip : null,
+                    invoice_street_name: invoice ? invoice.street_name : null,
+                    invoice_street_number: invoice ? invoice.street_number : null,
+                    invoice_postal_code: invoice ? invoice.postal_code : null,
+                    payment_token: token,
+                    amount: amount,
+                    currency: currency,
+                    team_id: teamId,
+                    plan_id: planId,
+                    plan_deadline: planDeadline
+                });
+
+                if(invoice) {
+                    await this.teamsInvoicesDataRepository.save({
+                        team_id: teamId,
+                        name: invoice.name,
+                        nip: invoice.nip,
+                        street_name: invoice.street_name,
+                        street_number: invoice.street_number,
+                        postal_code: invoice.postal_code
+                    });
+                }
+
+                return {
+                    token: token
+                }
+            }
+            else {
+                return {
+                    error: true
+                }
             }
         }
-        else {
-            return {
-                error: true
-            }
+        catch(e) {
+            throw new HttpException('Error', 500);
         }
     }
 
@@ -255,7 +300,19 @@ export class SubscriptionsService {
             });
 
             if(transactionRow) {
-                const { plan_id, plan_deadline, team_id } = transactionRow;
+                const { plan_id, plan_deadline, team_id, is_invoice_applicable } = transactionRow;
+
+                if(is_invoice_applicable) {
+                    await this.transactionsRepository
+                        .createQueryBuilder()
+                        .update({
+                            invoice_number: await this.generateInvoiceNumber()
+                        })
+                        .where({
+                            id: sessionId
+                        })
+                        .execute();
+                }
 
                 await this.teamsRepository
                     .createQueryBuilder()

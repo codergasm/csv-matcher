@@ -18,9 +18,6 @@ export class TransactionsEntity {
     payment_operator_token: string;
 
     @Column()
-    invoice_row_id: number;
-
-    @Column()
     payment_operator_name: string;
 
     @Column({
@@ -39,12 +36,27 @@ export class TransactionsEntity {
     @Column({
         nullable: true
     })
-    invoice_buyer_name: string;
+    invoice_name: string;
 
     @Column({
         nullable: true
     })
     invoice_nip: string;
+
+    @Column({
+        nullable: true
+    })
+    invoice_street_name: string;
+
+    @Column({
+        nullable: true
+    })
+    invoice_street_number: string;
+
+    @Column({
+        nullable: true
+    })
+    invoice_postal_code: string;
 
     @Column({
         nullable: true

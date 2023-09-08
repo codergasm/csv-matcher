@@ -6,20 +6,52 @@ import getDaysDifferenceBetweenTwoDates from "../helpers/getDaysDifferenceBetwee
 import addDaysToCurrentDate from "../helpers/addDaysToCurrentDate";
 import {TranslationContext} from "../App";
 import {plansColors, PRZELEWY24_PAYMENT_LINK} from "../static/constans";
-import {registerPayment} from "../api/subscriptions";
+import {getTeamInvoiceData, registerPayment} from "../api/subscriptions";
 import Loader from "./Loader";
+import {SubscriptionContext} from "./LoggedUserWrapper";
+import addDaysToDate from "../helpers/addDaysToDate";
+import InvoiceForm from "./InvoiceForm";
 
 const PayPlanWindow = ({plan, user}) => {
     const { content, currency } = useContext(TranslationContext);
+    const { planDeadline } = useContext(SubscriptionContext);
 
     const [amount, setAmount] = useState(0);
     const [endDate, setEndDate] = useState(addDaysToCurrentDate(31));
     const [endDateButtonActive, setEndDateButtonActive] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isInvoiceApplicable, setIsInvoiceApplicable] = useState(false);
+    const [invoice, setInvoice] = useState({
+        name: '',
+        nip: '',
+        street_name: '',
+        street_number: '',
+        postal_code: ''
+    });
+    const [invoiceError, setInvoiceError] = useState(false);
+
+    useEffect(() => {
+        if(user) {
+            getTeamInvoiceData(user.teamId)
+                .then((res) => {
+                    if(res?.data?.name) {
+                        setInvoice(Object.fromEntries(Object.entries(res.data).filter((item) => {
+                            return item[0] !== 'team_id';
+                        })));
+                    }
+                });
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if(planDeadline > new Date()) {
+            setEndDate(addDaysToDate(planDeadline, 31));
+        }
+    }, [planDeadline]);
 
     useEffect(() => {
         if(endDate && currency && plan) {
-            const numberOfDaysToPay = getDaysDifferenceBetweenTwoDates(endDate, new Date());
+            const numberOfDaysToPay = getDaysDifferenceBetweenTwoDates(endDate, planDeadline);
             const costPerMonth = plan[`price_${currency.toLowerCase()}`];
             const costPerDay = costPerMonth / 30;
 
@@ -28,36 +60,46 @@ const PayPlanWindow = ({plan, user}) => {
     }, [endDate, currency, plan]);
 
     useEffect(() => {
-        if(endDateButtonActive === 0) {
-            setEndDate(addDaysToCurrentDate(31));
+        if(planDeadline) {
+            if(endDateButtonActive === 0) {
+                setEndDate(addDaysToDate(planDeadline, 30));
+            }
+            else if(endDateButtonActive === 1) {
+                setEndDate(addDaysToDate(planDeadline, 3 * 30));
+            }
+            else if(endDateButtonActive === 2) {
+                setEndDate(addDaysToDate(planDeadline, 12 * 30));
+            }
         }
-        else if(endDateButtonActive === 1) {
-            setEndDate(addDaysToCurrentDate(3 * 30));
-        }
-        else if(endDateButtonActive === 2) {
-            setEndDate(addDaysToCurrentDate(12 * 30 + 1));
-        }
-    }, [endDateButtonActive]);
+    }, [planDeadline, endDateButtonActive]);
 
     const setPredefinedDate = (type) => {
         setEndDateButtonActive(type);
     }
 
-    const makePayment = () => {
-        setLoading(true);
-
-        registerPayment(amount, currency, user.id, user.team_id, plan.id, endDate)
-            .then((res) => {
-                const paymentUri = PRZELEWY24_PAYMENT_LINK;
-                const token = res.data.token;
-                window.location = `${paymentUri}${token}`;
-            })
-            .catch(() => {
-                setLoading(false);
-            });
+    const validateInvoiceFields = () => {
+        return !isInvoiceApplicable || Object.values(invoice).findIndex((item) => (!item)) === -1;
     }
 
-    return <div className="subscription__inner subscription__inner--new center shadow">
+    const makePayment = () => {
+        if(validateInvoiceFields()) {
+            setLoading(true);
+
+            registerPayment(amount, currency, user.id, user.teamId, plan.id,
+                endDate, isInvoiceApplicable ? invoice : null)
+                .then((res) => {
+                    window.location = `${PRZELEWY24_PAYMENT_LINK}${res.data.token}`;
+                })
+                .catch(() => {
+                    setLoading(false);
+                });
+        }
+        else {
+            setInvoiceError(true);
+        }
+    }
+
+    return <div className="subscription__inner subscription__inner--new scroll shadow">
         <h2 className="subscription__inner__header">
             {content.payPlan}
         </h2>
@@ -95,6 +137,13 @@ const PayPlanWindow = ({plan, user}) => {
             <span>{amount} {currency}</span>
             <span>{content.toPay}</span>
         </h4>
+
+        <InvoiceForm invoice={invoice}
+                     isInvoiceApplicable={isInvoiceApplicable}
+                     setInvoice={setInvoice}
+                     setIsInvoiceApplicable={setIsInvoiceApplicable}
+                     invoiceError={invoiceError}
+                     setInvoiceError={setInvoiceError} />
 
         {loading ? <div className="center">
             <Loader width={40} />

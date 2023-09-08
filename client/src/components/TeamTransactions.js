@@ -14,6 +14,7 @@ const TeamTransactions = ({user}) => {
         if(user) {
             getTeamTransactions(user.team_id)
                 .then((res) => {
+                    console.log(res);
                     if(res) {
                         setTransactions(res.data);
                     }
@@ -22,13 +23,9 @@ const TeamTransactions = ({user}) => {
     }, [user]);
 
     return <div className="transactions">
-        <h2 className="transactions__header">
-            {content.transactions}
-        </h2>
-
         <div className="teamTable w scroll">
             <div className="sheet__table">
-                <div className="line line--member">
+                <div className="line line--member line--header">
                     {content.transactionsTableHeader?.map((item, index) => {
                         return <div className="sheet__header__cell"
                                     key={index}>
@@ -41,7 +38,7 @@ const TeamTransactions = ({user}) => {
                     return <div className="line line--member"
                                 key={index}>
                         <div className="sheet__header__cell">
-                            {printDate(item.create_datetime)}
+                            {printDate(new Date(item.create_datetime))}
                         </div>
                         <div className="sheet__header__cell">
                             {content.transactionTitle}
@@ -49,7 +46,7 @@ const TeamTransactions = ({user}) => {
                         <div className="sheet__header__cell">
                             {item.amount} {item.currency}
                         </div>
-                        <div className="sheet__header__cell">
+                        <div className="sheet__header__cell sheet__header__cell--column">
                             {translatePaymentStatus(item.status, content.paymentStatuses)}
 
                             {item.status !== 'confirmed' ? <a href={`${PRZELEWY24_PAYMENT_LINK}${item.payment_token}`}

@@ -9,12 +9,13 @@ import {FilesEntity} from "../entities/files.entity";
 import {MatchSchemasEntity} from "../entities/match_schemas.entity";
 import {TransactionsEntity} from "../entities/transactions.entity";
 import {TeamsEntity} from "../entities/teams.entity";
+import {TeamsInvoicesDataEntity} from "../entities/teams_invoices_data.entity";
 
 @Module({
   providers: [SubscriptionsService],
   controllers: [SubscriptionsController],
   imports: [TypeOrmModule.forFeature(
-      [SubscriptionTypesEntity, AutomaticMatchOperationsRegistryEntity,
+      [SubscriptionTypesEntity, AutomaticMatchOperationsRegistryEntity, TeamsInvoicesDataEntity,
         UsersEntity, FilesEntity, MatchSchemasEntity, TransactionsEntity, TeamsEntity]
   )]
 })

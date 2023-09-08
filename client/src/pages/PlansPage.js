@@ -46,7 +46,7 @@ const PlansPage = ({user}) => {
                     <PlansTable user={user}
                                 plans={plans} />
                     <PlansPageInfo />
-                </> : <TransactionsPage />}
+                </> : <TransactionsPage user={user} />}
             </div>
         </div>
     </>

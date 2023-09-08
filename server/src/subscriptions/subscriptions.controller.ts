@@ -40,6 +40,11 @@ export class SubscriptionsController {
         return this.subscriptionsService.getTeamTransactions(id);
     }
 
+    @Get('/getTeamInvoiceData/:id')
+    getTeamInvoiceData(@Param('id') id) {
+        return this.subscriptionsService.getTeamInvoiceData(id);
+    }
+
     @Post('/registerPayment')
     registerPayment(@Body() body) {
         return this.subscriptionsService.registerPayment(body);

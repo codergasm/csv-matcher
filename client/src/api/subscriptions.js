@@ -28,14 +28,18 @@ const getTeamTransactions = (teamId) => {
     return axios.get(`/subscriptions/getTeamTransactions/${teamId}`, getConfigWithAuthHeader());
 }
 
-const registerPayment = (amount, currency, userId, teamId, planId, planDeadline) => {
+const getTeamInvoiceData = (teamId) => {
+    return axios.get(`/subscriptions/getTeamInvoiceData/${teamId}`, getConfigWithAuthHeader());
+}
+
+const registerPayment = (amount, currency, userId, teamId, planId, planDeadline, invoice) => {
     const email = getLoggedUserEmail();
 
-    return axios.post(`/subscription/registerPayment`, {
+    return axios.post(`/subscriptions/registerPayment`, {
         amount, userId, teamId, email,
-        planId, planDeadline
+        planId, planDeadline, currency, invoice
     }, getConfigWithAuthHeader());
 }
 
-export { getAllSubscriptionPlans, getPlanById, getTeamLimitsUsage, getTeamTransactions,
+export { getAllSubscriptionPlans, getPlanById, getTeamLimitsUsage, getTeamTransactions, getTeamInvoiceData,
     getNumberOfAutoMatchOperationsInCurrentMonth, registerPayment, convertSubscription }
