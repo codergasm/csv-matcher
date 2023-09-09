@@ -2,17 +2,17 @@ import React, {useContext, useEffect, useState} from 'react';
 import {TranslationContext} from "../App";
 import addDaysToCurrentDate from "../helpers/addDaysToCurrentDate";
 import getDaysDifferenceBetweenTwoDates from "../helpers/getDaysDifferenceBetweenTwoDates";
-import {convertSubscription} from "../api/subscriptions";
+import {convertSubscription, validateConversionPossibility} from "../api/subscriptions";
 import {plansColors} from "../static/constans";
 import Loader from "./Loader";
 import {SubscriptionContext} from "./LoggedUserWrapper";
 import {addTrailingZero} from "../helpers/others";
 import BottomNotification from "./BottomNotification";
-import addDaysToDate from "../helpers/addDaysToDate";
+import ConversionNotPossibleModal from "./ConversionNotPossibleModal";
 
 const PlanConversionWindow = ({plan, user}) => {
     const { content, currency } = useContext(TranslationContext);
-    const { currentPlan, planDeadline } = useContext(SubscriptionContext);
+    const { currentPlan, planDeadline, planId } = useContext(SubscriptionContext);
 
     const [newPlanDeadline, setNewPlanDeadline] = useState(new Date());
     const [loading, setLoading] = useState(false);
@@ -24,6 +24,8 @@ const PlanConversionWindow = ({plan, user}) => {
     const [newPlanCostPerDay, setNewPlanCostPerDay] = useState(0);
     const [numberOfFreeDays, setNumberOfFreeDays] = useState(0);
     const [conversionStatus, setConversionStatus] = useState(0);
+    const [conversionErrorObject, setConversionErrorObject] = useState({});
+    const [conversionNotPossibleModalVisible, setConversionNotPossibleModalVisible] = useState(false);
 
     useEffect(() => {
         if(plan && currency) {
@@ -56,12 +58,7 @@ const PlanConversionWindow = ({plan, user}) => {
     }, [valueOfPaidDaysLeft, newPlanCostPerDay]);
 
     useEffect(() => {
-        if(planDeadline > new Date()) {
-            setNewPlanDeadline(addDaysToDate(planDeadline, numberOfFreeDays));
-        }
-        else {
-            setNewPlanDeadline(addDaysToCurrentDate(numberOfFreeDays));
-        }
+        setNewPlanDeadline(addDaysToCurrentDate(numberOfFreeDays));
     }, [numberOfFreeDays]);
 
     useEffect(() => {
@@ -83,8 +80,29 @@ const PlanConversionWindow = ({plan, user}) => {
             });
     }
 
-    const convert = () => {
+    const convert = async () => {
         setLoading(true);
+
+        if(planId < plan.id) {
+            try {
+                const conversionPossibility = await validateConversionPossibility(user.teamId, plan.id);
+
+                if(conversionPossibility) {
+                    if(conversionPossibility.data?.error) {
+                        setConversionErrorObject(conversionPossibility.data);
+                        setConversionNotPossibleModalVisible(true);
+                        setLoading(false);
+                        return 0;
+                    }
+                }
+                else {
+                    setConversionStatus(-1);
+                }
+            }
+            catch(e) {
+                setConversionStatus(-1);
+            }
+        }
 
         convertSubscription(user.teamId, plan.id, newPlanDeadline)
             .then((res) => {
@@ -103,6 +121,9 @@ const PlanConversionWindow = ({plan, user}) => {
     return <div className="subscription__inner subscription__inner--conversion center shadow">
         {conversionStatus ? <BottomNotification text={conversionStatus === 1 ? content.conversionSuccess : content.error}
                                                 background={conversionStatus === 1 ? '#508345' : 'red'} /> : ''}
+
+        {conversionNotPossibleModalVisible ? <ConversionNotPossibleModal conversionErrorObject={conversionErrorObject}
+                                                                         closeModal={() => { setConversionNotPossibleModalVisible(false); }} /> : ''}
 
         <h2 className="subscription__inner__header">
             {content.convertPlan}

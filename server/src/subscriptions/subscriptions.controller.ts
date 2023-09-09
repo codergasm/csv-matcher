@@ -28,10 +28,15 @@ export class SubscriptionsController {
         return this.subscriptionsService.getTeamLimitsUsage(id);
     }
 
+    @Post('/validateConversionPossibility')
+    validateConversionPossibility(@Body() body) {
+        const { teamId, newPlanId } = body;
+        return this.subscriptionsService.validateConversionPossibility(teamId, newPlanId);
+    }
+
     @Post('/convertSubscription')
     convertSubscription(@Body() body) {
         const { teamId, newPlanId, newPlanDeadline } = body;
-
         return this.subscriptionsService.convertSubscription(teamId, newPlanId, newPlanDeadline);
     }
 

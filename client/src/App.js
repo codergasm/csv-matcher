@@ -8,7 +8,7 @@ import PublicRoutesWrapper from "./components/PublicRoutesWrapper";
 import getTranslationContent from "./static/translations/getTranslationContent";
 import AdminWrapper from "./components/AdminWrapper";
 import {getLanguages} from "./api/languages";
-import AdminTransactionsPage from "./pages/AdminTransactionsPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 
 axios.defaults.baseURL = 'http://localhost:5000';
 // axios.defaults.baseURL = 'http://192.168.77.31:5000';
@@ -101,10 +101,10 @@ const App = () => {
 
       {/* Admin */}
       <Route path="/admin">
-        <AdminWrapper page={1} />
+        <AdminLoginPage />
       </Route>
       <Route path="/transakcje">
-        <AdminTransactionsPage />
+        <AdminWrapper page={1} />
       </Route>
     </Router>
   </TranslationContext.Provider>

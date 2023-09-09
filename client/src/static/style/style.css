@@ -3719,7 +3719,7 @@ input[type=number] {
     width: 75%;
     font-size: 15px;
     padding: 3px 10px;
-    border-right: 2px solid #313131;
+    border-right: 1px solid #313131;
     text-align: left;
 }
 
@@ -3910,4 +3910,26 @@ input[type=number] {
     margin-bottom: 40px;
 }
 
+.modal__header--text--single > span {
+    display: block;
+    text-align: left !important;
+    padding-left: 10px;
+    font-style: italic;
+}
 
+.modal__header--text--point {
+    text-align: left !important;
+    padding-left: 15px;
+    position: relative;
+}
+
+.modal__header--text--point::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    background: var(--primary);
+    border-radius: 50%;
+}

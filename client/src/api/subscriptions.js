@@ -18,6 +18,12 @@ const getTeamLimitsUsage = (teamId) => {
     return axios.get(`/subscriptions/getTeamLimitsUsage/${teamId}`);
 }
 
+const validateConversionPossibility = (teamId, newPlanId) => {
+    return axios.post(`/subscriptions/validateConversionPossibility`, {
+        teamId, newPlanId
+    });
+}
+
 const convertSubscription = (teamId, newPlanId, newPlanDeadline) => {
     return axios.post(`/subscriptions/convertSubscription`, {
         teamId, newPlanId, newPlanDeadline
@@ -41,5 +47,7 @@ const registerPayment = (amount, currency, userId, teamId, planId, planDeadline,
     }, getConfigWithAuthHeader());
 }
 
-export { getAllSubscriptionPlans, getPlanById, getTeamLimitsUsage, getTeamTransactions, getTeamInvoiceData,
-    getNumberOfAutoMatchOperationsInCurrentMonth, registerPayment, convertSubscription }
+export { getAllSubscriptionPlans, getPlanById, getTeamLimitsUsage,
+    getTeamTransactions, getTeamInvoiceData,
+    getNumberOfAutoMatchOperationsInCurrentMonth, registerPayment,
+    convertSubscription, validateConversionPossibility }

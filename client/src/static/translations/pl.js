@@ -21,6 +21,7 @@ const pl = {
 
     // Homepage
     topMenu: ['Home', 'Moje pliki', 'Moje schematy', 'Nowe dopasowanie', 'Zespół'],
+    topMenuAdmin: ['Transakcje'],
     topDropdownMenu: ['Zmień hasło', 'Wyloguj się'],
     mainMenu: ['Moje pliki', 'Moje schematy dopasowania', 'Utwórz nowe dopasowanie', 'Zarządzaj zespołem i użytkownikami'],
 
@@ -237,6 +238,8 @@ const pl = {
     doNotHaveAccount: 'Nie masz konta?',
     email: 'Adres e-mail',
     loginError: 'Niepoprawny adres e-mail lub hasło',
+    username: 'Nazwa użytkownika',
+    adminPanel: 'Panel administratora',
 
     // Register page
     register: 'Zarejestruj się',
@@ -397,6 +400,15 @@ const pl = {
     companyPostalCode: 'Kod pocztowy',
     invoiceError: 'Uzupełnij wszystkie pola',
     tyHeader: 'Twoja subskrypcja została pomyślnie przedłużona!',
+    conversionNotPossible: 'Konwersja na wyższy plan nie jest możliwa z następujących powodów:',
+    conversionErrorMatchOperations: 'Liczba operacji autodopasowania w tym miesiącu przekracza miesięczny limit w nowym planie',
+    conversionErrorNumberOfUsers: 'Liczba użytkowników zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorNumberOfFiles: 'Liczba plików zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorNumberOfSchemas: 'Liczba schematów dopasowania zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorDiskUsage: 'Zajęcie dysku przez pliki przekracza dopuszczalny limit w nowym planie',
+    conversionErrorSingleFileSize: 'Następujące pliki przekraczają dopuszczalny limit wielkości:',
+    conversionErrorSingleFileColumns: 'Następujące pliki przekraczają dopuszczalny limit kolumn:',
+    conversionErrorSingleFileRows: 'Następujące pliki przekraczają dopuszczalny limit wierszy',
 
     // Admin panel
     onlyConfirmed: 'tylko opłacone',

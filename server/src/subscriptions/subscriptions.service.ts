@@ -127,6 +127,64 @@ export class SubscriptionsService {
         }
     }
 
+    async validateConversionPossibility(teamId, newPlanId) {
+        const {
+            numberOfMatchOperations,
+            numberOfUsers,
+            numberOfFiles,
+            numberOfMatchSchemas,
+            diskUsage
+        } = await this.getTeamLimitsUsage(teamId);
+
+        const newPlanLimits = await this.subscriptionTypesRepository.findOneBy({
+            id: newPlanId
+        });
+
+        const numberOfMatchOperationsError = numberOfMatchOperations > newPlanLimits.matches_per_month;
+        const numberOfUsersError = numberOfUsers > newPlanLimits.users_per_team;
+        const numberOfFilesError = numberOfFiles > newPlanLimits.files_per_team;
+        const numberOfMatchSchemasError = numberOfMatchSchemas > newPlanLimits.schemas_per_team;
+        const diskUsageError = diskUsage > newPlanLimits.size_per_team;
+
+        const allTeamFiles = await this.getAllTeamFiles(teamId);
+        const filesizeLimit = newPlanLimits.size_per_file;
+        const columnsLimit = newPlanLimits.columns_per_file;
+        const rowsLimit = newPlanLimits.rows_per_file;
+
+        const exceededSizeFiles = allTeamFiles.filter((item) => {
+            return item.filesize > filesizeLimit;
+        }).map((item) => (item.filename));
+
+        const exceededColumnsFiles = allTeamFiles.filter((item) => {
+            return item.column_count > columnsLimit;
+        }).map((item) => (item.filename));
+
+        const exceededRowsFiles = allTeamFiles.filter((item) => {
+            return item.row_count > rowsLimit;
+        }).map((item) => (item.filename));
+
+        if(numberOfMatchSchemasError || numberOfUsersError || numberOfFilesError ||
+            numberOfMatchSchemasError || diskUsageError || exceededSizeFiles.length ||
+            exceededColumnsFiles.length || exceededRowsFiles.length) {
+            return {
+                error: true,
+                numberOfMatchOperationsError,
+                numberOfUsersError,
+                numberOfFilesError,
+                numberOfMatchSchemasError,
+                diskUsageError,
+                exceededSizeFiles,
+                exceededColumnsFiles,
+                exceededRowsFiles
+            }
+        }
+        else {
+            return {
+                error: false
+            }
+        }
+    }
+
     async convertSubscription(teamId, newPlanId, newPlanDeadline) {
         return this.teamsRepository
             .createQueryBuilder()
