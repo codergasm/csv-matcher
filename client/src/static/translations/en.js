@@ -1,4 +1,4 @@
-const en = {
+const pl = {
     // General
     edit: 'Edytuj',
     delete: 'Usuń',
@@ -16,9 +16,12 @@ const en = {
     use: 'Zastosuj',
     choose: 'Wybierz',
     error: 'Coś poszło nie tak... Prosimy spróbować później',
+    from: 'od',
+    to: 'do',
 
     // Homepage
     topMenu: ['Home', 'My files', 'My schemas', 'New match', 'Team'],
+    topMenuAdmin: ['Transakcje'],
     topDropdownMenu: ['Zmień hasło', 'Wyloguj się'],
     mainMenu: ['Moje pliki', 'Moje schematy dopasowania', 'Utwórz nowe dopasowanie', 'Zarządzaj zespołem i użytkownikami'],
 
@@ -235,6 +238,8 @@ const en = {
     doNotHaveAccount: 'Nie masz konta?',
     email: 'Adres e-mail',
     loginError: 'Niepoprawny adres e-mail lub hasło',
+    username: 'Nazwa użytkownika',
+    adminPanel: 'Panel administratora',
 
     // Register page
     register: 'Zarejestruj się',
@@ -297,7 +302,120 @@ const en = {
     },
     matchingLimitsExceededError: `Nie można przeprowadzić dopasowania, ponieważ liczba skorelowanych przez Twój 
     zespół rekordów w tym miesiącu przekroczyła limit Twojego planu. Zmień plan na wyższy lub spróbuj ponownie na początku
-    przyszłego miesiąca.`
+    przyszłego miesiąca.`,
+    conversionSuccess: 'Konwersja zakończona powodzeniem',
+    plansPageInfo: [
+        `Tylko administrator zespołu może wykupić plan abonamentowy`,
+        `Możesz w każdym momencie zmienić plan na wyższy lub niższy. Jeżeli
+            zapragniesz wrócić do darmowej wersji - to Twój wcześniej zakupiony
+            plan płatny będzie aktywny aż do momentu, do którego był opłacony.`,
+        `Każdorazowo limity obowiązują cały zespół, jak i każdego użytkownika z osobna.
+            Limity wliczają się, tym samym jeśli użytkownicy posiadają przykładowo 10MB danych
+            dostępnych tylko dla siebie, oraz 20MB udostępnionych zespołowi - to łączna
+            wartość zużycia wynosi 50MB.`
+    ],
+    payPlan: 'Opłać plan',
+    clickAndSet: 'Kliknij i ustaw:',
+    predefinedDateRanges: ['miesiąc', '3 miesiące', 'rok'],
+    payPlanWindowDisclaimer: `Możesz w każdym momencie zmienić plan na wyższy lub niższy. Jeżeli zapragniesz wrócić do
+            darmowej wersji - to Twój wcześniej zakupiony plan płatny będzie aktywny aż do momentu,
+            do którego był opłacony.`,
+    convert: 'Konwertuj',
+    convertAndBuyLongerDeadline: 'Konwertuj, a następnie wykup dłuższy okres',
+    newDeadlineAfterConversion: 'Nowa data zakończenia abonamentu po konwersji',
+    convertPlan: 'Konwertuj plan',
+    currentPlan: 'Obecny plan',
+    targetPlan: 'Docelowy plan',
+    toPay: 'Do zapłaty',
+    goPay: 'Przejdź do płatności',
+    monthlyCostOfCurrentPlan: 'Miesięczny koszt obecnego planu',
+    currentPlanCostPerDay: 'Uśredniony koszt jednego dnia w obecnym planie',
+    paidDaysLeft: 'Pozostało opłaconych dni',
+    valueOfPaidDaysLeft: 'Wartość pozostałych opłaconych dni',
+    monthlyCostOfTargetPlan: 'Miesięczny koszt nowego planu',
+    targetPlanCostPerDay: 'Uśredniony koszt jednego dnia w nowym planie',
+    numberOfFreeDays: 'Ilość dni, jaka zostanie sfinansowana przez ww. uprzednio opłacone dni',
+
+    // Transactions
+    subscription: 'Subskrypcja',
+    plans: 'Plany',
+    transactions: 'Transakcje',
+    transactionsTableHeader: ['data', 'przedmiot transakcji', 'wartość', 'status', 'potwierdzenie'],
+    adminTransactionsTableHeader: ['data', 'przedmiot transakcji', 'wartość', 'status', 'numer faktury', 'e-mail', 'team', 'potwierdzenie'],
+    paymentStatuses: ['niepotwierdzone', 'wykonane'],
+    showConfirmation: 'Wyświetl potwierdzenie',
+    transactionTitle: 'opłata licencji',
+    ourPlans: 'Nasze plany',
+    ourPlansSubheader: 'Wybierz odpowiedni plan dla Twojego zespołu',
+    plansTableLegend: [
+        {
+            content: 'Maksymalna ilość członków zespołu',
+            info: '',
+            large: false
+        },
+        {
+            content: 'Limit ilości plików na zespół',
+            info: 'Wliczamy zarówno pliki zespołowe, jak i prywatne każdego członka zespołu',
+            large: false
+        },
+        {
+            content: 'Maksymalna ilość rekordów w pojedynczym pliku',
+            info: 'Czyli jak duże zbiory danych możesz przyrównywać',
+            large: false
+        },
+        {
+            content: 'Maksymalna ilość kolumn w pojedynczym pliku',
+            info: 'Czyli jak duże zbiory danych możesz przyrównywać',
+            large: false
+        },
+        {
+            content: 'Maksymalny rozmiar pojedynczego pliku',
+            info: '',
+            large: false
+        },
+        {
+            content: 'Przestrzeń dyskowa',
+            info: 'Czyli ile łącznie powierzchni mogą zajmować wszystkie pliki zespołu',
+            large: false
+        },
+        {
+            content: 'Maksymalna ilość schematów dopasowania',
+            info: '',
+            large: false
+        },
+        {
+            content: 'Maksymalna ilość automatycznie dopasowanych rekordów w skali miesięcznej',
+            info: `Licznik zeruje się 1. dnia miesiąca. Dotyczy tylko rekordów dopasowanych automatycznie, 
+                                       naliczane każdorazowo przy uruchomieniu automatycznego dopasowania, gdy zostaną przydzielone
+                                       wyniki - nawet jeśli z nich nie skorzystasz. Licznik zeruje się co miesiąc licząc od 
+                                       dnia uruchomienia danego pakietu.`,
+            large: true
+        }
+    ],
+    invoiceCheckbox: 'Chcę otrzymać fakturę VAT',
+    companyName: 'Nazwa firmy',
+    companyNIP: 'NIP',
+    companyStreetName: 'Ulica',
+    companyStreetNumber: 'Nr lokalu',
+    companyPostalCode: 'Kod pocztowy',
+    invoiceError: 'Uzupełnij wszystkie pola',
+    tyHeader: 'Twoja subskrypcja została pomyślnie przedłużona!',
+    conversionNotPossible: 'Konwersja na wyższy plan nie jest możliwa z następujących powodów:',
+    conversionErrorMatchOperations: 'Liczba operacji autodopasowania w tym miesiącu przekracza miesięczny limit w nowym planie',
+    conversionErrorNumberOfUsers: 'Liczba użytkowników zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorNumberOfFiles: 'Liczba plików zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorNumberOfSchemas: 'Liczba schematów dopasowania zespołu przekracza dopuszczalną ilość w nowym planie',
+    conversionErrorDiskUsage: 'Zajęcie dysku przez pliki przekracza dopuszczalny limit w nowym planie',
+    conversionErrorSingleFileSize: 'Następujące pliki przekraczają dopuszczalny limit wielkości:',
+    conversionErrorSingleFileColumns: 'Następujące pliki przekraczają dopuszczalny limit kolumn:',
+    conversionErrorSingleFileRows: 'Następujące pliki przekraczają dopuszczalny limit wierszy',
+
+    // Admin panel
+    onlyConfirmed: 'tylko opłacone',
+    onlyInvoice: 'z fakturą',
+    onlyReceipt: 'z paragonem',
+    filterByDate: 'Filtruj wg daty',
+    exportCurrentViewToCsv: 'Eksportuj aktualny widok do csv'
 }
 
-export default en;
+export default pl;
