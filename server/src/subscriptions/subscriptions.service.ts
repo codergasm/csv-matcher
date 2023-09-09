@@ -322,9 +322,6 @@ export class SubscriptionsService {
     async verifyPayment(body) {
         let { merchantId, posId, sessionId, amount, currency, orderId } = body;
 
-        console.log('yes!');
-        console.log(body);
-
         /* Calculate SHA384 checksum */
         let hash, data, sign;
         hash = crypto.createHash('sha384');

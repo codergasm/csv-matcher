@@ -12,9 +12,8 @@ const TeamTransactions = ({user}) => {
 
     useEffect(() => {
         if(user) {
-            getTeamTransactions(user.team_id)
+            getTeamTransactions(user.teamId)
                 .then((res) => {
-                    console.log(res);
                     if(res) {
                         setTransactions(res.data);
                     }
