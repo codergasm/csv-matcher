@@ -256,7 +256,7 @@ export class SubscriptionsService {
             language: "pl",
             encoding: "utf-8",
             urlReturn: `${process.env.WEBSITE_URL}/subskrypcja-przedluzona`,
-            urlStatus: `${process.env.API_URL}/subscription/verifyPayment`,
+            urlStatus: `${process.env.API_URL}/subscriptions/verifyPayment`,
             sign: gen_hash
         };
 
@@ -321,6 +321,9 @@ export class SubscriptionsService {
 
     async verifyPayment(body) {
         let { merchantId, posId, sessionId, amount, currency, orderId } = body;
+
+        console.log('yes!');
+        console.log(body);
 
         /* Calculate SHA384 checksum */
         let hash, data, sign;
